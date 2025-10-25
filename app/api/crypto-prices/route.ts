@@ -3,54 +3,62 @@ import { NextResponse } from 'next/server';
 /**
  * Crypto Prices API Route
  *
- * Fetches real-time BTC and ETH prices from Binance API
+ * Fetches real-time BTC and ETH prices from CoinGecko API
  * Returns price and 24h change data
+ *
+ * Note: Using CoinGecko instead of Binance due to geo-restrictions in Vercel US datacenter
  */
 
-interface BinanceTicker {
-  symbol: string;
-  lastPrice: string;
-  priceChangePercent: string;
+interface CoinGeckoPrice {
+  usd: number;
+  usd_24h_change: number;
 }
 
 export async function GET() {
   try {
-    console.log('[API] Fetching prices from Binance...');
+    console.log('[API] Fetching prices from CoinGecko...');
 
-    // Fetch BTC and ETH prices from Binance (separate requests)
-    const [btcResponse, ethResponse] = await Promise.all([
-      fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', {
+    // Fetch BTC and ETH prices from CoinGecko (single request for both)
+    const response = await fetch(
+      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true',
+      {
         cache: 'no-store',
-      }),
-      fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT', {
-        cache: 'no-store',
-      }),
-    ]);
+        headers: {
+          'Accept': 'application/json',
+        },
+      }
+    );
 
-    console.log('[API] BTC Response:', btcResponse.status, btcResponse.statusText);
-    console.log('[API] ETH Response:', ethResponse.status, ethResponse.statusText);
+    console.log('[API] CoinGecko Response:', response.status, response.statusText);
 
-    if (!btcResponse.ok || !ethResponse.ok) {
-      const btcError = !btcResponse.ok ? await btcResponse.text() : '';
-      const ethError = !ethResponse.ok ? await ethResponse.text() : '';
-      console.error('[API] Binance API Error:', { btcError, ethError });
-      throw new Error(`Failed to fetch prices from Binance: BTC=${btcResponse.status}, ETH=${ethResponse.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[API] CoinGecko API Error:', errorText);
+      throw new Error(`Failed to fetch prices from CoinGecko: ${response.status}`);
     }
 
-    const data: BinanceTicker[] = await Promise.all([
-      btcResponse.json(),
-      ethResponse.json(),
-    ]);
+    const data: {
+      bitcoin: CoinGeckoPrice;
+      ethereum: CoinGeckoPrice;
+    } = await response.json();
 
     console.log('[API] Received data:', data);
 
     // Transform data to our format
-    const prices = data.map((ticker) => ({
-      symbol: ticker.symbol.replace('USDT', ''),
-      price: parseFloat(ticker.lastPrice),
-      change24h: parseFloat(ticker.priceChangePercent),
-      lastUpdate: new Date().toISOString(),
-    }));
+    const prices = [
+      {
+        symbol: 'BTC',
+        price: data.bitcoin.usd,
+        change24h: data.bitcoin.usd_24h_change,
+        lastUpdate: new Date().toISOString(),
+      },
+      {
+        symbol: 'ETH',
+        price: data.ethereum.usd,
+        change24h: data.ethereum.usd_24h_change,
+        lastUpdate: new Date().toISOString(),
+      },
+    ];
 
     console.log('[API] Returning prices:', prices);
 
