@@ -45,8 +45,9 @@ export function LivePriceWidget() {
       const response = await fetch('/api/crypto-prices');
       const result = await response.json();
 
-      if (result.success && result.data) {
-        console.log('[LivePriceWidget] Updated prices:', result.data);
+      // Use data even if success is false (fallback data is still useful)
+      if (result.data && result.data.length > 0) {
+        console.log('[LivePriceWidget] Updated prices:', result.data, 'success:', result.success);
         setPrices(
           result.data.map((item: any) => ({
             symbol: item.symbol,

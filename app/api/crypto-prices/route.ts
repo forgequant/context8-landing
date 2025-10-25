@@ -15,19 +15,24 @@ interface BinanceTicker {
 
 export async function GET() {
   try {
-    // Fetch BTC and ETH prices from Binance
-    const response = await fetch(
-      'https://api.binance.com/api/v3/ticker/24hr?symbols=["BTCUSDT","ETHUSDT"]',
-      {
-        next: { revalidate: 60 }, // Cache for 60 seconds
-      }
-    );
+    // Fetch BTC and ETH prices from Binance (separate requests)
+    const [btcResponse, ethResponse] = await Promise.all([
+      fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', {
+        next: { revalidate: 60 },
+      }),
+      fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT', {
+        next: { revalidate: 60 },
+      }),
+    ]);
 
-    if (!response.ok) {
+    if (!btcResponse.ok || !ethResponse.ok) {
       throw new Error('Failed to fetch prices from Binance');
     }
 
-    const data: BinanceTicker[] = await response.json();
+    const data: BinanceTicker[] = await Promise.all([
+      btcResponse.json(),
+      ethResponse.json(),
+    ]);
 
     // Transform data to our format
     const prices = data.map((ticker) => ({
