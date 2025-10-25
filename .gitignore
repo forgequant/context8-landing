@@ -37,3 +37,7 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# Database setup scripts with credentials
+setup-db.js
+setup-aiven-db.sh
