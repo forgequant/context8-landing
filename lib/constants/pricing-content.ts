@@ -61,7 +61,7 @@ export const pricingContent: PricingContent = {
       ],
       cta: {
         text: 'Start Free',
-        href: '/auth/signin',
+        href: '/login',
         variant: 'secondary',
         size: 'lg',
       },
@@ -115,7 +115,7 @@ export const pricingContent: PricingContent = {
       ],
       cta: {
         text: 'Upgrade to Pro',
-        href: '/auth/signin?plan=pro',
+        href: '/login?plan=pro',
         variant: 'primary',
         size: 'lg',
       },

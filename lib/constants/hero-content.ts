@@ -17,7 +17,7 @@ export const heroContent: HeroContent = {
   cta: {
     primary: {
       text: 'Get Started Free',
-      href: '/auth/signin',
+      href: '/login',
       variant: 'primary',
       icon: 'arrow-right',
       size: 'lg',

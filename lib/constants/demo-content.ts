@@ -43,7 +43,7 @@ Current technicals show bullish momentum with positive sentiment. On-chain data 
   },
   cta: {
     text: 'Try It Yourself',
-    href: '/auth/signin',
+    href: '/login',
     variant: 'primary',
     size: 'lg',
   },
