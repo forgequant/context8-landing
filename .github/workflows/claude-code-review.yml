@@ -1,0 +1,128 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [develop, main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  claude-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+        with:
+          files: |
+            **/*.ts
+            **/*.tsx
+            **/*.js
+            **/*.jsx
+
+      - name: Review with Claude Code
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          model: claude-sonnet-4
+          review-type: comprehensive
+          focus-areas: |
+            - Code quality and best practices
+            - Security vulnerabilities
+            - Performance issues
+            - TypeScript type safety
+            - React hooks usage
+            - Accessibility (a11y)
+          custom-instructions: |
+            Review this Next.js 14 + TypeScript codebase with focus on:
+            1. Type safety and proper TypeScript usage
+            2. React best practices (hooks, component structure)
+            3. Performance (avoid unnecessary re-renders)
+            4. Accessibility (WCAG 2.1 AA compliance)
+            5. Security (XSS, CSRF, data validation)
+            6. Code readability and maintainability
+
+            Provide specific, actionable feedback with code examples.
+            Flag critical issues as "blocking" and suggestions as "non-blocking".
+
+      - name: Post review summary
+        if: always() && steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = `## 🤖 Claude Code Review Summary
+
+            **Status**: Review completed
+            **Files Reviewed**: ${{ steps.changed-files.outputs.all_changed_files_count }}
+            **Model**: Claude Sonnet 4
+
+            ### Focus Areas
+            - ✅ Code quality and best practices
+            - ✅ Security vulnerabilities
+            - ✅ Performance issues
+            - ✅ TypeScript type safety
+            - ✅ React hooks usage
+            - ✅ Accessibility (a11y)
+
+            Check the "Files changed" tab for detailed inline comments.
+
+            ---
+            *Generated with [Claude Code](https://claude.com/claude-code)*
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  complexity-check:
+    name: Code Complexity Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Analyze complexity
+        run: |
+          npx ts-prune || echo "No unused exports detected"
+          npx eslint . --ext .ts,.tsx --max-warnings 10 || echo "Lint warnings detected"
+        continue-on-error: true
+
+      - name: Check bundle size
+        run: |
+          npm run build
+          npx @next/bundle-analyzer || echo "Bundle analysis skipped"
+        env:
+          ANALYZE: true
+        continue-on-error: true

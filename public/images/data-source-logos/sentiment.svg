@@ -1,0 +1,36 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Social sentiment logo: Orange chat/community concept -->
+  <defs>
+    <linearGradient id="sentimentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FB923C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F97316;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="48" height="48" rx="10" fill="url(#sentimentGrad)"/>
+
+  <!-- Main chat bubble -->
+  <g transform="translate(24, 22)">
+    <!-- Bubble body -->
+    <path d="M -12 -10 L 12 -10 L 12 6 L 2 6 L -2 11 L -2 6 L -12 6 Z" fill="white" rx="3"/>
+
+    <!-- Positive sentiment indicators -->
+    <!-- Eyes -->
+    <circle cx="-6" cy="-3" r="2" fill="url(#sentimentGrad)"/>
+    <circle cx="6" cy="-3" r="2" fill="url(#sentimentGrad)"/>
+
+    <!-- Happy smile -->
+    <path d="M -6 1 Q 0 5 6 1" stroke="url(#sentimentGrad)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- Small secondary bubbles (community aspect) -->
+  <circle cx="37" cy="13" r="3" fill="white" opacity="0.9"/>
+  <circle cx="11" cy="37" r="2.5" fill="white" opacity="0.9"/>
+
+  <!-- Decorative dots in bubbles -->
+  <g opacity="0.7">
+    <circle cx="36" cy="13" r="0.8" fill="url(#sentimentGrad)"/>
+    <circle cx="38" cy="13" r="0.8" fill="url(#sentimentGrad)"/>
+  </g>
+</svg>

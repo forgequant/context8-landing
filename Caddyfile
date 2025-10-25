@@ -1,0 +1,93 @@
+# Caddyfile for Context8 Landing Page
+# Automatic HTTPS with Let's Encrypt
+
+{
+    # Global options
+    email admin@context8.io
+
+    # ACME CA for Let's Encrypt
+    acme_ca https://acme-v02.api.letsencrypt.org/directory
+
+    # Enable HTTP/3
+    servers {
+        protocols h1 h2 h3
+    }
+}
+
+# Main domain
+context8.io {
+    # Reverse proxy to Next.js app
+    reverse_proxy app:3000 {
+        # Health check
+        health_uri /api/health
+        health_interval 30s
+        health_timeout 10s
+        health_status 200
+
+        # Load balancing (for future horizontal scaling)
+        lb_policy round_robin
+        lb_try_duration 5s
+
+        # Headers
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Compression
+    encode gzip zstd
+
+    # Security headers
+    header {
+        # Prevent clickjacking
+        X-Frame-Options "DENY"
+
+        # XSS Protection
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+
+        # HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+        # Referrer Policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+
+        # Permissions Policy
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+        # CSP (adjust as needed)
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.binance.com"
+
+        # Remove server header
+        -Server
+    }
+
+    # Rate limiting (requires Caddy plugin - commented out for basic setup)
+    # rate_limit {
+    #     zone static {
+    #         key {remote_host}
+    #         events 100
+    #         window 1m
+    #     }
+    # }
+
+    # Logging
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 10MB
+            roll_keep 5
+        }
+        format json
+    }
+
+    # Error pages (optional - customize as needed)
+    handle_errors {
+        respond "{http.error.status_code} {http.error.status_text}"
+    }
+}
+
+# Redirect www to non-www
+www.context8.io {
+    redir https://context8.io{uri} permanent
+}

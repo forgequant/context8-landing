@@ -1,0 +1,35 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- CoinGecko-inspired logo: Green circular gecko concept -->
+  <defs>
+    <linearGradient id="geckoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9FD961;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8DC647;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="24" cy="24" r="24" fill="url(#geckoGrad)"/>
+
+  <!-- Inner white circle -->
+  <circle cx="24" cy="24" r="17" fill="white"/>
+
+  <!-- Gecko/creature face -->
+  <g transform="translate(24, 24)">
+    <!-- Body -->
+    <ellipse cx="0" cy="0" rx="13" ry="12" fill="url(#geckoGrad)"/>
+
+    <!-- Eyes -->
+    <circle cx="-5" cy="-3" r="2.5" fill="white"/>
+    <circle cx="5" cy="-3" r="2.5" fill="white"/>
+    <circle cx="-5" cy="-3" r="1.5" fill="#5A9933"/>
+    <circle cx="5" cy="-3" r="1.5" fill="#5A9933"/>
+
+    <!-- Smile -->
+    <path d="M -6 3 Q 0 7 6 3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- Spots/texture -->
+    <circle cx="-8" cy="2" r="1.5" fill="#5A9933" opacity="0.3"/>
+    <circle cx="8" cy="2" r="1.5" fill="#5A9933" opacity="0.3"/>
+    <circle cx="0" cy="-8" r="1.5" fill="#5A9933" opacity="0.3"/>
+  </g>
+</svg>

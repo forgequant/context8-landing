@@ -1,0 +1,37 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Polymarket-inspired logo: Prediction market concept with chart/polygon theme -->
+  <defs>
+    <linearGradient id="polyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="24" cy="24" r="24" fill="url(#polyGrad)"/>
+
+  <!-- Inner white circle -->
+  <circle cx="24" cy="24" r="17" fill="white"/>
+
+  <!-- Prediction chart concept -->
+  <g transform="translate(24, 24)">
+    <!-- Rising chart line -->
+    <path d="M -10 6 L -5 2 L 0 4 L 5 -2 L 10 -6"
+          stroke="url(#polyGrad)"
+          stroke-width="2.5"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+
+    <!-- Data points -->
+    <circle cx="-10" cy="6" r="2" fill="#6366F1"/>
+    <circle cx="-5" cy="2" r="2" fill="#7C3AED"/>
+    <circle cx="0" cy="4" r="2" fill="#8B5CF6"/>
+    <circle cx="5" cy="-2" r="2" fill="#A78BFA"/>
+    <circle cx="10" cy="-6" r="2" fill="#C4B5FD"/>
+
+    <!-- Percentage indicators -->
+    <text x="-10" y="12" font-family="Arial, sans-serif" font-size="6" fill="#6366F1" text-anchor="middle" font-weight="bold">%</text>
+    <text x="10" y="-10" font-family="Arial, sans-serif" font-size="6" fill="#8B5CF6" text-anchor="middle" font-weight="bold">%</text>
+  </g>
+</svg>

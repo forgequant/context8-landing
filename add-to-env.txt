@@ -1,0 +1,11 @@
+# Добавьте эти строки в ваш .env.local:
+
+AUTH_SECRET="zN52tN5GX5uAcdC6d4uy0TzJKZPQ3Ftf4Bhe9Foft1k="
+
+# Если хотите только Google авторизацию - добавьте пустые значения для GitHub:
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
+
+# Или настройте GitHub OAuth и вставьте реальные значения:
+# GITHUB_CLIENT_ID="ваш-реальный-github-client-id"
+# GITHUB_CLIENT_SECRET="ваш-реальный-github-client-secret"
