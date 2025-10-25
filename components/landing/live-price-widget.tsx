@@ -97,9 +97,8 @@ export function LivePriceWidget() {
           ? 'border-teal-500/50 bg-teal-900/20 shadow-lg shadow-teal-500/20'
           : 'border-slate-800/50 bg-slate-900/80'
       }`}
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.8 }}
+      initial={false}
+      animate={{ opacity: 1 }}
     >
       {/* Live indicator */}
       <div className="flex items-center gap-2">
