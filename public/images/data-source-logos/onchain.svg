@@ -1,40 +1,51 @@
 <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- On-chain data logo: Indigo blockchain/cube concept -->
+  <!-- On-chain data visualization theme -->
   <defs>
     <linearGradient id="chainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#818CF8;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563EB;stop-opacity:1" />
     </linearGradient>
   </defs>
 
   <!-- Background -->
   <rect width="48" height="48" rx="10" fill="url(#chainGrad)"/>
 
-  <!-- 3D cube/blockchain concept -->
-  <g transform="translate(24, 20)">
-    <!-- Top face -->
-    <path d="M 0 -8 L 10 -3 L 10 4 L 0 9 L -10 4 L -10 -3 Z" fill="white" opacity="0.95"/>
+  <!-- Blockchain blocks connected by links -->
+  <g transform="translate(12, 12)">
+    <!-- Block 1 -->
+    <rect x="0" y="0" width="6" height="6" rx="1" fill="white"/>
 
-    <!-- Left face -->
-    <path d="M -10 4 L -10 -3 L 0 -8 L 0 9 Z" fill="white" opacity="0.7"/>
+    <!-- Link 1 -->
+    <line x1="6" y1="3" x2="9" y2="3" stroke="white" stroke-width="1.5"/>
 
-    <!-- Right face -->
-    <path d="M 10 4 L 10 -3 L 0 -8 L 0 9 Z" fill="white" opacity="0.85"/>
+    <!-- Block 2 -->
+    <rect x="9" y="0" width="6" height="6" rx="1" fill="white"/>
+
+    <!-- Link 2 -->
+    <line x1="15" y1="3" x2="18" y2="3" stroke="white" stroke-width="1.5"/>
+
+    <!-- Block 3 -->
+    <rect x="18" y="0" width="6" height="6" rx="1" fill="white"/>
+
+    <!-- Second row -->
+    <!-- Block 4 -->
+    <rect x="0" y="9" width="6" height="6" rx="1" fill="white" opacity="0.8"/>
+
+    <!-- Link 3 -->
+    <line x1="6" y1="12" x2="9" y2="12" stroke="white" stroke-width="1.5" opacity="0.8"/>
+
+    <!-- Block 5 -->
+    <rect x="9" y="9" width="6" height="6" rx="1" fill="white" opacity="0.8"/>
+
+    <!-- Link 4 -->
+    <line x1="15" y1="12" x2="18" y2="12" stroke="white" stroke-width="1.5" opacity="0.8"/>
+
+    <!-- Block 6 -->
+    <rect x="18" y="9" width="6" height="6" rx="1" fill="white" opacity="0.8"/>
+
+    <!-- Vertical connections -->
+    <line x1="3" y1="6" x2="3" y2="9" stroke="white" stroke-width="1.5" opacity="0.6"/>
+    <line x1="12" y1="6" x2="12" y2="9" stroke="white" stroke-width="1.5" opacity="0.6"/>
+    <line x1="21" y1="6" x2="21" y2="9" stroke="white" stroke-width="1.5" opacity="0.6"/>
   </g>
-
-  <!-- Second cube (creating chain effect) -->
-  <g transform="translate(24, 32)">
-    <!-- Top face -->
-    <path d="M 0 -4 L 8 -1 L 8 4 L 0 7 L -8 4 L -8 -1 Z" fill="white" opacity="0.8"/>
-
-    <!-- Left face -->
-    <path d="M -8 4 L -8 -1 L 0 -4 L 0 7 Z" fill="white" opacity="0.55"/>
-
-    <!-- Right face -->
-    <path d="M 8 4 L 8 -1 L 0 -4 L 0 7 Z" fill="white" opacity="0.7"/>
-  </g>
-
-  <!-- Connection lines -->
-  <line x1="24" y1="17" x2="24" y2="20" stroke="white" stroke-width="1.5" opacity="0.8"/>
-  <line x1="24" y1="29" x2="24" y2="28" stroke="white" stroke-width="1.5" opacity="0.8"/>
 </svg>

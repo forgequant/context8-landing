@@ -1,33 +1,22 @@
 <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Binance-inspired logo: Yellow diamond pattern -->
-  <defs>
-    <linearGradient id="binanceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FCD535;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#F3BA2F;stop-opacity:1" />
-    </linearGradient>
-  </defs>
+  <!-- Binance official brand colors and logo structure -->
+  <rect width="48" height="48" rx="10" fill="#F3BA2F"/>
 
-  <!-- Background -->
-  <rect width="48" height="48" rx="10" fill="url(#binanceGrad)"/>
-
-  <!-- Diamond pattern (inspired by Binance logo structure) -->
+  <!-- Binance diamond logo pattern -->
   <g transform="translate(24, 24)">
-    <!-- Center diamond -->
-    <path d="M 0 -8 L 8 0 L 0 8 L -8 0 Z" fill="white"/>
+    <!-- Center large diamond -->
+    <path d="M 0 -6 L 6 0 L 0 6 L -6 0 Z" fill="white"/>
 
-    <!-- Top diamond -->
-    <path d="M 0 -18 L 4 -14 L 0 -10 L -4 -14 Z" fill="white" opacity="0.9"/>
+    <!-- Top small diamond -->
+    <path d="M 0 -13 L 3 -10 L 0 -7 L -3 -10 Z" fill="white"/>
 
-    <!-- Right diamond -->
-    <path d="M 10 0 L 14 4 L 10 8 L 6 4 Z" fill="white" opacity="0.9"/>
+    <!-- Right small diamond -->
+    <path d="M 7 0 L 10 3 L 7 6 L 4 3 Z" fill="white"/>
 
-    <!-- Bottom diamond -->
-    <path d="M 0 10 L 4 14 L 0 18 L -4 14 Z" fill="white" opacity="0.9"/>
+    <!-- Bottom small diamond -->
+    <path d="M 0 7 L 3 10 L 0 13 L -3 10 Z" fill="white"/>
 
-    <!-- Left diamond -->
-    <path d="M -10 0 L -6 4 L -10 8 L -14 4 Z" fill="white" opacity="0.9"/>
+    <!-- Left small diamond -->
+    <path d="M -7 0 L -4 3 L -7 6 L -10 3 Z" fill="white"/>
   </g>
-
-  <!-- Subtle pattern overlay -->
-  <rect width="48" height="48" rx="10" fill="white" opacity="0.05"/>
 </svg>
