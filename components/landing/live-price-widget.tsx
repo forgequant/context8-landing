@@ -25,17 +25,15 @@ interface CryptoPrice {
  * - Fallback to mock data if API fails
  */
 export function LivePriceWidget() {
-  const [prices, setPrices] = useState<CryptoPrice[]>([
-    { symbol: 'BTC', price: 42150.25, change24h: 2.34, lastUpdate: new Date() },
-    { symbol: 'ETH', price: 2234.89, change24h: -1.12, lastUpdate: new Date() },
-  ]);
+  const [prices, setPrices] = useState<CryptoPrice[]>([]);
   const [isLive, setIsLive] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading state
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const fetchPrices = async () => {
-    if (isLoading) return;
+  const fetchPrices = async (isInitial = false) => {
+    // Allow initial fetch even if loading
+    if (isLoading && !isInitial) return;
 
     console.log('[LivePriceWidget] Fetching prices...', new Date().toLocaleTimeString());
     setIsLoading(true);
@@ -73,8 +71,8 @@ export function LivePriceWidget() {
   useEffect(() => {
     console.log('[LivePriceWidget] Component mounted, starting auto-refresh...');
 
-    // Fetch prices immediately on mount
-    fetchPrices();
+    // Fetch prices immediately on mount (allow initial fetch)
+    fetchPrices(true);
 
     // Fetch prices every 10 seconds for demo (change to 60000 for production)
     const UPDATE_INTERVAL = 10000; // 10 seconds for demo
@@ -82,7 +80,7 @@ export function LivePriceWidget() {
 
     const interval = setInterval(() => {
       console.log('[LivePriceWidget] Auto-refresh triggered');
-      fetchPrices();
+      fetchPrices(false);
     }, UPDATE_INTERVAL);
 
     return () => {
@@ -119,7 +117,30 @@ export function LivePriceWidget() {
       {/* Price cards */}
       <div className="flex items-center gap-6">
         <AnimatePresence>
-          {prices.map((crypto) => (
+          {prices.length === 0 ? (
+            // Loading skeleton
+            <>
+              {['BTC', 'ETH'].map((symbol) => (
+                <motion.div
+                  key={symbol}
+                  className="flex items-center gap-3"
+                  initial={{ opacity: 0.5 }}
+                  animate={{ opacity: [0.5, 0.8, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-slate-400" />
+                    <span className="text-sm font-bold text-slate-400">{symbol}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div className="h-4 w-20 bg-slate-800 rounded animate-pulse" />
+                    <div className="h-3 w-16 bg-slate-800 rounded animate-pulse" />
+                  </div>
+                </motion.div>
+              ))}
+            </>
+          ) : (
+            prices.map((crypto) => (
             <motion.div
               key={crypto.symbol}
               className="flex items-center gap-3"
@@ -170,7 +191,8 @@ export function LivePriceWidget() {
                 </div>
               </motion.div>
             </motion.div>
-          ))}
+          ))
+          )}
         </AnimatePresence>
       </div>
 
