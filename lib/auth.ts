@@ -1,12 +1,20 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { db } from "./db"
-import { users } from "./db/schema"
+import { users, accounts, sessions, verificationTokens } from "./db/schema"
 import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Use DrizzleAdapter for Google OAuth to save users to database
+  adapter: db ? DrizzleAdapter(db, {
+    usersTable: users,
+    accountsTable: accounts,
+    sessionsTable: sessions,
+    verificationTokensTable: verificationTokens,
+  }) : undefined,
   providers: [
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? [
