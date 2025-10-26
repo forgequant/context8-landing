@@ -25,7 +25,88 @@
   }
 }
 
+/* Terminal animations */
 @keyframes cursor-blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
+}
+
+@keyframes scanlines {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(10px); }
+}
+
+/* Terminal effects */
+.animate-cursor {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+.terminal-scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    rgba(125, 211, 252, 0.02) 1px,
+    transparent 2px
+  );
+  animation: scanlines 10s linear infinite;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.terminal-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(125, 211, 252, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.3;
+  z-index: 1;
+}
+
+/* Terminal glow effects */
+.shadow-terminal-cyan {
+  box-shadow: 0 0 20px rgba(125, 211, 252, 0.1);
+}
+
+@media (min-width: 768px) {
+  .shadow-terminal-cyan {
+    box-shadow: 0 0 30px rgba(125, 211, 252, 0.15);
+  }
+}
+
+.hover\:shadow-terminal-cyan:hover {
+  box-shadow: 0 0 15px rgba(125, 211, 252, 0.3);
+}
+
+/* Smooth transitions */
+button, a {
+  transition: all 0.2s ease;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .terminal-scanlines {
+    animation: none;
+  }
+
+  .animate-cursor {
+    animation: none;
+    opacity: 1;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
