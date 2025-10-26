@@ -1,0 +1,6 @@
+export { Hero } from './Hero'
+export { Features } from './Features'
+export { CodeExamples } from './CodeExamples'
+export { Pricing } from './Pricing'
+export { LivePrices } from './LivePrices'
+export { Footer } from './Footer'

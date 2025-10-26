@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-graphite-950: #0B0C0E;
+    --color-graphite-900: #121317;
+    --color-graphite-800: #1A1C21;
+    --color-terminal-text: #E6E8EC;
+    --color-terminal-muted: #B1B5C1;
+    --color-terminal-cyan: #7DD3FC;
+    --color-terminal-green: #4ADE80;
+    --color-terminal-red: #F87171;
+  }
+
+  body {
+    @apply bg-graphite-950 text-terminal-text font-sans antialiased;
+  }
+
+  pre, code {
+    @apply font-mono;
+  }
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
