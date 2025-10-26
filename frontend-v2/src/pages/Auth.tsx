@@ -131,25 +131,13 @@ export function Auth() {
           <p className="text-sm text-terminal-muted">OAuth Authentication</p>
         </motion.div>
 
-        {/* Terminal window */}
+        {/* Auth container - flat style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-graphite-900 rounded-lg border border-graphite-800 overflow-hidden"
+          className="bg-graphite-900 rounded-lg border border-graphite-800 p-6 min-h-[300px]"
         >
-          {/* Terminal header */}
-          <div className="bg-graphite-950 px-4 py-3 flex items-center gap-2 border-b border-graphite-800">
-            <div className="flex gap-2">
-              <div className="w-3 h-3 rounded-full bg-terminal-red"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div className="w-3 h-3 rounded-full bg-terminal-green"></div>
-            </div>
-            <span className="text-xs text-terminal-muted ml-2">context8-auth</span>
-          </div>
-
-          {/* Terminal content */}
-          <div className="p-6 min-h-[300px]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -336,7 +324,6 @@ export function Auth() {
                 </motion.div>
               )}
             </motion.div>
-          </div>
         </motion.div>
 
         {/* Footer links */}
