@@ -70,7 +70,7 @@ export function Pricing() {
                       <span className="text-5xl font-bold font-mono text-terminal-text">
                         {tier.price}
                       </span>
-                      {tier.price !== 'Custom' && (
+                      {tier.price !== 'custom' && (
                         <span className="text-terminal-muted">/month</span>
                       )}
                     </div>

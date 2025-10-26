@@ -4,6 +4,7 @@ export interface Feature {
   description: string
   icon: string // Terminal icon or symbol
   command: string // CLI command example
+  highlight?: string // Optional highlight text
 }
 
 export const features: Feature[] = [
