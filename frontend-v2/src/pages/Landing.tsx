@@ -1,7 +1,6 @@
 import { motion, useInView } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useRef } from 'react'
-import { TerminalWindow } from '@/components/terminal/TerminalWindow'
 import { useTypewriter } from '@/hooks/useTypewriter'
 
 export function Landing() {
@@ -49,7 +48,7 @@ export function Landing() {
 
       {/* Main content */}
       <main className="max-w-6xl mx-auto relative z-10">
-        {/* Hero section in Terminal Window */}
+        {/* Hero section - simplified flat style */}
         <motion.section
           ref={heroRef}
           initial={{ opacity: 0, y: 20 }}
@@ -57,58 +56,56 @@ export function Landing() {
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          <TerminalWindow title="context8-landing" className="shadow-terminal-cyan">
-            <div className="space-y-4">
-              {/* Connection status */}
-              <p className="text-terminal-muted text-sm">
-                # Connecting to Context8 MCP Server...
-              </p>
+          <div className="space-y-4">
+            {/* Connection status */}
+            <p className="text-terminal-muted text-sm">
+              # Connecting to Context8 MCP Server...
+            </p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-terminal-green text-sm"
+            >
+              ✓ Connected to api.context8.markets
+            </motion.p>
+
+            {/* Typewriter headline - smaller size */}
+            <div className="pt-4">
+              <h2 className="text-xl md:text-2xl font-normal mb-4 text-terminal-text">
+                {heroText}
+                {!heroComplete && <span className="animate-cursor">_</span>}
+              </h2>
               <motion.p
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-terminal-green text-sm"
+                animate={{ opacity: heroComplete ? 1 : 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-sm text-terminal-muted mb-8"
               >
-                ✓ Connected to api.context8.markets
+                LLM-ready, minimal, deterministic. Plug one URL.
               </motion.p>
 
-              {/* Typewriter headline */}
-              <div className="pt-4">
-                <h2 className="text-2xl md:text-4xl font-normal mb-4 text-terminal-text min-h-[2.5rem]">
-                  {heroText}
-                  {!heroComplete && <span className="animate-cursor">_</span>}
-                </h2>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: heroComplete ? 1 : 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="text-sm md:text-base text-terminal-muted mb-8"
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: heroComplete ? 1 : 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+              >
+                <button
+                  onClick={handleAuth}
+                  className="bg-terminal-cyan text-graphite-950 px-6 py-2 rounded text-sm font-semibold hover:bg-terminal-cyan/90 transition-all group"
                 >
-                  LLM-ready, minimal, deterministic. Plug one URL.
-                </motion.p>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: heroComplete ? 1 : 0 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
-                >
-                  <button
-                    onClick={handleAuth}
-                    className="bg-terminal-cyan text-graphite-950 px-6 py-2 rounded text-sm font-semibold hover:bg-terminal-cyan/90 transition-all hover:shadow-terminal-cyan group"
-                  >
-                    <span className="group-hover:hidden">Start free (OAuth)</span>
-                    <span className="hidden group-hover:inline">$ start-free --oauth_</span>
-                  </button>
-                  <p className="text-xs text-terminal-muted mt-2">
-                    Informational only. Not financial advice.
-                  </p>
-                </motion.div>
-              </div>
+                  <span className="group-hover:hidden">Start free (OAuth)</span>
+                  <span className="hidden group-hover:inline">$ start-free --oauth_</span>
+                </button>
+                <p className="text-xs text-terminal-muted mt-2">
+                  Informational only. Not financial advice.
+                </p>
+              </motion.div>
             </div>
-          </TerminalWindow>
+          </div>
         </motion.section>
 
-        {/* Usage section in Terminal Window */}
+        {/* Usage section - flat style */}
         <motion.section
           ref={usageRef}
           initial={{ opacity: 0, y: 20 }}
@@ -117,7 +114,7 @@ export function Landing() {
           className="mb-16"
         >
           <h3 className="text-sm text-terminal-text mb-4">$ cat usage.txt</h3>
-          <TerminalWindow title="context8-mcp-demo" className="shadow-terminal-cyan">
+          <div className="bg-graphite-900 rounded-lg border border-graphite-800 p-6">
             <div className="overflow-x-auto">
               <pre className="text-terminal-muted text-sm">
                 <motion.code
@@ -161,7 +158,7 @@ Open in your LLM client → OAuth (Google/Github)
                 </motion.code>
               </pre>
             </div>
-          </TerminalWindow>
+          </div>
         </motion.section>
 
         {/* Plans section with terminal output style */}
