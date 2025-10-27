@@ -2,6 +2,7 @@
 // Sends Telegram message to admin when new payment is submitted
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 interface PaymentData {
   id: string
@@ -24,14 +25,30 @@ serve(async (req) => {
       return new Response('Unauthorized', { status: 401 })
     }
 
-    // Get Telegram credentials
+    // Get Telegram bot token
     const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
-    const telegramChatId = Deno.env.get('TELEGRAM_ADMIN_CHAT_ID')
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-    if (!telegramBotToken || !telegramChatId) {
-      console.error('Missing Telegram credentials')
+    if (!telegramBotToken || !supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing required environment variables')
       return new Response('Server configuration error', { status: 500 })
     }
+
+    // Get admin's chat_id from database
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const { data: setting, error: dbError } = await supabase
+      .from('admin_settings')
+      .select('value')
+      .eq('key', 'telegram_chat_id')
+      .single()
+
+    if (dbError || !setting?.value) {
+      console.error('Admin not registered in Telegram bot:', dbError)
+      return new Response('Admin not registered. Send /start to the bot.', { status: 400 })
+    }
+
+    const telegramChatId = setting.value
 
     // Parse payment data from webhook
     const { record, type } = await req.json()

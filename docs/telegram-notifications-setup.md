@@ -10,31 +10,51 @@
 4. Введи username бота (например: `context8_admin_bot`)
 5. **Сохрани токен** (выглядит как `123456:ABC-DEF1234...`)
 
-## 2. Получение Chat ID
+## 2. Генерация Секретного Кода
 
-1. Найди своего бота в Telegram и отправь ему любое сообщение (например: `/start`)
-2. Открой в браузере: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
-   - Замени `<YOUR_BOT_TOKEN>` на токен из шага 1
-3. Найди в ответе поле `"chat":{"id":123456789,...}`
-4. **Сохрани Chat ID** (это число, например: `123456789`)
+Создай случайный секретный код для регистрации админа:
 
-## 3. Настройка Supabase Edge Function
+```bash
+openssl rand -base64 16
+```
 
-### 3.1 Деплой Edge Function
+Сохрани этот код, он понадобится в шаге 3 и 5.
+
+## 3. Настройка Supabase
+
+### 3.1 Деплой Edge Functions
 
 ```bash
 # В корне проекта
+supabase functions deploy telegram-bot
 supabase functions deploy telegram-notify-admin
 ```
 
-### 3.2 Добавление Environment Variables
+### 3.2 Настройка Webhook для Telegram
 
-Зайди в Supabase Dashboard → Edge Functions → Settings и добавь:
+1. Зайди в Supabase Dashboard → Edge Functions
+2. Найди функцию `telegram-bot` и скопируй её URL
+3. Установи webhook для бота:
+
+```bash
+curl https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook \
+  -d "url=<EDGE_FUNCTION_URL>"
+```
+
+Замени:
+- `<YOUR_BOT_TOKEN>` на токен из шага 1
+- `<EDGE_FUNCTION_URL>` на URL Edge Function
+
+### 3.3 Добавление Environment Variables
+
+Зайди в Supabase Dashboard → Project Settings → Edge Functions и добавь:
 
 ```
-TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234...
-TELEGRAM_ADMIN_CHAT_ID=123456789
-WEBHOOK_SECRET=<generate_random_string>
+TELEGRAM_BOT_TOKEN=<твой_бот_токен>
+TELEGRAM_ADMIN_SECRET=<секретный_код_из_шага_2>
+WEBHOOK_SECRET=<генерируй_новый>
+SUPABASE_URL=<твой_supabase_url>
+SUPABASE_SERVICE_ROLE_KEY=<твой_service_role_key>
 ```
 
 **Генерация WEBHOOK_SECRET:**
@@ -42,22 +62,18 @@ WEBHOOK_SECRET=<generate_random_string>
 openssl rand -base64 32
 ```
 
-## 4. Настройка Database Webhook
+URL и Service Key найдёшь в Project Settings → API.
 
-### 4.1 Создать Webhook в Supabase
+## 4. Настройка Database
 
-1. Зайди в Supabase Dashboard → Database → Webhooks
-2. Нажми "Create a new hook"
-3. Заполни:
-   - **Name:** `payment-submission-notify`
-   - **Table:** `payment_submissions`
-   - **Events:** `INSERT` (только новые платежи)
-   - **Type:** `Supabase Edge Function`
-   - **Edge Function:** `telegram-notify-admin`
+### 4.1 Запусти SQL миграции
 
-### 4.2 Альтернатива: Database Trigger (более надёжно)
+Зайди в Supabase SQL Editor и запусти по очереди:
 
-Запусти в Supabase SQL Editor:
+1. **Таблица настроек** (`003_admin_telegram_settings.sql`)
+2. **Триггер уведомлений** (`002_telegram_notifications.sql`)
+
+Или запусти всё сразу:
 
 ```sql
 -- Create function to call Edge Function
@@ -111,9 +127,24 @@ FOR EACH ROW
 EXECUTE FUNCTION notify_admin_new_payment();
 ```
 
-## 5. Тестирование
+## 5. Регистрация Админа
 
-### 5.1 Тест через Supabase Dashboard
+Теперь самое простое - зарегистрируйся в боте!
+
+1. Найди своего бота в Telegram (username из шага 1)
+2. Отправь команду:
+   ```
+   /start <ТВОЙ_СЕКРЕТНЫЙ_КОД>
+   ```
+   Замени `<ТВОЙ_СЕКРЕТНЫЙ_КОД>` на код из шага 2
+
+3. Бот ответит: ✅ **Admin Registered!**
+
+Готово! Теперь будешь получать уведомления о новых платежах.
+
+## 6. Тестирование
+
+### 6.1 Тест через Supabase Dashboard
 
 1. Зайди в Supabase → Table Editor → `payment_submissions`
 2. Вставь тестовую запись:
