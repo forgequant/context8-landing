@@ -5,6 +5,7 @@ import { PaymentModal } from '../components/payment/PaymentModal'
 import { usePaymentSubmit } from '../hooks/usePaymentSubmit'
 import { useSubscription } from '../hooks/useSubscription'
 import { usePaymentHistory } from '../hooks/usePaymentHistory'
+import { usePendingPaymentsCount } from '../hooks/usePendingPaymentsCount'
 import { SubscriptionStatus } from '../components/subscription/SubscriptionStatus'
 import { RenewalReminder } from '../components/subscription/RenewalReminder'
 import { PaymentHistory } from '../components/subscription/PaymentHistory'
@@ -29,6 +30,9 @@ export function Dashboard() {
 
   // Payment history data
   const { payments, loading: paymentsLoading } = usePaymentHistory()
+
+  // Pending payments count (for admin badge)
+  const { count: pendingCount } = usePendingPaymentsCount()
 
   useEffect(() => {
     // Check if user is authenticated and fetch pending payment
@@ -124,9 +128,14 @@ export function Dashboard() {
             {user?.user_metadata?.is_admin && (
               <button
                 onClick={() => navigate('/admin')}
-                className="text-sm bg-terminal-cyan text-graphite-950 px-4 py-1.5 rounded hover:bg-terminal-cyan/90 transition-colors font-semibold"
+                className="text-sm bg-terminal-cyan text-graphite-950 px-4 py-1.5 rounded hover:bg-terminal-cyan/90 transition-colors font-semibold relative"
               >
                 Admin
+                {pendingCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-terminal-red text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    {pendingCount}
+                  </span>
+                )}
               </button>
             )}
             <button
