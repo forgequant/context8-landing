@@ -27,25 +27,13 @@ export function usePaymentSubmissions(): UsePaymentSubmissionsReturn {
     setError(null)
 
     try {
-      // Fetch pending payments with user email
+      // Call RPC function to get payments with user emails
       const { data, error: fetchError } = await supabase
-        .from('payment_submissions')
-        .select(`
-          *,
-          user:auth.users!user_id(email)
-        `)
-        .eq('status', 'pending')
-        .order('submitted_at', { ascending: false })
+        .rpc('get_pending_payments_with_emails')
 
       if (fetchError) throw fetchError
 
-      // Transform data to include user_email at top level
-      const paymentsWithEmail = (data || []).map((payment: any) => ({
-        ...payment,
-        user_email: payment.user?.email || 'Unknown'
-      }))
-
-      setPayments(paymentsWithEmail)
+      setPayments(data || [])
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch payments'
       setError(message)

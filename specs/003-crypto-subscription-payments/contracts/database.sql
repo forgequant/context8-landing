@@ -154,3 +154,36 @@ AFTER UPDATE ON payment_submissions
 FOR EACH ROW
 WHEN (NEW.status != OLD.status)
 EXECUTE FUNCTION notify_user_on_payment_status();
+
+-- Function: Get pending payments with user emails (for admin panel)
+CREATE OR REPLACE FUNCTION get_pending_payments_with_emails()
+RETURNS TABLE (
+  id UUID,
+  user_id UUID,
+  plan TEXT,
+  tx_hash TEXT,
+  chain TEXT,
+  amount NUMERIC,
+  status TEXT,
+  submitted_at TIMESTAMPTZ,
+  verified_at TIMESTAMPTZ,
+  verified_by UUID,
+  verification_notes TEXT,
+  user_email TEXT
+) AS $$
+BEGIN
+  -- Check if user is admin
+  IF NOT (SELECT (raw_user_meta_data->>'is_admin')::boolean FROM auth.users WHERE id = auth.uid()) THEN
+    RAISE EXCEPTION 'Unauthorized: Admin access required';
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    ps.*,
+    u.email as user_email
+  FROM payment_submissions ps
+  LEFT JOIN auth.users u ON ps.user_id = u.id
+  WHERE ps.status = 'pending'
+  ORDER BY ps.submitted_at DESC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
