@@ -1,4 +1,4 @@
-import { addDays, differenceInDays, isBefore, isAfter } from 'date-fns'
+import { addDays, isBefore, isAfter } from 'date-fns'
 import { Subscription, TxHashValidationResult, GRACE_PERIOD_HOURS } from '../types/subscription'
 
 /**
@@ -30,11 +30,14 @@ export function validateTxHash(txHash: string): TxHashValidationResult {
 
 /**
  * Calculate days remaining in subscription
+ * Uses Math.ceil to always round up partial days (e.g., 29.99 days → 30 days)
  */
 export function getDaysRemaining(subscription: Subscription): number {
   const now = new Date()
   const endDate = new Date(subscription.end_date)
-  return Math.max(0, differenceInDays(endDate, now))
+  const diffInMs = endDate.getTime() - now.getTime()
+  const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
+  return Math.max(0, Math.ceil(diffInDays))
 }
 
 /**
