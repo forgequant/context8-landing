@@ -11,16 +11,16 @@ import { WalletAddresses } from '../types/subscription'
  */
 export const WALLET_ADDRESSES: WalletAddresses = {
   ethereum: {
-    usdt: '0x0000000000000000000000000000000000000000', // Replace with actual Ethereum USDT address
-    usdc: '0x0000000000000000000000000000000000000000'  // Replace with actual Ethereum USDC address
+    usdt: '0x25BFf871800bA09fFf55467e6f0D7ee6dd342c95',
+    usdc: '0x25BFf871800bA09fFf55467e6f0D7ee6dd342c95'
   },
   polygon: {
-    usdt: '0x0000000000000000000000000000000000000000', // Replace with actual Polygon USDT address
-    usdc: '0x0000000000000000000000000000000000000000'  // Replace with actual Polygon USDC address
+    usdt: '0x25BFf871800bA09fFf55467e6f0D7ee6dd342c95',
+    usdc: '0x25BFf871800bA09fFf55467e6f0D7ee6dd342c95'
   },
   bsc: {
-    usdt: '0x0000000000000000000000000000000000000000', // Replace with actual BSC USDT address
-    usdc: '0x0000000000000000000000000000000000000000'  // Replace with actual BSC USDC address
+    usdt: '0x25BFf871800bA09fFf55467e6f0D7ee6dd342c95',
+    usdc: '0x25BFf871800bA09fFf55467e6f0D7ee6dd342c95'
   }
 }
 
