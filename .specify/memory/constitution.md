@@ -1,27 +1,27 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version: N/A → 1.0.0 (MINOR - Initial constitution ratification)
-Date: 2025-10-22
+Version: 1.0.0 → 1.0.1 (PATCH - Technology Stack correction)
+Date: 2025-10-27
 
-Modified Principles: N/A (initial creation)
-Added Sections:
-  - Core Principles (7 principles)
-  - Scope & Boundaries
-  - Technology Stack
-  - Security Requirements
-  - Performance & Reliability Standards
-  - Report Format Standards
-  - Governance
-
-Removed Sections: N/A
+Modified Principles: None
+Modified Sections:
+  - Technology Stack (lines 157-162) - Updated to reflect actual Vite + React 19 implementation
+    - Changed: Next.js (App Router) → Vite 7 + React 19
+    - Changed: Auth.js (NextAuth) → Supabase Auth
+    - Changed: Backend description to reflect Supabase primary + optional MCP services
+    - Removed: shadcn/ui, next-themes references
+    - Added: Framer Motion, TailwindCSS v3
 
 Template Updates:
-  ✅ plan-template.md - Constitution Check section aligns with principles
-  ✅ spec-template.md - Requirements align with scope and security constraints
-  ✅ tasks-template.md - Task structure supports modular adapter approach
+  ✅ No template changes required (already compliant with Vite architecture)
 
 Follow-up TODOs: None
+-->
+
+<!--
+PREVIOUS SYNC REPORT - Version: N/A → 1.0.0 (MINOR - Initial constitution ratification)
+Date: 2025-10-22
 -->
 
 # Context8 Constitution
@@ -154,10 +154,10 @@ Complexity must be explicitly justified; simpler alternatives are preferred.
 
 ## Technology Stack
 
-- **Frontend**: Next.js (App Router) + React + TypeScript + TailwindCSS + shadcn/ui + next-themes
-- **Authentication**: Auth.js (NextAuth) with Google and GitHub OAuth providers
-- **Backend**: Node.js MCP service(s) on VPS; modular adapter architecture; optional task queue for async jobs
-- **Hosting**: Vercel (frontend static site) + VPS (MCP backend and adapters)
+- **Frontend**: Vite 7 + React 19 + TypeScript + TailwindCSS v3 + Framer Motion
+- **Authentication**: Supabase Auth with Google and GitHub OAuth providers
+- **Backend**: Supabase (PostgreSQL + Auth + RLS) for primary data storage; optional Node.js MCP service(s) on VPS for crypto briefings
+- **Hosting**: Vercel (frontend static site deployment)
 - **CI/CD**: GitHub Actions for linting, type-checking, building, and deployment automation
 - **Content**: Static site copy stored in repository; optional blog from Markdown files (future)
 
@@ -321,4 +321,4 @@ For day-to-day development practices, refer to:
 - `.specify/templates/` (workflow templates)
 - `README.md` (setup and contribution guide, when created)
 
-**Version**: 1.0.0 | **Ratified**: 2025-10-22 | **Last Amended**: 2025-10-22
+**Version**: 1.0.1 | **Ratified**: 2025-10-22 | **Last Amended**: 2025-10-27
