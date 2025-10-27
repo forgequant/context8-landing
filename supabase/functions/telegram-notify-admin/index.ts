@@ -27,11 +27,12 @@ serve(async (req) => {
 
     // Get Telegram bot token
     const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    // Use built-in Supabase environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-    if (!telegramBotToken || !supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing required environment variables')
+    if (!telegramBotToken) {
+      console.error('Missing TELEGRAM_BOT_TOKEN')
       return new Response('Server configuration error', { status: 500 })
     }
 

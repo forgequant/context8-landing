@@ -21,10 +21,11 @@ serve(async (req) => {
   try {
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
     const adminSecret = Deno.env.get('TELEGRAM_ADMIN_SECRET')
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    // Use built-in Supabase environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-    if (!botToken || !adminSecret || !supabaseUrl || !supabaseServiceKey) {
+    if (!botToken || !adminSecret) {
       console.error('Missing required environment variables')
       return new Response('Server configuration error', { status: 500 })
     }
