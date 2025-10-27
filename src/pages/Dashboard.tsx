@@ -114,7 +114,11 @@ export function Dashboard() {
             <span className="text-terminal-text">&gt;_</span>
           </h1>
           <div className="flex items-center gap-3">
-            <button className="text-sm bg-graphite-900 px-4 py-1.5 rounded hover:bg-graphite-800 transition-colors">
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="text-sm bg-graphite-900 px-4 py-1.5 rounded hover:bg-graphite-800 transition-colors"
+              title="Upgrade to Pro"
+            >
               Pro $8
             </button>
             {user?.user_metadata?.is_admin && (
