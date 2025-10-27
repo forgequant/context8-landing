@@ -1,5 +1,6 @@
 import { BlockchainNetwork } from '../../types/subscription'
-import { getChainDisplayName, getEstimatedGasFee } from '../../lib/blockchain'
+import { getChainDisplayName } from '../../lib/blockchain'
+import { useGasPrices } from '../../hooks/useGasPrices'
 
 interface ChainSelectorProps {
   selectedChain: BlockchainNetwork
@@ -9,6 +10,16 @@ interface ChainSelectorProps {
 const CHAINS: BlockchainNetwork[] = ['ethereum', 'polygon', 'bsc']
 
 export function ChainSelector({ selectedChain, onChainChange }: ChainSelectorProps) {
+  const { gasPrices, loading } = useGasPrices()
+
+  const formatGasFee = (chain: BlockchainNetwork): string => {
+    const price = gasPrices[chain]
+    if (price === null || loading) return '...'
+    if (price < 0.01) return '<$0.01'
+    if (price < 1) return `$${price.toFixed(2)}`
+    return `$${price.toFixed(1)}`
+  }
+
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-300">
@@ -34,7 +45,7 @@ export function ChainSelector({ selectedChain, onChainChange }: ChainSelectorPro
               <div className="flex justify-between items-center">
                 <span className="font-medium">{getChainDisplayName(chain)}</span>
                 <span className="text-xs text-gray-400">
-                  Gas: {getEstimatedGasFee(chain)}
+                  Gas: {formatGasFee(chain)}
                 </span>
               </div>
             </button>

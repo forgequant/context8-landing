@@ -173,14 +173,24 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
   -- Check if user is admin
-  IF NOT (SELECT (raw_user_meta_data->>'is_admin')::boolean FROM auth.users WHERE id = auth.uid()) THEN
+  IF NOT (SELECT (raw_user_meta_data->>'is_admin')::boolean FROM auth.users WHERE auth.users.id = auth.uid()) THEN
     RAISE EXCEPTION 'Unauthorized: Admin access required';
   END IF;
 
   RETURN QUERY
   SELECT
-    ps.*,
-    u.email as user_email
+    ps.id,
+    ps.user_id,
+    ps.plan,
+    ps.tx_hash,
+    ps.chain,
+    ps.amount,
+    ps.status,
+    ps.submitted_at,
+    ps.verified_at,
+    ps.verified_by,
+    ps.verification_notes,
+    u.email::TEXT as user_email
   FROM payment_submissions ps
   LEFT JOIN auth.users u ON ps.user_id = u.id
   WHERE ps.status = 'pending'
