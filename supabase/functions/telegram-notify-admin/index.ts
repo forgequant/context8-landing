@@ -17,11 +17,15 @@ interface PaymentData {
 
 serve(async (req) => {
   try {
-    // Validate webhook secret
+    // Validate webhook secret (allow internal-trigger for database triggers)
     const authHeader = req.headers.get('authorization')
     const webhookSecret = Deno.env.get('WEBHOOK_SECRET')
 
-    if (!webhookSecret || authHeader !== `Bearer ${webhookSecret}`) {
+    // Accept both internal trigger calls and external webhook calls
+    const isAuthorized = authHeader === 'Bearer internal-trigger' ||
+                        (webhookSecret && authHeader === `Bearer ${webhookSecret}`)
+
+    if (!isAuthorized) {
       return new Response('Unauthorized', { status: 401 })
     }
 

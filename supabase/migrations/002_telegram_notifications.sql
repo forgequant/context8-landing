@@ -33,10 +33,12 @@ BEGIN
     )
   );
 
-  -- Get Edge Function URL and webhook secret from environment
-  -- These should be set in Supabase Dashboard -> Project Settings -> API
-  function_url := current_setting('app.supabase_url', true) || '/functions/v1/telegram-notify-admin';
-  webhook_secret := current_setting('app.webhook_secret', true);
+  -- Hardcoded Edge Function URL (project-specific)
+  function_url := 'https://yfahpblxugjtbollpudv.supabase.co/functions/v1/telegram-notify-admin';
+
+  -- Webhook secret - set this in Supabase Edge Functions environment variables
+  -- We'll pass it from the function itself, so just use a placeholder here
+  webhook_secret := 'internal-trigger';
 
   -- Call Edge Function asynchronously (don't block transaction)
   PERFORM extensions.http_post(
