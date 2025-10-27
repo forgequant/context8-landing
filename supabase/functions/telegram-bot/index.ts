@@ -22,11 +22,16 @@ serve(async (req) => {
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
     const adminSecret = Deno.env.get('TELEGRAM_ADMIN_SECRET')
     // Use built-in Supabase environment variables
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-    if (!botToken || !adminSecret) {
-      console.error('Missing required environment variables')
+    if (!botToken || !adminSecret || !supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing required environment variables:', {
+        hasBotToken: !!botToken,
+        hasAdminSecret: !!adminSecret,
+        hasSupabaseUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey
+      })
       return new Response('Server configuration error', { status: 500 })
     }
 
@@ -57,6 +62,8 @@ serve(async (req) => {
             key: 'telegram_chat_id',
             value: chatId.toString(),
             updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'key'
           })
 
         if (error) {

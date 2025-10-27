@@ -8,47 +8,33 @@ CREATE EXTENSION IF NOT EXISTS http WITH SCHEMA extensions;
 CREATE OR REPLACE FUNCTION notify_admin_new_payment()
 RETURNS TRIGGER AS $$
 DECLARE
-  function_url TEXT;
-  webhook_secret TEXT;
-  payload JSONB;
+  request_id BIGINT;
   user_email TEXT;
 BEGIN
   -- Get user email
-  SELECT email INTO user_email
-  FROM auth.users
-  WHERE id = NEW.user_id;
+  SELECT email INTO user_email FROM auth.users WHERE id = NEW.user_id;
 
-  -- Build payload
-  payload := jsonb_build_object(
-    'type', 'INSERT',
-    'record', jsonb_build_object(
-      'id', NEW.id,
-      'user_id', NEW.user_id,
-      'user_email', COALESCE(user_email, 'Unknown'),
-      'plan', NEW.plan,
-      'chain', NEW.chain,
-      'amount', NEW.amount,
-      'tx_hash', NEW.tx_hash,
-      'submitted_at', NEW.submitted_at
-    )
-  );
-
-  -- Hardcoded Edge Function URL (project-specific)
-  function_url := 'https://yfahpblxugjtbollpudv.supabase.co/functions/v1/telegram-notify-admin';
-
-  -- Webhook secret - set this in Supabase Edge Functions environment variables
-  -- We'll pass it from the function itself, so just use a placeholder here
-  webhook_secret := 'internal-trigger';
-
-  -- Call Edge Function asynchronously (don't block transaction)
-  PERFORM extensions.http_post(
-    url := function_url,
+  -- Use pg_net for reliable HTTP requests
+  SELECT net.http_post(
+    url := 'https://yfahpblxugjtbollpudv.supabase.co/functions/v1/telegram-notify-admin',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || webhook_secret
+      'Authorization', 'Bearer internal-trigger'
     ),
-    body := payload
-  );
+    body := jsonb_build_object(
+      'type', 'INSERT',
+      'record', jsonb_build_object(
+        'id', NEW.id::text,
+        'user_id', NEW.user_id::text,
+        'user_email', COALESCE(user_email, 'Unknown'),
+        'plan', NEW.plan,
+        'chain', NEW.chain,
+        'amount', NEW.amount::text,
+        'tx_hash', NEW.tx_hash,
+        'submitted_at', NEW.submitted_at::text
+      )
+    )
+  ) INTO request_id;
 
   RETURN NEW;
 EXCEPTION

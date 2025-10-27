@@ -35,11 +35,11 @@ export function usePendingPaymentsCount(): UsePendingPaymentsCountReturn {
         return
       }
 
-      // Count pending payments
-      const { count: pendingCount, error: fetchError } = await supabase
-        .from('payment_submissions')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending')
+      // Count pending payments using RPC (bypasses RLS issues)
+      const { data: countData, error: fetchError } = await supabase
+        .rpc('count_pending_payments')
+
+      const pendingCount = countData || 0
 
       if (fetchError) throw fetchError
 
@@ -56,25 +56,11 @@ export function usePendingPaymentsCount(): UsePendingPaymentsCountReturn {
   useEffect(() => {
     fetchCount()
 
-    // Subscribe to real-time updates for payment_submissions table
-    const subscription = supabase
-      .channel('pending_payments_count')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'payment_submissions'
-        },
-        () => {
-          // Refetch count on any change
-          fetchCount()
-        }
-      )
-      .subscribe()
+    // Poll every 10 seconds for updates
+    const interval = setInterval(fetchCount, 10000)
 
     return () => {
-      subscription.unsubscribe()
+      clearInterval(interval)
     }
   }, [])
 

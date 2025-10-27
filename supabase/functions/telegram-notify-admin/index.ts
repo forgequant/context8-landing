@@ -26,6 +26,7 @@ serve(async (req) => {
                         (webhookSecret && authHeader === `Bearer ${webhookSecret}`)
 
     if (!isAuthorized) {
+      console.error('Unauthorized request')
       return new Response('Unauthorized', { status: 401 })
     }
 
