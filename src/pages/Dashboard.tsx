@@ -117,6 +117,14 @@ export function Dashboard() {
             <button className="text-sm bg-graphite-900 px-4 py-1.5 rounded hover:bg-graphite-800 transition-colors">
               Pro $8
             </button>
+            {user?.user_metadata?.is_admin && (
+              <button
+                onClick={() => navigate('/admin')}
+                className="text-sm bg-terminal-cyan text-graphite-950 px-4 py-1.5 rounded hover:bg-terminal-cyan/90 transition-colors font-semibold"
+              >
+                Admin
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="text-sm text-terminal-muted hover:text-terminal-red transition-colors"
