@@ -14,10 +14,10 @@ export function ChainSelector({ selectedChain, onChainChange }: ChainSelectorPro
 
   const formatGasFee = (chain: BlockchainNetwork): string => {
     const price = gasPrices[chain]
-    if (price === null || loading) return '...'
+    if (price === null) return '~$0.01'
     if (price < 0.01) return '<$0.01'
-    if (price < 1) return `$${price.toFixed(2)}`
-    return `$${price.toFixed(1)}`
+    if (price < 1) return `~$${price.toFixed(2)}`
+    return `~$${price.toFixed(1)}`
   }
 
   return (
