@@ -16,12 +16,13 @@ VALUES ('telegram_chat_id', '')
 ON CONFLICT (key) DO NOTHING;
 
 -- Index for fast lookups
-CREATE INDEX idx_admin_settings_key ON admin_settings(key);
+CREATE INDEX IF NOT EXISTS idx_admin_settings_key ON admin_settings(key);
 
 -- RLS policies (only service role can access)
 ALTER TABLE admin_settings ENABLE ROW LEVEL SECURITY;
 
 -- Allow service role full access
+DROP POLICY IF EXISTS "Service role can manage admin settings" ON admin_settings;
 CREATE POLICY "Service role can manage admin settings"
 ON admin_settings
 FOR ALL
