@@ -1,14 +1,37 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { PaymentModal } from '../components/payment/PaymentModal'
+import { usePaymentSubmit } from '../hooks/usePaymentSubmit'
+import { useSubscription } from '../hooks/useSubscription'
+import { usePaymentHistory } from '../hooks/usePaymentHistory'
+import { SubscriptionStatus } from '../components/subscription/SubscriptionStatus'
+import { RenewalReminder } from '../components/subscription/RenewalReminder'
+import { PaymentHistory } from '../components/subscription/PaymentHistory'
 
 export function Dashboard() {
   const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [pendingPayment, setPendingPayment] = useState<any>(null)
+  const { submitPayment } = usePaymentSubmit()
+
+  // Subscription data
+  const {
+    subscription,
+    loading: subLoading,
+    isActive,
+    isExpired,
+    isInGrace,
+    daysRemaining
+  } = useSubscription()
+
+  // Payment history data
+  const { payments, loading: paymentsLoading } = usePaymentHistory()
 
   useEffect(() => {
-    // Check if user is authenticated
+    // Check if user is authenticated and fetch pending payment
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
 
@@ -18,6 +41,18 @@ export function Dashboard() {
       }
 
       setUser(user)
+
+      // Check for pending payment
+      const { data: payment } = await supabase
+        .from('payment_submissions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .order('submitted_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      setPendingPayment(payment)
       setLoading(false)
     }
 
@@ -34,6 +69,27 @@ export function Dashboard() {
 
     return () => subscription.unsubscribe()
   }, [navigate])
+
+  // Check for expired subscription (outside grace period) and prompt upgrade
+  useEffect(() => {
+    if (!subLoading && isExpired && !isInGrace && !pendingPayment) {
+      setShowPaymentModal(true)
+    }
+  }, [subLoading, isExpired, isInGrace, pendingPayment])
+
+  const handlePaymentSubmit = async (data: any) => {
+    await submitPayment(data)
+    // Refresh pending payment status
+    const { data: payment } = await supabase
+      .from('payment_submissions')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .order('submitted_at', { ascending: false })
+      .limit(1)
+      .single()
+    setPendingPayment(payment)
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -82,25 +138,61 @@ export function Dashboard() {
           </section>
         )}
 
-        {/* Your plan section */}
+        {/* Subscription section */}
         <section className="mb-12">
-          <h2 className="text-sm text-terminal-muted italic mb-6">Your plan</h2>
+          <h2 className="text-sm text-terminal-muted italic mb-6">Your subscription</h2>
 
-          <div className="bg-graphite-900 rounded-lg p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-sm mb-1">Current plan: <span className="font-semibold">Free</span></p>
-              </div>
-              <div className="text-right text-sm text-terminal-muted">
-                Usage: 0 / 100
-              </div>
-            </div>
-
-            <button className="bg-terminal-cyan text-graphite-950 px-4 py-2 rounded text-sm font-semibold hover:bg-terminal-cyan/90 transition-colors">
-              Upgrade to Pro
-            </button>
+          {/* Subscription Status */}
+          <div className="mb-4">
+            <SubscriptionStatus
+              subscription={subscription}
+              loading={subLoading}
+              daysRemaining={daysRemaining}
+              isInGrace={isInGrace}
+            />
           </div>
+
+          {/* Renewal Reminder */}
+          {subscription && !subLoading && (daysRemaining < 7 || isInGrace) && (
+            <div className="mb-4">
+              <RenewalReminder
+                daysRemaining={daysRemaining}
+                isInGrace={isInGrace}
+                onRenew={() => setShowPaymentModal(true)}
+              />
+            </div>
+          )}
+
+          {/* Pending Payment Notice */}
+          {pendingPayment && (
+            <div className="mb-4 p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+              <p className="text-sm text-yellow-200">
+                ⏳ Payment pending admin verification
+              </p>
+              <p className="text-xs text-yellow-300 mt-1">
+                Your payment is being reviewed. Pro access will be activated upon approval (typically within 24 hours).
+              </p>
+            </div>
+          )}
+
+          {/* Upgrade Button (show if not active or no pending payment) */}
+          {!isActive && !pendingPayment && (
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="bg-terminal-cyan text-graphite-950 px-4 py-2 rounded text-sm font-semibold hover:bg-terminal-cyan/90 transition-colors"
+            >
+              Upgrade to Pro - $8/month
+            </button>
+          )}
         </section>
+
+        {/* Payment History section */}
+        {payments.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-sm text-terminal-muted italic mb-6">Payment history</h2>
+            <PaymentHistory payments={payments} loading={paymentsLoading} />
+          </section>
+        )}
 
         {/* Data sources section */}
         <section>
@@ -146,6 +238,13 @@ export function Dashboard() {
           Availability depends on your plan. Informational only. Not financial advice.
         </p>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSubmit={handlePaymentSubmit}
+      />
     </div>
   )
 }

@@ -30,7 +30,7 @@ export const pricingTiers: PricingTier[] = [
   {
     id: 'pro',
     name: 'Pro',
-    price: 29,
+    price: 8,
     period: 'month',
     description: 'For serious traders and algorithm developers',
     features: [
