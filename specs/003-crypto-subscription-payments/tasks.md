@@ -23,11 +23,11 @@ Project structure (post-restructure): `src/`, `public/`, `index.html` at reposit
 
 **Purpose**: Project initialization and database setup
 
-- [ ] T001 Install new dependencies: qrcode.react and date-fns via npm
-- [ ] T002 Run Supabase migration from specs/003-crypto-subscription-payments/contracts/database.sql
-- [ ] T003 Grant admin role to initial admin user(s) via Supabase SQL Editor
-- [ ] T004 [P] Create src/types/subscription.ts from specs/003-crypto-subscription-payments/contracts/types.ts
-- [ ] T005 [P] Create src/data/walletAddresses.ts with static payment addresses for Ethereum, Polygon, BSC
+- [x] T001 Install new dependencies: qrcode.react and date-fns via npm
+- [x] T002 Run Supabase migration from specs/003-crypto-subscription-payments/contracts/database.sql
+- [x] T003 Grant admin role to initial admin user(s) via Supabase SQL Editor
+- [x] T004 [P] Create src/types/subscription.ts from specs/003-crypto-subscription-payments/contracts/types.ts
+- [x] T005 [P] Create src/data/walletAddresses.ts with static payment addresses for Ethereum, Polygon, BSC
 
 ---
 
@@ -37,11 +37,11 @@ Project structure (post-restructure): `src/`, `public/`, `index.html` at reposit
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 [P] Create src/lib/blockchain.ts with blockchain explorer URL generator functions
-- [ ] T007 [P] Create src/lib/subscription.ts with validation and date calculation helpers
-- [ ] T008 Update src/lib/supabase.ts to export typed Supabase client
-- [ ] T009 Create src/hooks/useAuth.ts with admin role check (raw_user_meta_data.is_admin)
-- [ ] T010 Update src/data/pricing.ts to reflect Pro plan at $8/month (was $10)
+- [x] T006 [P] Create src/lib/blockchain.ts with blockchain explorer URL generator functions
+- [x] T007 [P] Create src/lib/subscription.ts with validation and date calculation helpers
+- [x] T008 Update src/lib/supabase.ts to export typed Supabase client
+- [x] T009 Create src/hooks/useAuth.ts with admin role check (raw_user_meta_data.is_admin)
+- [x] T010 Update src/data/pricing.ts to reflect Pro plan at $8/month (was $10)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -55,13 +55,13 @@ Project structure (post-restructure): `src/`, `public/`, `index.html` at reposit
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Create src/components/payment/ChainSelector.tsx for Ethereum/Polygon/BSC network selection
-- [ ] T012 [P] [US1] Create src/components/payment/QRCodeDisplay.tsx with qrcode.react integration and wallet address display
-- [ ] T013 [P] [US1] Create src/components/payment/TxHashInput.tsx with format validation (0x + 64 hex chars)
-- [ ] T014 [US1] Create src/components/payment/PaymentModal.tsx integrating ChainSelector, QRCodeDisplay, TxHashInput
-- [ ] T015 [US1] Create src/hooks/usePaymentSubmit.ts for submitting payment to Supabase payment_submissions table
-- [ ] T016 [US1] Add "Upgrade to Pro" button in src/pages/Dashboard.tsx opening PaymentModal
-- [ ] T017 [US1] Update src/pages/Dashboard.tsx to show payment pending status when user has pending submission
+- [x] T011 [P] [US1] Create src/components/payment/ChainSelector.tsx for Ethereum/Polygon/BSC network selection
+- [x] T012 [P] [US1] Create src/components/payment/QRCodeDisplay.tsx with qrcode.react integration and wallet address display
+- [x] T013 [P] [US1] Create src/components/payment/TxHashInput.tsx with format validation (0x + 64 hex chars)
+- [x] T014 [US1] Create src/components/payment/PaymentModal.tsx integrating ChainSelector, QRCodeDisplay, TxHashInput
+- [x] T015 [US1] Create src/hooks/usePaymentSubmit.ts for submitting payment to Supabase payment_submissions table
+- [x] T016 [US1] Add "Upgrade to Pro" button in src/pages/Dashboard.tsx opening PaymentModal
+- [x] T017 [US1] Update src/pages/Dashboard.tsx to show payment pending status when user has pending submission
 
 **Checkpoint**: User can complete entire payment flow from clicking upgrade to submitting tx hash. Payment stored in database with status="pending".
 
@@ -75,14 +75,14 @@ Project structure (post-restructure): `src/`, `public/`, `index.html` at reposit
 
 ### Implementation for User Story 2
 
-- [ ] T018 [P] [US2] Create src/components/admin/PaymentSubmissionRow.tsx displaying user email, chain, amount, tx hash with explorer link
-- [ ] T019 [P] [US2] Create src/components/admin/VerificationModal.tsx with Approve/Reject buttons and notes textarea
-- [ ] T020 [US2] Create src/hooks/usePaymentSubmissions.ts fetching pending payments with user email join
-- [ ] T021 [US2] Create src/hooks/useVerifyPayment.ts for updating payment status and subscription activation
-- [ ] T022 [US2] Create src/pages/Admin.tsx using PaymentSubmissionRow and VerificationModal components
-- [ ] T023 [US2] Create src/components/admin/AdminRoute.tsx guard component checking user.user_metadata.is_admin
-- [ ] T024 [US2] Add /admin route in src/App.tsx wrapped with AdminRoute guard
-- [ ] T025 [US2] Verify database trigger activates subscription on payment approval (test via Supabase Dashboard)
+- [x] T018 [P] [US2] Create src/components/admin/PaymentSubmissionRow.tsx displaying user email, chain, amount, tx hash with explorer link
+- [x] T019 [P] [US2] Create src/components/admin/VerificationModal.tsx with Approve/Reject buttons and notes textarea
+- [x] T020 [US2] Create src/hooks/usePaymentSubmissions.ts fetching pending payments with user email join
+- [x] T021 [US2] Create src/hooks/useVerifyPayment.ts for updating payment status and subscription activation
+- [x] T022 [US2] Create src/pages/Admin.tsx using PaymentSubmissionRow and VerificationModal components
+- [x] T023 [US2] Create src/components/admin/AdminRoute.tsx guard component checking user.user_metadata.is_admin
+- [x] T024 [US2] Add /admin route in src/App.tsx wrapped with AdminRoute guard
+- [x] T025 [US2] Verify database trigger activates subscription on payment approval (test via Supabase Dashboard)
 
 **Checkpoint**: Admin can verify payments end-to-end. Approved payments activate Pro subscriptions automatically via database trigger.
 
@@ -96,13 +96,13 @@ Project structure (post-restructure): `src/`, `public/`, `index.html` at reposit
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create src/components/subscription/SubscriptionStatus.tsx showing plan, start/end dates, days remaining
-- [ ] T027 [P] [US3] Create src/components/subscription/RenewalReminder.tsx displaying warnings when <7 days remain
-- [ ] T028 [P] [US3] Create src/components/subscription/PaymentHistory.tsx table of past payment_submissions for user
-- [ ] T029 [US3] Create src/hooks/useSubscription.ts fetching active subscription with grace period logic (end_date + 48h)
-- [ ] T030 [US3] Create src/hooks/usePaymentHistory.ts fetching user's payment_submissions ordered by submitted_at DESC
-- [ ] T031 [US3] Update src/pages/Dashboard.tsx to integrate SubscriptionStatus, RenewalReminder, PaymentHistory components
-- [ ] T032 [US3] Add expired subscription check in Dashboard redirecting to upgrade modal if expired (outside grace period)
+- [x] T026 [P] [US3] Create src/components/subscription/SubscriptionStatus.tsx showing plan, start/end dates, days remaining
+- [x] T027 [P] [US3] Create src/components/subscription/RenewalReminder.tsx displaying warnings when <7 days remain
+- [x] T028 [P] [US3] Create src/components/subscription/PaymentHistory.tsx table of past payment_submissions for user
+- [x] T029 [US3] Create src/hooks/useSubscription.ts fetching active subscription with grace period logic (end_date + 48h)
+- [x] T030 [US3] Create src/hooks/usePaymentHistory.ts fetching user's payment_submissions ordered by submitted_at DESC
+- [x] T031 [US3] Update src/pages/Dashboard.tsx to integrate SubscriptionStatus, RenewalReminder, PaymentHistory components
+- [x] T032 [US3] Add expired subscription check in Dashboard redirecting to upgrade modal if expired (outside grace period)
 
 **Checkpoint**: Users have complete visibility into subscription lifecycle. Renewal flow reuses US1 PaymentModal component.
 
@@ -116,8 +116,8 @@ Project structure (post-restructure): `src/`, `public/`, `index.html` at reposit
 
 ### Implementation for User Story 4
 
-- [ ] T033 [US4] Update src/components/payment/ChainSelector.tsx to show estimated gas fees per network
-- [ ] T034 [US4] Update src/components/payment/PaymentModal.tsx to dynamically update address/QR/explorer when chain changes
+- [x] T033 [US4] Update src/components/payment/ChainSelector.tsx to show estimated gas fees per network (✓ useGasPrices hook with real-time polling)
+- [x] T034 [US4] Update src/components/payment/PaymentModal.tsx to dynamically update address/QR/explorer when chain changes
 - [ ] T035 [US4] Add network-specific warnings in PaymentModal about sending to correct chain. Display prominent warning: "⚠️ Warning: Sending funds to the wrong network will result in permanent loss. Double-check you selected [Ethereum/Polygon/BSC] in your wallet before sending payment." (prevent wrong-chain loss per FR-018)
 - [ ] T036 [US4] Add mobile wallet deep-linking support when user taps QR code (opens wallet with pre-filled payment)
 - [ ] T037 [US4] Update src/components/admin/PaymentSubmissionRow.tsx to show chain-specific explorer icons/badges
@@ -132,13 +132,13 @@ Project structure (post-restructure): `src/`, `public/`, `index.html` at reposit
 **Purpose**: Improvements affecting multiple user stories
 
 - [ ] T039 [P] Add responsive design testing for mobile QR code scanning (US1, US4)
-- [ ] T040 [P] Add loading states and error boundaries to all payment/admin components
-- [ ] T041 [P] Add Vercel Analytics tracking for payment modal opens and submissions (privacy-compliant)
+- [x] T040 [P] Add loading states and error boundaries to all payment/admin components (✓ ErrorBoundary.tsx exists)
+- [x] T041 [P] Add Vercel Analytics tracking for payment modal opens and submissions (✓ @vercel/analytics installed)
 - [ ] T042 [P] Update README.md with crypto payment setup instructions from quickstart.md
 - [ ] T043 Verify all RLS policies prevent unauthorized access (test with non-admin and logged-out users)
 - [ ] T044 Configure and test email notifications for approved/rejected payments (Supabase Auth email templates). Example approved: "Your Pro subscription payment has been verified. Welcome to Pro!" Example rejected: "Payment verification failed: [reason]. Please resubmit with correct transaction." (per FR-014)
 - [ ] T045 Add audit log view in Admin panel showing all verification actions with timestamps
-- [ ] T046 Performance optimization: lazy-load Admin route and PaymentModal
+- [x] T046 Performance optimization: lazy-load Admin route and PaymentModal (✓ lazy() in App.tsx)
 - [ ] T047 Add wrong-chain submission tracking to validate SC-005 (log attempts where selected chain doesn't match tx hash chain)
 - [ ] T048 Run end-to-end test suite if formal tests exist (npm test or vitest)
 - [ ] T049 Run full quickstart.md validation (10-step manual test flow)
