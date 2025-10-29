@@ -51,11 +51,14 @@ export function MCPInstructions() {
               </div>
             </li>
             <li>
-              <span className="text-terminal-text">In chat, use:</span>
-              <div className="ml-6 mt-1">
-                <code className="bg-graphite-950 px-2 py-1 rounded text-terminal-cyan">
-                  @Context8 Crypto get BTC price
+              <span className="text-terminal-text">Use in chat:</span>
+              <div className="ml-6 mt-2 space-y-2">
+                <code className="block bg-graphite-950 px-3 py-2 rounded text-terminal-cyan text-xs">
+                  @Context8 Crypto generate market report for BTCUSDT
                 </code>
+                <div className="text-xs text-terminal-muted">
+                  Generates comprehensive market intelligence: price, orderbook, liquidity, volume profile, order flow, anomalies, and market health
+                </div>
               </div>
             </li>
           </ol>

@@ -56,27 +56,31 @@ export function ApiDocs() {
             Endpoints
           </h2>
 
-          {/* Crypto Prices */}
+          {/* Market Report */}
           <div className="space-y-6">
             <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-5">
               <div className="mb-4">
                 <span className="inline-block px-2 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded text-xs font-bold mr-2">
-                  GET
+                  POST
                 </span>
-                <code className="text-terminal-cyan text-sm">/crypto</code>
+                <code className="text-terminal-cyan text-sm">/market/report</code>
               </div>
 
               <p className="text-terminal-muted text-sm mb-4">
-                Get real-time cryptocurrency prices and market data
+                Generate comprehensive market intelligence report combining price, orderbook, liquidity, volume profile, order flow, anomalies, and market health
               </p>
 
               {/* Parameters */}
               <div className="mb-4">
-                <p className="text-terminal-text font-medium text-sm mb-2">Query Parameters:</p>
+                <p className="text-terminal-text font-medium text-sm mb-2">Request Body:</p>
                 <div className="space-y-2 text-xs">
                   <div className="flex gap-3">
-                    <code className="text-terminal-cyan min-w-[100px]">symbols</code>
-                    <span className="text-terminal-muted">Comma-separated list of symbols (e.g., BTC,ETH,SOL)</span>
+                    <code className="text-terminal-cyan min-w-[100px]">symbol</code>
+                    <span className="text-terminal-muted">Trading pair symbol (e.g., BTCUSDT, ETHUSDT)</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <code className="text-terminal-cyan min-w-[100px]">venue</code>
+                    <span className="text-terminal-muted">Exchange venue (currently: "binance")</span>
                   </div>
                   <div className="flex gap-3">
                     <code className="text-terminal-cyan min-w-[100px]">apikey</code>
@@ -89,9 +93,13 @@ export function ApiDocs() {
               <div className="mb-4">
                 <p className="text-terminal-text font-medium text-sm mb-2">Example Request:</p>
                 <div className="bg-graphite-950 border border-graphite-700 rounded p-3 font-mono text-xs overflow-x-auto">
-                  <code className="text-terminal-text">
-                    curl https://api.context8.markets/v1/crypto?symbols=BTC,ETH,SOL&apikey=<span className="text-terminal-cyan">YOUR_KEY</span>
-                  </code>
+                  <pre className="text-terminal-text">{`curl -X POST https://api.context8.markets/v1/market/report \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "symbol": "BTCUSDT",
+    "venue": "binance",
+    "apikey": "YOUR_KEY"
+  }'`}</pre>
                 </div>
               </div>
 
@@ -101,20 +109,7 @@ export function ApiDocs() {
                 <div className="bg-graphite-950 border border-graphite-700 rounded p-3 font-mono text-xs overflow-x-auto">
                   <pre className="text-terminal-text">{`{
   "success": true,
-  "data": [
-    {
-      "symbol": "BTC",
-      "price": 98234.50,
-      "change_24h": 2.34,
-      "volume_24h": 45234567890
-    },
-    {
-      "symbol": "ETH",
-      "price": 3456.78,
-      "change_24h": -0.56,
-      "volume_24h": 23456789012
-    }
-  ],
+  "report": "# Market Intelligence Report: BTCUSDT\\n\\n## Price Data\\n- Current: $98,234.50\\n- 24h Change: +2.34%\\n- 24h Volume: $45.2B\\n\\n## Orderbook Analysis\\n- Bid/Ask Spread: 0.01%\\n- Market Depth: Strong\\n\\n## Liquidity Profile\\n- Top 5 levels: $12.3M\\n- Liquidity Score: 9.2/10\\n\\n## Volume Profile\\n- VWAP: $97,856.23\\n- POC: $97,900\\n\\n## Order Flow\\n- Buy Pressure: 58%\\n- Sell Pressure: 42%\\n\\n## Market Health\\n- Overall: Healthy\\n- Trend: Bullish",
   "timestamp": "2025-10-29T10:30:00Z"
 }`}</pre>
                 </div>
