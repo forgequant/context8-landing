@@ -106,6 +106,46 @@ export const WALLET_ADDRESSES: WalletAddresses = {
 
 For detailed implementation guide, see `specs/003-crypto-subscription-payments/quickstart.md`.
 
+### 4. Telegram Notifications (Optional)
+
+Get real-time payment notifications via Telegram:
+
+1. Create Telegram bot via @BotFather
+2. Add environment variables in Supabase Dashboard → Edge Functions:
+   - `TELEGRAM_BOT_TOKEN`: Your bot token from @BotFather
+   - `TELEGRAM_ADMIN_SECRET`: Random secure string for admin registration
+3. Deploy Edge Functions:
+```bash
+supabase functions deploy telegram-bot
+supabase functions deploy telegram-notify-admin
+```
+4. Send `/start YOUR_SECRET` to your bot to register as admin
+5. You'll receive notifications when users submit payments
+
+### 5. MCP Integration
+
+Context8 provides MCP server integration for Claude Code:
+
+```bash
+# Install Context8 CLI
+npm install -g context8
+
+# Add to claude_desktop_config.json:
+{
+  "mcpServers": {
+    "context8": {
+      "command": "context8",
+      "args": ["mcp"],
+      "env": {
+        "CONTEXT8_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+Pro subscribers get API access. The MCP setup instructions are displayed in the user dashboard.
+
 ## Development
 
 ```bash

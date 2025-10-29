@@ -118,9 +118,9 @@ Project structure (post-restructure): `src/`, `public/`, `index.html` at reposit
 
 - [x] T033 [US4] Update src/components/payment/ChainSelector.tsx to show estimated gas fees per network (✓ useGasPrices hook with real-time polling)
 - [x] T034 [US4] Update src/components/payment/PaymentModal.tsx to dynamically update address/QR/explorer when chain changes
-- [ ] T035 [US4] Add network-specific warnings in PaymentModal about sending to correct chain. Display prominent warning: "⚠️ Warning: Sending funds to the wrong network will result in permanent loss. Double-check you selected [Ethereum/Polygon/BSC] in your wallet before sending payment." (prevent wrong-chain loss per FR-018)
+- [x] T035 [US4] Add network-specific warnings in PaymentModal about sending to correct chain. Display prominent warning: "⚠️ Warning: Sending funds to the wrong network will result in permanent loss. Double-check you selected [Ethereum/Polygon/BSC] in your wallet before sending payment." (prevent wrong-chain loss per FR-018)
 - [ ] T036 [US4] Add mobile wallet deep-linking support when user taps QR code (opens wallet with pre-filled payment)
-- [ ] T037 [US4] Update src/components/admin/PaymentSubmissionRow.tsx to show chain-specific explorer icons/badges
+- [x] T037 [US4] Update src/components/admin/PaymentSubmissionRow.tsx to show chain-specific explorer icons/badges (✓ Color-coded badges with icons)
 - [ ] T038 [US4] Verify all three blockchains (ETH, Polygon, BSC) work end-to-end with test transactions
 
 **Checkpoint**: All three blockchain networks fully functional. Users can choose lowest-cost option.

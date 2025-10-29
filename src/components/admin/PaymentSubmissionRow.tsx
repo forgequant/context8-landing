@@ -10,6 +10,22 @@ export function PaymentSubmissionRow({ payment, onVerify }: PaymentSubmissionRow
   const explorerUrl = getExplorerTxUrl(payment.chain, payment.tx_hash)
   const chainName = getChainDisplayName(payment.chain)
 
+  // Chain-specific colors and badges
+  const getChainBadge = (chain: string) => {
+    switch(chain) {
+      case 'ethereum':
+        return { color: 'bg-blue-500/20 text-blue-300 border-blue-500/30', icon: '⟠' }
+      case 'polygon':
+        return { color: 'bg-purple-500/20 text-purple-300 border-purple-500/30', icon: '⬡' }
+      case 'bsc':
+        return { color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30', icon: '◈' }
+      default:
+        return { color: 'bg-gray-500/20 text-gray-300 border-gray-500/30', icon: '●' }
+    }
+  }
+
+  const chainBadge = getChainBadge(payment.chain)
+
   return (
     <div className="bg-graphite-900 rounded-lg p-4 hover:bg-graphite-800 transition-colors">
       <div className="flex items-start justify-between gap-4">
@@ -24,7 +40,10 @@ export function PaymentSubmissionRow({ payment, onVerify }: PaymentSubmissionRow
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-2">
               <span className="text-terminal-muted">Chain:</span>
-              <span className="font-semibold">{chainName}</span>
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border ${chainBadge.color}`}>
+                <span>{chainBadge.icon}</span>
+                <span>{chainName}</span>
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-terminal-muted">Amount:</span>

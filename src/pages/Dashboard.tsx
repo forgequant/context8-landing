@@ -9,6 +9,7 @@ import { usePendingPaymentsCount } from '../hooks/usePendingPaymentsCount'
 import { SubscriptionStatus } from '../components/subscription/SubscriptionStatus'
 import { RenewalReminder } from '../components/subscription/RenewalReminder'
 import { PaymentHistory } from '../components/subscription/PaymentHistory'
+import { MCPInstructions } from '../components/dashboard/MCPInstructions'
 
 export function Dashboard() {
   const navigate = useNavigate()
@@ -214,6 +215,12 @@ export function Dashboard() {
             <PaymentHistory payments={payments} loading={paymentsLoading} />
           </section>
         )}
+
+        {/* MCP Integration section */}
+        <section className="mb-12">
+          <h2 className="text-sm text-terminal-muted italic mb-6">MCP Integration</h2>
+          <MCPInstructions />
+        </section>
 
         {/* Data sources section */}
         <section>
