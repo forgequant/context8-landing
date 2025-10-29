@@ -41,7 +41,7 @@ export function MCPInstructions() {
                   </div>
                   <div>
                     <span className="text-terminal-muted">MCP Server URL:</span>
-                    <code className="ml-2 text-terminal-cyan break-all">https://api.context8.io/mcp</code>
+                    <code className="ml-2 text-terminal-cyan break-all">https://api.context8.markets/sse</code>
                   </div>
                   <div>
                     <span className="text-terminal-muted">Authentication:</span>

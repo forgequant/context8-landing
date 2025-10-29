@@ -25,7 +25,7 @@ export function ApiDocs() {
             </p>
             <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
               <p className="text-terminal-text font-medium mb-2">Base URL:</p>
-              <code className="text-terminal-cyan">https://api.context8.io/v1</code>
+              <code className="text-terminal-cyan">https://api.context8.markets/v1</code>
             </div>
           </div>
         </section>
@@ -90,7 +90,7 @@ export function ApiDocs() {
                 <p className="text-terminal-text font-medium text-sm mb-2">Example Request:</p>
                 <div className="bg-graphite-950 border border-graphite-700 rounded p-3 font-mono text-xs overflow-x-auto">
                   <code className="text-terminal-text">
-                    curl https://api.context8.io/v1/crypto?symbols=BTC,ETH,SOL&apikey=<span className="text-terminal-cyan">YOUR_KEY</span>
+                    curl https://api.context8.markets/v1/crypto?symbols=BTC,ETH,SOL&apikey=<span className="text-terminal-cyan">YOUR_KEY</span>
                   </code>
                 </div>
               </div>
@@ -175,7 +175,7 @@ export function ApiDocs() {
                   </div>
                   <div className="flex gap-2">
                     <span className="text-terminal-muted min-w-[120px]">MCP Server URL:</span>
-                    <code className="text-terminal-cyan">https://api.context8.io/mcp</code>
+                    <code className="text-terminal-cyan">https://api.context8.markets/sse</code>
                   </div>
                   <div className="flex gap-2">
                     <span className="text-terminal-muted min-w-[120px]">Authentication:</span>
