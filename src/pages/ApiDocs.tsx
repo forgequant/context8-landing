@@ -144,24 +144,60 @@ export function ApiDocs() {
         {/* ChatGPT Integration */}
         <section>
           <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            ChatGPT Integration
+            ChatGPT Custom Connector
           </h2>
-          <div className="space-y-3 text-sm">
+          <div className="space-y-4 text-sm">
             <p className="text-terminal-muted">
-              Add live crypto prices to ChatGPT via Custom Instructions:
+              Connect Context8 to ChatGPT using Custom Connectors (requires ChatGPT Plus/Pro/Team/Enterprise):
             </p>
-            <ol className="list-decimal list-inside space-y-2 text-terminal-muted ml-4">
-              <li>Open ChatGPT → Settings → Personalization → Custom Instructions</li>
-              <li>Add this URL to "How would you like ChatGPT to respond?":</li>
-            </ol>
-            <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4 font-mono text-xs overflow-x-auto">
-              <code className="text-terminal-cyan break-all">
-                https://api.context8.io/v1/crypto?symbols=BTC,ETH,SOL&apikey=YOUR_API_KEY
-              </code>
+
+            <div className="space-y-3">
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <p className="font-medium text-blue-200 mb-2">Step 1: Enable Developer Mode</p>
+                <p className="text-blue-300/80 text-xs">
+                  ChatGPT → Settings → Advanced → Enable "Developer Mode"
+                </p>
+              </div>
+
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <p className="font-medium text-blue-200 mb-2">Step 2: Create Custom Connector</p>
+                <p className="text-blue-300/80 text-xs mb-3">
+                  Settings → Applications and Connectors → Create
+                </p>
+                <div className="bg-graphite-950 border border-graphite-700 rounded p-3 space-y-2 text-xs">
+                  <div className="flex gap-2">
+                    <span className="text-terminal-muted min-w-[120px]">Name:</span>
+                    <code className="text-terminal-cyan">Context8 Crypto</code>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-terminal-muted min-w-[120px]">Description:</span>
+                    <code className="text-terminal-text">Real-time crypto market data</code>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-terminal-muted min-w-[120px]">MCP Server URL:</span>
+                    <code className="text-terminal-cyan">https://api.context8.io/mcp</code>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="text-terminal-muted min-w-[120px]">Authentication:</span>
+                    <code className="text-terminal-cyan">No authentication</code>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <p className="font-medium text-blue-200 mb-2">Step 3: Use in Chat</p>
+                <div className="bg-graphite-950 border border-graphite-700 rounded p-3 font-mono text-xs">
+                  <code className="text-terminal-cyan">@Context8 Crypto get BTC, ETH, SOL prices</code>
+                </div>
+              </div>
             </div>
-            <p className="text-terminal-muted text-xs">
-              ChatGPT will automatically fetch current prices when you discuss cryptocurrencies.
-            </p>
+
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 text-xs">
+              <p className="font-medium text-yellow-200">Note:</p>
+              <p className="text-yellow-300/80 mt-1">
+                Custom Connectors require a paid ChatGPT plan. Free users can access the API directly via REST.
+              </p>
+            </div>
           </div>
         </section>
 

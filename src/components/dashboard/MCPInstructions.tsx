@@ -15,22 +15,57 @@ export function MCPInstructions() {
         {/* ChatGPT Integration - Primary */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-base font-semibold text-terminal-text">ChatGPT Integration</span>
+            <span className="text-base font-semibold text-terminal-text">ChatGPT Custom Connector</span>
             <span className="px-2 py-0.5 bg-terminal-cyan/20 text-terminal-cyan text-xs rounded border border-terminal-cyan/30">Recommended</span>
           </div>
 
           <ol className="list-decimal list-inside space-y-2 text-terminal-muted">
-            <li>Go to ChatGPT → Settings → Personalization → Custom Instructions</li>
-            <li className="ml-6 mt-1">
-              <span className="text-terminal-text">Add this URL to "Custom Instructions":</span>
-              <div className="mt-2 p-3 bg-graphite-950 rounded border border-graphite-700 font-mono text-xs">
-                <code className="text-terminal-cyan break-all">
-                  https://api.context8.io/v1/crypto?symbols=BTC,ETH,SOL&apikey=YOUR_API_KEY
+            <li>
+              <span className="text-terminal-text">Enable Developer Mode:</span>
+              <div className="ml-6 mt-1 text-xs">
+                Settings → Advanced → Enable "Developer Mode" (требует ChatGPT Plus/Pro)
+              </div>
+            </li>
+            <li>
+              <span className="text-terminal-text">Create Custom Connector:</span>
+              <div className="ml-6 mt-1 text-xs space-y-1">
+                <div>Settings → Applications and Connectors → Create</div>
+                <div className="mt-2 p-3 bg-graphite-950 rounded border border-graphite-700 space-y-2">
+                  <div>
+                    <span className="text-terminal-muted">Name:</span>
+                    <code className="ml-2 text-terminal-cyan">Context8 Crypto</code>
+                  </div>
+                  <div>
+                    <span className="text-terminal-muted">Description:</span>
+                    <code className="ml-2 text-terminal-text">Real-time crypto market data</code>
+                  </div>
+                  <div>
+                    <span className="text-terminal-muted">MCP Server URL:</span>
+                    <code className="ml-2 text-terminal-cyan break-all">https://api.context8.io/mcp</code>
+                  </div>
+                  <div>
+                    <span className="text-terminal-muted">Authentication:</span>
+                    <code className="ml-2 text-terminal-cyan">No authentication</code>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <span className="text-terminal-text">In chat, use:</span>
+              <div className="ml-6 mt-1">
+                <code className="bg-graphite-950 px-2 py-1 rounded text-terminal-cyan">
+                  @Context8 Crypto get BTC price
                 </code>
               </div>
             </li>
-            <li>ChatGPT will automatically fetch live crypto prices when discussing markets</li>
           </ol>
+
+          <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-200">
+            <p className="font-medium">Note: Requires ChatGPT Plus, Pro, Team, or Enterprise</p>
+            <p className="mt-1 text-yellow-300/80">
+              Free plan users: use the API directly or try Claude Desktop below
+            </p>
+          </div>
         </div>
 
         {/* Claude Desktop - Secondary */}
