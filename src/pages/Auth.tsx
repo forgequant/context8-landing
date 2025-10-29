@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
-type AuthMethod = 'google' | 'github' | 'email'
+type AuthMethod = 'google' | 'email'
 type Step = 'method' | 'username' | 'password' | 'authenticating'
 
 export function Auth() {
@@ -27,15 +27,12 @@ export function Auth() {
       setAuthMethod('google')
       handleOAuthFlow('google')
     } else if (choice === '2') {
-      setAuthMethod('github')
-      handleOAuthFlow('github')
-    } else if (choice === '3') {
       setAuthMethod('email')
       setStep('username')
     }
   }
 
-  const handleOAuthFlow = async (provider: 'google' | 'github') => {
+  const handleOAuthFlow = async (provider: 'google') => {
     setStep('authenticating')
 
     const { supabase } = await import('../lib/supabase')
@@ -150,9 +147,7 @@ export function Auth() {
               <p className="text-sm mb-6">
                 <span className="text-terminal-cyan">[1]</span> Google OAuth
                 <br />
-                <span className="text-terminal-cyan">[2]</span> GitHub OAuth
-                <br />
-                <span className="text-terminal-cyan">[3]</span> Email/Password
+                <span className="text-terminal-cyan">[2]</span> Email/Password
               </p>
 
               {/* Method selection */}
@@ -242,7 +237,7 @@ export function Auth() {
                     <span className="text-terminal-cyan">$</span>
                     <span>Select option:</span>
                     <span className="text-terminal-text">
-                      {authMethod === 'google' ? '1' : authMethod === 'github' ? '2' : '3'}
+                      {authMethod === 'google' ? '1' : '2'}
                     </span>
                   </div>
 
@@ -272,12 +267,6 @@ export function Auth() {
                         <p className="text-terminal-green">✓ Opening authorization window</p>
                       </>
                     )}
-                    {authMethod === 'github' && (
-                      <>
-                        <p className="mb-2">→ Redirecting to GitHub OAuth...</p>
-                        <p className="text-terminal-green">✓ Opening authorization window</p>
-                      </>
-                    )}
                     {authMethod === 'email' && (
                       <>
                         <p className="mb-2">→ Authenticating...</p>
@@ -297,7 +286,7 @@ export function Auth() {
                   transition={{ delay: 0.6 }}
                   className="mt-8 text-xs text-terminal-muted"
                 >
-                  <p>Enter 1, 2, or 3 and press Enter</p>
+                  <p>Enter 1 or 2 and press Enter</p>
                   <p className="mt-2">All methods are enabled</p>
                 </motion.div>
               )}
