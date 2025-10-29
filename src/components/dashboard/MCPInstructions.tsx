@@ -112,16 +112,6 @@ export function MCPInstructions() {
           </div>
         </div>
 
-        <div>
-          <a
-            href="/docs/api"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-terminal-cyan hover:underline text-sm"
-          >
-            View API documentation →
-          </a>
-        </div>
       </div>
     </div>
   )
