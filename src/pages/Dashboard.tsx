@@ -216,9 +216,9 @@ export function Dashboard() {
           </section>
         )}
 
-        {/* MCP Integration section */}
+        {/* API Integration section */}
         <section className="mb-12">
-          <h2 className="text-sm text-terminal-muted italic mb-6">MCP Integration</h2>
+          <h2 className="text-sm text-terminal-muted italic mb-6">API Integration</h2>
           <MCPInstructions />
         </section>
 
