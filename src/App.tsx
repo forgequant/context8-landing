@@ -8,6 +8,8 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })))
 const Admin = lazy(() => import('./pages/Admin').then(m => ({ default: m.Admin })))
 const AdminRoute = lazy(() => import('./components/admin/AdminRoute').then(m => ({ default: m.AdminRoute })))
+const DailyReport = lazy(() => import('./pages/DailyReport').then(m => ({ default: m.DailyReport })))
+const DailyReportRu = lazy(() => import('./pages/DailyReportRu').then(m => ({ default: m.DailyReportRu })))
 
 // Loading fallback component
 function LoadingFallback() {
@@ -27,6 +29,8 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/reports/daily" element={<DailyReport />} />
+            <Route path="/reports/daily-ru" element={<DailyReportRu />} />
             <Route
               path="/admin"
               element={

@@ -97,9 +97,17 @@ export function Landing() {
                   <span className="group-hover:hidden">Start free (OAuth)</span>
                   <span className="hidden group-hover:inline">$ start-free --oauth_</span>
                 </button>
-                <p className="text-xs text-terminal-muted mt-2">
-                  Informational only. Not financial advice.
-                </p>
+                <div className="mt-4 space-y-2">
+                  <a
+                    href="/reports/daily"
+                    className="inline-block text-sm text-terminal-cyan hover:underline"
+                  >
+                    → Daily BTC Report (Oct 29)
+                  </a>
+                  <p className="text-xs text-terminal-muted">
+                    Informational only. Not financial advice.
+                  </p>
+                </div>
               </motion.div>
             </div>
           </div>
