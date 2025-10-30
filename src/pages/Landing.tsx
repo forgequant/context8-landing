@@ -102,7 +102,7 @@ export function Landing() {
                     href="/reports/daily"
                     className="inline-block text-sm text-terminal-cyan hover:underline"
                   >
-                    → Daily BTC Report (Oct 29)
+                    → Daily BTC Report (Oct 30)
                   </a>
                   <p className="text-xs text-terminal-muted">
                     Informational only. Not financial advice.
