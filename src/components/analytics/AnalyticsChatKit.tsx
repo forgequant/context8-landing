@@ -152,14 +152,14 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
         grayscale: {
           hue: 200,
           tint: 3,
-          shade: -6,
+          shade: -4,
         },
         accent: {
           primary: '#06b6d4', // terminal-cyan
           level: 2,
         },
       },
-      radius: 'minimal',
+      radius: 'sharp',
       font: {
         family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
       },
