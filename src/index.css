@@ -66,3 +66,18 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* ChatKit terminal styling overrides */
+openai-chatkit {
+  --ck-color-background: #0B0C0E !important;
+  --ck-color-surface: #1a1c20 !important;
+  --ck-color-border: #2d3139 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}
+
+/* Make ChatKit buttons more terminal-like */
+openai-chatkit button {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  text-transform: none !important;
+  letter-spacing: 0.01em !important;
+}

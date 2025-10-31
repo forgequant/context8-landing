@@ -150,44 +150,43 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
       colorScheme: 'dark',
       color: {
         grayscale: {
-          hue: 220,
-          tint: 6,
-          shade: -4,
+          hue: 200,
+          tint: 3,
+          shade: -6,
         },
         accent: {
           primary: '#06b6d4', // terminal-cyan
-          level: 1,
+          level: 2,
         },
       },
-      radius: 'round',
+      radius: 'minimal',
+      font: {
+        family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      },
     },
     startScreen: {
-      greeting: '# Context8 Crypto Analytics\n\nAsk me about crypto market data. I have access to:\n- **fetch** - Complete market reports (orderbook, volume, flows)\n- **search** - Find crypto symbols',
+      greeting: 'Terminal-native crypto market analysis.\n\nTools: fetch (market data) | search (symbols)',
       prompts: [
         {
-          label: 'BTC Market Report',
+          label: '$ btc report',
           prompt: 'Show BTC market report',
-          icon: 'circle-question',
         },
         {
-          label: 'ETH Order Book',
+          label: '$ eth orderbook',
           prompt: 'Get order book for ETHUSDT',
-          icon: 'circle-question',
         },
         {
-          label: 'Search Symbols',
+          label: '$ search btc',
           prompt: 'Search for Bitcoin symbols',
-          icon: 'circle-question',
         },
         {
-          label: 'SOL Analysis',
+          label: '$ analyze sol',
           prompt: 'Analyze SOLUSDT microstructure',
-          icon: 'circle-question',
         },
       ],
     },
     composer: {
-      placeholder: 'Ask about crypto markets...',
+      placeholder: '> query markets_',
     },
     threadItemActions: {
       feedback: false,
@@ -235,13 +234,15 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
   }, [chatkit.control, isInitializing, error])
 
   return (
-    <div className="relative">
-      <div className="bg-graphite-900 border border-graphite-800 rounded-lg overflow-hidden h-[600px] relative">
+    <div className="h-full flex flex-col">
+      <div className="flex-1 bg-graphite-900 border border-graphite-800 rounded overflow-hidden relative">
         {isInitializing && (
-          <div className="absolute inset-0 flex items-center justify-center bg-graphite-950/90 z-50 pointer-events-none">
-            <div className="text-center pointer-events-auto">
-              <div className="text-terminal-cyan text-sm mb-2">Initializing ChatKit...</div>
-              <div className="text-terminal-muted text-xs">Creating session with OpenAI</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-graphite-950/90 z-50">
+            <div className="text-center">
+              <div className="text-terminal-cyan text-sm font-mono mb-2">
+                <span className="animate-pulse">█</span> initializing_session
+              </div>
+              <div className="text-terminal-muted text-xs font-mono">connecting to openai...</div>
             </div>
           </div>
         )}
@@ -252,20 +253,13 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
       </div>
 
       {error && (
-        <div className="mt-4 bg-red-900/20 border border-red-500/50 rounded-lg p-4">
+        <div className="mt-3 bg-red-900/20 border border-red-500/50 rounded p-3">
           <div className="flex items-start gap-2">
-            <span className="text-red-500 text-sm">⚠</span>
-            <div className="flex-1">
-              <p className="text-red-400 text-sm font-semibold mb-1">Error</p>
-              <p className="text-red-300/80 text-xs">{error}</p>
-            </div>
+            <span className="text-red-500 text-xs font-mono">ERR</span>
+            <p className="text-red-300 text-xs font-mono flex-1">{error}</p>
           </div>
         </div>
       )}
-
-      <div className="mt-3 text-xs text-terminal-muted">
-        <span className="text-terminal-cyan">$</span> ChatKit session ready (Workflow: {WORKFLOW_ID.slice(0, 12)}...)
-      </div>
     </div>
   )
 })
