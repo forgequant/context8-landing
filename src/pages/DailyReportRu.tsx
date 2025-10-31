@@ -10,7 +10,7 @@ export function DailyReportRu() {
         </Link>
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold text-terminal-cyan">Ежедневный отчёт по BTC</h1>
-          <span className="text-sm text-terminal-muted">30 окт 2025 11:03 UTC</span>
+          <span className="text-sm text-terminal-muted">31 окт 2025 09:30 UTC</span>
         </div>
         <p className="text-terminal-muted">Комплексный анализ рынка • Факты, мнение и практические шаги</p>
       </header>
@@ -22,188 +22,166 @@ export function DailyReportRu() {
         <section className="bg-graphite-900 border border-terminal-cyan/30 rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4 text-terminal-cyan">TL;DR</h2>
           <ul className="space-y-2 text-terminal-text">
-            <li>• <strong>Спот-цена</strong>: <span className="text-terminal-cyan">$110 030</span>, <span className="text-terminal-red">-2.44%</span> за 24ч; рынок продолжает корректироваться от локального максимума $113.6k. Диапазон: $107 925–$113 643.</li>
-            <li>• <strong>Объём</strong>: 26 722 BTC (~$2.96B) — стабильная активность, но приоритет перешёл к продавцам.</li>
-            <li>• <strong>Сентимент</strong>: Crypto Fear & Greed = <span className="text-yellow-300">36 (Fear)</span> — устойчивое осторожное настроение. <a href="https://alternative.me/crypto/" target="_blank" rel="noopener noreferrer" className="text-terminal-cyan hover:underline">[Alternative.me]</a></li>
-            <li>• <strong>Polymarket</strong>: наиболее вероятный таргет 2025 — <span className="text-terminal-green">≥$130k (~52%)</span>, <span className="text-terminal-green">≥$150k (~15%)</span>; вероятность выше $150k снизилась на фоне коррекции. <a href="https://polymarket.com/event/what-price-will-bitcoin-hit-in-2025" target="_blank" rel="noopener noreferrer" className="text-terminal-cyan hover:underline">[Polymarket]</a></li>
-            <li>• <strong>Микроструктура</strong> (Binance BTCUSDT): спред $0.01 (0.91 мбпс), дисбаланс <span className="text-terminal-red">0.02 (доминирование продавцов)</span>, CVD <span className="text-terminal-red">-57.22</span>, health <span className="text-terminal-green">87.5/100 (Excellent)</span> — ликвидность высокая, безопасно для лимитных ордеров.</li>
+            <li>• <strong>Спот-цена</strong>: <span className="text-terminal-cyan">$110 043.82</span>; рынок стабилизировался в диапазоне $108.6–$116k после пика $126k 6 окт. Mid-точка: $112 280.</li>
+            <li>• <strong>Диапазон недели</strong>: $108 604 – $115 957; размах 6.55% — умеренная волатильность.</li>
+            <li>• <strong>Сентимент</strong>: Crypto Fear & Greed = <span className="text-yellow-300">37 (Fear)</span> — осторожное настроение сохраняется. <a href="https://alternative.me/crypto/" target="_blank" rel="noopener noreferrer" className="text-terminal-cyan hover:underline">[Alternative.me]</a></li>
+            <li>• <strong>Polymarket</strong>: <span className="text-terminal-green">≥$130k (~53%)</span>, <span className="text-terminal-green">≥$150k (~15%)</span>, <span className="text-terminal-red">≤$80k (~10%)</span>. Оборот $38 млн. <a href="https://polymarket.com/event/what-price-will-bitcoin-hit-in-2025" target="_blank" rel="noopener noreferrer" className="text-terminal-cyan hover:underline">[Polymarket]</a></li>
+            <li>• <strong>Микроструктура</strong> (Binance BTCUSDT): спред $0.01 (0.91 m-bps) — сверхплотный; imbalance <span className="text-terminal-red">-0.923 (перевес продавцов)</span>, orders/sec 46, net flow <span className="text-terminal-green">+0.58</span>, health <span className="text-terminal-green">80/100 (хорошо)</span>.</li>
           </ul>
         </section>
 
-        {/* Рыночная сводка */}
+        {/* Макро и факты */}
         <section>
           <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            1. Рыночная сводка (SSE / Binance)
+            1. Макро и фундаментальные факты
           </h2>
           <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
             <table className="w-full text-terminal-text text-sm">
               <tbody className="space-y-2">
-                <tr><td className="py-1"><strong>Цена (LTP)</strong></td><td className="py-1 text-right"><span className="text-terminal-cyan">$110 030.29</span></td></tr>
-                <tr><td className="py-1"><strong>Изменение 24ч</strong></td><td className="py-1 text-right"><span className="text-terminal-red">−2.44 %</span></td></tr>
-                <tr><td className="py-1"><strong>Дневной диапазон</strong></td><td className="py-1 text-right">$107 925 – $113 643</td></tr>
-                <tr><td className="py-1"><strong>Средневзвешенная (24ч)</strong></td><td className="py-1 text-right">$110 810</td></tr>
-                <tr><td className="py-1"><strong>Объём 24ч</strong></td><td className="py-1 text-right">26 722 BTC (~$2.96B)</td></tr>
-                <tr><td className="py-1"><strong>Дата отчёта</strong></td><td className="py-1 text-right text-terminal-muted">2025-10-30 11:03:07 UTC</td></tr>
+                <tr><td className="py-1"><strong>ФРС США (30 окт)</strong></td><td className="py-1 text-right">Ставка −25 б.п. → 3.75–4.00%</td></tr>
+                <tr><td className="py-1"><strong>QT (сворачивание баланса)</strong></td><td className="py-1 text-right">С 1 дек прекращается, реинвестирование</td></tr>
+                <tr><td className="py-1"><strong>ВВП США Q3</strong></td><td className="py-1 text-right">+3.1% QoQ (мягкое приземление)</td></tr>
+                <tr><td className="py-1"><strong>PCE (инфляция)</strong></td><td className="py-1 text-right">Публикация 31 окт 12:30 UTC</td></tr>
+                <tr><td className="py-1"><strong>BTC ETF (США)</strong></td><td className="py-1 text-right">Смешанные потоки, институц. спрос стабилен</td></tr>
               </tbody>
             </table>
           </div>
-          <p className="text-yellow-300 mt-3 text-sm">🟡 Рынок продолжает корректироваться от локального максимума $113.6k; объёмы стабильные, но приоритет перешёл к продавцам.</p>
+          <p className="text-terminal-green mt-3 text-sm">✅ ФРС смягчила политику, QT стоп с 1 дек → увеличение долларовой ликвидности.</p>
+        </section>
+
+        {/* Рыночная статистика */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
+            2. Рыночная статистика (CoinGecko / неделя)
+          </h2>
+          <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
+            <table className="w-full text-terminal-text text-sm">
+              <tbody className="space-y-2">
+                <tr><td className="py-1"><strong>Диапазон 7 дней</strong></td><td className="py-1 text-right">$108 604 – $115 957</td></tr>
+                <tr><td className="py-1"><strong>24ч сегодня</strong></td><td className="py-1 text-right">$108 201 – $113 567</td></tr>
+                <tr><td className="py-1"><strong>Средняя точка (mid)</strong></td><td className="py-1 text-right"><span className="text-terminal-cyan">$112 280</span></td></tr>
+                <tr><td className="py-1"><strong>Размах / mid</strong></td><td className="py-1 text-right">≈ 6.55%</td></tr>
+                <tr><td className="py-1"><strong>ATH октября</strong></td><td className="py-1 text-right">$126 080 (6 окт)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-terminal-cyan mt-3 text-sm">📊 Рынок стабилизировался после пика 125–126k в начале октября.</p>
+        </section>
+
+        {/* Сентимент и прогнозы */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
+            3. Сентимент и прогнозы
+          </h2>
+          <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
+            <table className="w-full text-terminal-text text-sm">
+              <tbody>
+                <tr><td className="py-1"><strong>Fear & Greed Index</strong></td><td className="py-1 text-right"><span className="text-yellow-300">37 (Fear)</span> → осторожность</td></tr>
+                <tr><td className="py-1"><strong>Polymarket ≥$130k</strong></td><td className="py-1 text-right"><span className="text-terminal-green">≈ 53%</span></td></tr>
+                <tr><td className="py-1"><strong>Polymarket ≥$150k</strong></td><td className="py-1 text-right"><span className="text-terminal-green">≈ 15%</span></td></tr>
+                <tr><td className="py-1"><strong>Polymarket ≤$80k</strong></td><td className="py-1 text-right"><span className="text-terminal-red">≈ 10%</span></td></tr>
+                <tr><td className="py-1"><strong>Оборот рынка</strong></td><td className="py-1 text-right">≈ $38 млн</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-terminal-muted mt-3 text-sm">Тональность соцсетей: обсуждение «смягчения ФРС» и «возможного ретеста ATH».</p>
+        </section>
+
+        {/* Ключевые уровни */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
+            4. Ключевые уровни недели
+          </h2>
+          <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
+            <table className="w-full text-terminal-text text-sm">
+              <tbody>
+                <tr><td className="py-1"><strong>Поддержка S1</strong></td><td className="py-1 text-right">$108.0–$108.6k (нижняя кромка 7 дней)</td></tr>
+                <tr><td className="py-1"><strong>Поддержка S2</strong></td><td className="py-1 text-right">$106–$107k (октябрьские скопления)</td></tr>
+                <tr><td className="py-1"><strong>Сопротивление R1</strong></td><td className="py-1 text-right">$113–$116k (верх 7 дней)</td></tr>
+                <tr><td className="py-1"><strong>Сопротивление R2</strong></td><td className="py-1 text-right">$118–$120k (окно к ретесту $125k)</td></tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         {/* Микроструктура */}
         <section>
           <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            2. Микроструктура (стакан, потоки, баланс)
+            5. Микроструктура (SSE, Binance BTCUSDT)
           </h2>
+          <p className="text-terminal-muted text-xs mb-3">Время снимка: 2025-10-31 08:57:51 UTC | Состояние потока: ok (≈ 80 мс)</p>
           <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
             <table className="w-full text-terminal-text text-sm">
               <tbody>
-                <tr><td className="py-1"><strong>Bid</strong></td><td className="py-1 text-right">$110 027.93 (0.0577 BTC)</td></tr>
-                <tr><td className="py-1"><strong>Ask</strong></td><td className="py-1 text-right">$110 027.94 (8.8145 BTC)</td></tr>
-                <tr><td className="py-1"><strong>Спред</strong></td><td className="py-1 text-right"><span className="text-terminal-green">$0.01 (0.91 мбпс) ✅ плотный</span></td></tr>
-                <tr><td className="py-1"><strong>Imbalance (Top-20)</strong></td><td className="py-1 text-right"><span className="text-terminal-red">0.02 🔴 доминирование продавцов</span></td></tr>
-                <tr><td className="py-1"><strong>CVD (дельта)</strong></td><td className="py-1 text-right"><span className="text-terminal-red">-57.22</span></td></tr>
-                <tr><td className="py-1"><strong>Flow rate</strong></td><td className="py-1 text-right">Bid 6.68 / Ask 7.57 орд/с</td></tr>
-                <tr><td className="py-1"><strong>Net flow</strong></td><td className="py-1 text-right"><span className="text-terminal-red">-0.88 орд/с → слабое давление продаж</span></td></tr>
-                <tr><td className="py-1"><strong>Health-score</strong></td><td className="py-1 text-right"><span className="text-terminal-green">🟢 87.5/100 (Excellent)</span></td></tr>
+                <tr><td className="py-1"><strong>Last price (LTP)</strong></td><td className="py-1 text-right"><span className="text-terminal-cyan">$110 043.82</span></td></tr>
+                <tr><td className="py-1"><strong>Bid / Ask</strong></td><td className="py-1 text-right">$110 043.81 / $110 043.82</td></tr>
+                <tr><td className="py-1"><strong>Спред</strong></td><td className="py-1 text-right"><span className="text-terminal-green">$0.01 ≈ 0.91 m-bps</span> сверхплотный</td></tr>
+                <tr><td className="py-1"><strong>Bid сумма (top-20)</strong></td><td className="py-1 text-right">0.46 BTC (тонкая поддержка)</td></tr>
+                <tr><td className="py-1"><strong>Ask сумма (top-20)</strong></td><td className="py-1 text-right">11.55 BTC (плотный кэп сверху)</td></tr>
+                <tr><td className="py-1"><strong>Imbalance</strong></td><td className="py-1 text-right"><span className="text-terminal-red">-0.923</span> перевес продавцов</td></tr>
+                <tr><td className="py-1"><strong>Orders/sec</strong></td><td className="py-1 text-right">46 ордеров / с (активный поток)</td></tr>
+                <tr><td className="py-1"><strong>Net flow</strong></td><td className="py-1 text-right"><span className="text-terminal-green">+0.58</span> (покупатели активны)</td></tr>
+                <tr><td className="py-1"><strong>Micro-price</strong></td><td className="py-1 text-right">$110 043.81 ≈ mid → нейтрально</td></tr>
+                <tr><td className="py-1"><strong>Health score</strong></td><td className="py-1 text-right"><span className="text-terminal-green">80 / 100</span> хорошо</td></tr>
               </tbody>
             </table>
           </div>
-          <p className="text-terminal-cyan mt-3 text-sm italic">💬 Микроструктура здорова, ликвидность высокая, но ордер-флоу перешёл в зону лёгкого sell-pressure. Торговля безопасна лимитами; вход «по рынку» может дать небольшой проскальзывающий эффект.</p>
+          <p className="text-terminal-cyan mt-3 text-sm italic">💬 Мгновенный перевес в ask-стороне; для движения вверх нужно поглотить кластер 110 043–110 045 (≈5 BTC). Ниже цены книга тонкая — при рывке вниз проседание ≈$30–50 без сопротивления.</p>
         </section>
 
-        {/* Профиль объёма */}
+        {/* Вероятностная оценка */}
         <section>
           <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            3. Профиль объёма и ликвидность (6-часовое окно)
+            6. Вероятностная оценка (на 1 неделю)
           </h2>
+          <p className="text-terminal-muted text-sm mb-3">Модель: нормальное распределение вокруг mid $112 280, σ ≈ 1.64%</p>
           <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
             <table className="w-full text-terminal-text text-sm">
               <tbody>
-                <tr><td className="py-1"><strong>POC (точка контроля)</strong></td><td className="py-1 text-right text-terminal-cyan">$110 180</td></tr>
-                <tr><td className="py-1"><strong>VAH / VAL</strong></td><td className="py-1 text-right">$111 227 / $109 546</td></tr>
-                <tr><td className="py-1"><strong>Общий объём (6ч)</strong></td><td className="py-1 text-right">5 374 BTC</td></tr>
+                <tr><td className="py-1"><strong>Боковик $109–$114k</strong></td><td className="py-1 text-right"><span className="text-terminal-cyan">≈ 60%</span></td></tr>
+                <tr><td className="py-1"><strong>Рост {'>'} $116k</strong></td><td className="py-1 text-right"><span className="text-terminal-green">≈ 12%</span> (ап-импульс при притоках)</td></tr>
+                <tr><td className="py-1"><strong>Снижение {'<'} $108.5k</strong></td><td className="py-1 text-right"><span className="text-terminal-red">≈ 12%</span> (реакция на инфляцию/ETF оттоки)</td></tr>
+                <tr><td className="py-1"><strong>Хвосты ({'<'}$106k / {'>'}$120k)</strong></td><td className="py-1 text-right">≈ 4–6% каждый (маловероятные экстремы)</td></tr>
               </tbody>
             </table>
           </div>
-          <p className="text-terminal-muted mt-3 text-sm">📈 Структура сбалансированная, POC близко к текущей цене → консолидация. Основной интерес покупателей в зоне $109.5–110.2k.</p>
+          <p className="text-yellow-300 mt-3 text-sm">⚠️ Сдвиг по микроструктуре: доминация ask-кластеров → краткосрочная вероятность отката в пределах рейнджа чуть выше, чем пробоя вверх.</p>
         </section>
 
-        {/* Новости и макрофон */}
+        {/* Практические наблюдения */}
         <section>
           <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            4. Новости и макрофон (30 окт)
+            7. Практические наблюдения (без рекомендаций)
           </h2>
-          <div className="space-y-3 text-terminal-muted">
-            <p className="font-semibold text-terminal-text">Факты:</p>
-            <ul className="space-y-2 ml-6">
-              <li>• Рынок остывает после импульса выше $113k; за сутки −2.4%</li>
-              <li>• Активность в спот-ETF (IBIT, FBTC) остаётся положительной, но темпы притока снижаются</li>
-              <li>• <strong className="text-yellow-300">Crypto Fear & Greed Index: ~36 (Fear)</strong> — устойчивое осторожное настроение</li>
-              <li>• Участники ждут макроданных США (PCE, инфляция) и риторики ФРС</li>
-              <li>• На фондовых рынках — консолидация; корреляция BTC-NASDAQ сохраняется</li>
-            </ul>
-            <p className="text-terminal-cyan italic mt-3">Мнение: коррекция техническая, пока без панических сигналов. Долгосрочный фон остаётся бычьим при сохранении ETF-притоков.</p>
-          </div>
-        </section>
-
-        {/* Polymarket */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            5. Polymarket (прогнозные вероятности)
-          </h2>
-          <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
-            <table className="w-full text-terminal-text text-sm">
-              <tbody>
-                <tr><td className="py-1"><strong>BTC ≥ $130 000 в 2025</strong></td><td className="py-1 text-right text-terminal-green">~52 %</td></tr>
-                <tr><td className="py-1"><strong>BTC ≥ $150 000 в 2025</strong></td><td className="py-1 text-right text-terminal-green">~15 %</td></tr>
-                <tr><td className="py-1"><strong>BTC ≥ $200 000 в 2025</strong></td><td className="py-1 text-right">{'<'} 5 %</td></tr>
-                <tr><td className="py-1"><strong>Объём ставок</strong></td><td className="py-1 text-right">≈ $38 M</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p className="text-terminal-muted mt-3 text-sm">📊 Рынок прогнозов сохраняет умеренный оптимизм, но вероятность роста выше $150k снизилась на фоне коррекции.</p>
-        </section>
-
-        {/* Тактическая оценка */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            6. Тактическая оценка
-          </h2>
-          <div className="space-y-4 text-terminal-muted">
-            <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
-              <table className="w-full text-terminal-text text-sm">
-                <tbody>
-                  <tr><td className="py-1"><strong>Тренд (H4)</strong></td><td className="py-1 text-right">Коррекция в рамках диапазона</td></tr>
-                  <tr><td className="py-1"><strong>Momentum</strong></td><td className="py-1 text-right text-yellow-300">Слабый, нейтрально-медвежий</td></tr>
-                  <tr><td className="py-1"><strong>Сентимент</strong></td><td className="py-1 text-right text-yellow-300">Осторожный</td></tr>
-                  <tr><td className="py-1"><strong>Ликвидность</strong></td><td className="py-1 text-right text-terminal-green">Высокая</td></tr>
-                  <tr><td className="py-1"><strong>Микроструктура</strong></td><td className="py-1 text-right text-yellow-300">Здорова, но давление продавцов</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div>
-              <p className="text-terminal-cyan font-semibold mb-2">🎯 Рабочие сценарии:</p>
-              <ol className="space-y-3 ml-6">
-                <li><strong className="text-terminal-text">1. Базовый диапазон: $108k–$113k</strong> → сделки от границ, частичная фиксация</li>
-                <li><strong className="text-terminal-text">2. Бычий сценарий:</strong> закрепление {'>'}$111.5k → цель $113–114k</li>
-                <li><strong className="text-terminal-text">3. Медвежий сценарий:</strong> пробой {'<'}$108k → снижение к $105k</li>
-              </ol>
-            </div>
-            <p className="text-terminal-cyan italic mt-3">📌 Тактика: использовать лимитные ордера, избегать входов на тонких объёмах, отслеживать ETF-потоки и CVD.</p>
-          </div>
-        </section>
-
-        {/* Риск-менеджмент */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            7. Риск-менеджмент (практика)
-          </h2>
-          <ul className="space-y-2 text-terminal-muted ml-6">
-            <li>• <strong className="text-terminal-text">Риск на сделку ≤0.5–1.0% капитала</strong>; R:R ≥1:2</li>
-            <li>• <strong className="text-terminal-text">Инструмент</strong>: лимитные ордера (тонкий спред), избегать маркет-входов в моменты выхода новостей (slippage)</li>
-            <li>• <strong className="text-terminal-text">Хедж/варианты</strong>: короткие perp-хеджи на прорывах, календарные колл-спрэды к событиям (ФРС/ETF-отчёты) — ограниченный риск</li>
-            <li>• <strong className="text-terminal-text">Календарь</strong>: отслеживать даты ФРС/инфляции/заявления по ETF (притоки/оттоки)</li>
-          </ul>
-        </section>
-
-        {/* Мониторинг */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            8. Что мониторить ежедневно (чек-лист)
-          </h2>
-          <ol className="space-y-2 text-terminal-muted ml-6">
-            <li>1. <strong className="text-terminal-text">Спот-потоки ETF</strong> (IBIT, FBTC и др.) — притоки/оттоки и дневные объёмы</li>
-            <li>2. <strong className="text-terminal-text">FGI</strong> (динамика дня-к-дню) — смена режима страха/жадности</li>
-            <li>3. <strong className="text-terminal-text">Polymarket</strong> — сдвиг вероятностей по бинам ≥$130k/≥$150k (признак изменения коллективного ожидания)</li>
-            <li>4. <strong className="text-terminal-text">Лента/стакан</strong> — дисбаланс и CVD на 1–5-мин окне (сигналы ускорения)</li>
-            <li>5. <strong className="text-terminal-text">Макро-календарь</strong> (риск-ивенты) — решения ФРС, инфляция США, заголовки по США–Китай</li>
+          <ol className="space-y-2 text-terminal-muted ml-6 text-sm">
+            <li>1. <strong className="text-terminal-text">Спред {'<'} 1 m-bps</strong> — оптимальные условия исполнения лимитов.</li>
+            <li>2. <strong className="text-terminal-text">Рост orders/sec {'>'} 50 + смещение imbalance к 0</strong> → рынок готов к импульсу.</li>
+            <li>3. <strong className="text-terminal-text">Расширение спреда {'>'} 3 m-bps</strong> → снижение глубины и рост риск-премий на ликвидность.</li>
+            <li>4. <strong className="text-terminal-text">Мониторинг FGI и ETF-потоков</strong>: переход FGI {'>'} 40 и два дня притоков в ETF обычно совпадают с выходом из боковика.</li>
+            <li>5. <strong className="text-terminal-text">Контроль Polymarket</strong>: увеличение доли ≥$150k {'>'} 20% → сигнал усиления долгосрочного оптимизма.</li>
           </ol>
         </section>
 
         {/* Итог */}
         <section className="bg-graphite-900 border border-graphite-700 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4 text-terminal-cyan">Итог для трейдера</h2>
-          <div className="space-y-3 text-terminal-muted">
-            <p>• BTC удерживается в <strong className="text-yellow-300">коррекционном боковике</strong>, при этом структура рынка остаётся <strong className="text-terminal-green">здоровой и ликвидной</strong>.</p>
-            <p>• Доминирование продавцов краткосрочно, но фундаментальные риски ограничены.</p>
-            <p>• Для <strong className="text-terminal-text">розничного трейдера</strong> рационально:</p>
-            <ul className="ml-6 space-y-1 text-sm">
-              <li>→ работать внутри диапазона $108–113k</li>
-              <li>→ рисковать ≤ 1 % на сделку</li>
-              <li>→ фиксировать частями при +1.5–2 %</li>
-              <li>→ следить за изменением CVD и дисбаланса стакана ({'>'} 3 — сигнал разворота)</li>
-            </ul>
-          </div>
+          <h2 className="text-xl font-semibold mb-4 text-terminal-cyan">Сводка TL;DR</h2>
+          <ul className="space-y-2 text-terminal-muted text-sm">
+            <li>• <strong className="text-terminal-text">ФРС</strong> смягчила политику (−25 б.п.; QT стоп с 1 дек).</li>
+            <li>• <strong className="text-terminal-text">BTC</strong> торгуется в $108.6–$116k, mid ≈ $112k.</li>
+            <li>• <strong className="text-terminal-text">Сентимент</strong> — осторожный (Fear 37).</li>
+            <li>• <strong className="text-terminal-text">Микроструктура SSE</strong>: LTP $110 043.82; спред $0.01; ask-доминация (imbalance −0.92); orders/sec 46; net flow +0.58.</li>
+            <li>• <strong className="text-terminal-text">Вероятности (неделя)</strong>: боковик 60%, выход вверх 12%, вниз 12%, хвосты 4–6%.</li>
+            <li>• <strong className="text-terminal-text">Вывод</strong>: рынок устойчив внутри рейнджа; макро-фон смягчается; прорыв возможен только при поглощении аск-кластеров и подтверждении притоков в ETF.</li>
+          </ul>
         </section>
 
       </article>
 
       {/* Footer */}
       <footer className="max-w-4xl mx-auto mt-16 pt-8 border-t border-graphite-800 text-xs text-terminal-muted">
-        <p>Отчёт сгенерирован: 30 окт 2025 11:03 UTC</p>
-        <p className="mt-2">Источник данных: SSE (Binance BTCUSDT), Polymarket, Alternative.me (FGI), CoinGecko</p>
-        <p className="mt-2">Этот отчёт объединяет факты (с источниками), мнение и допущения. Не является финансовым советом.</p>
+        <p>Отчёт сгенерирован: 31 окт 2025 09:30 UTC</p>
+        <p className="mt-2">Источник данных: SSE (Binance BTCUSDT), Polymarket, Alternative.me (FGI), CoinGecko, Farside</p>
+        <p className="mt-2">Этот отчёт объединяет факты (с источниками), квант-анализ и микроструктуру. Не является финансовым советом.</p>
         <p className="mt-4">
           <Link to="/" className="text-terminal-cyan hover:underline">← Назад на Context8</Link>
         </p>
