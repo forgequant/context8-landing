@@ -12,6 +12,12 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   const [error, setError] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
 
+  console.log('[AnalyticsChatKit] Component mounted', {
+    hasWorkflowId: !!WORKFLOW_ID,
+    hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY,
+    workflowIdPrefix: WORKFLOW_ID.slice(0, 15),
+  })
+
   // Create session with OpenAI ChatKit
   const getClientSecret = async () => {
     console.log('[AnalyticsChatKit] Creating session...', {

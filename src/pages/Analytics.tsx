@@ -9,18 +9,26 @@ export function Analytics() {
   const [loading, setLoading] = useState(true)
   const [widgets, setWidgets] = useState<MarketData[]>([])
 
+  console.log('[Analytics] Component rendered', { loading })
+
   useEffect(() => {
+    console.log('[Analytics] useEffect - checking user')
     checkUser()
   }, [])
 
   async function checkUser() {
+    console.log('[Analytics] checkUser called')
     const { data: { user } } = await supabase.auth.getUser()
 
+    console.log('[Analytics] User check result:', { hasUser: !!user, email: user?.email })
+
     if (!user) {
+      console.log('[Analytics] No user, redirecting to /auth')
       navigate('/auth')
       return
     }
 
+    console.log('[Analytics] User authenticated, setting loading=false')
     setLoading(false)
   }
 
