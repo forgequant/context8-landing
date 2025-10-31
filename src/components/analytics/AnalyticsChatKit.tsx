@@ -127,6 +127,7 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
     api: {
       getClientSecret,
     },
+    initialThread: null, // Show start screen
     theme: {
       colorScheme: 'dark',
       color: {
@@ -210,8 +211,8 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
     <div className="relative">
       <div className="bg-graphite-900 border border-graphite-800 rounded-lg overflow-hidden h-[600px] relative">
         {isInitializing && (
-          <div className="absolute inset-0 flex items-center justify-center bg-graphite-950/80 z-10">
-            <div className="text-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-graphite-950/90 z-50 pointer-events-none">
+            <div className="text-center pointer-events-auto">
               <div className="text-terminal-cyan text-sm mb-2">Initializing ChatKit...</div>
               <div className="text-terminal-muted text-xs">Creating session with OpenAI</div>
             </div>
