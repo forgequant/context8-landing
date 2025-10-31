@@ -11,7 +11,6 @@ const WORKFLOW_ID = (import.meta.env.VITE_CHATKIT_WORKFLOW_ID || '').trim()
 export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   const [error, setError] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
-  const [clientSecret, setClientSecret] = useState<string | null>(null)
 
   console.log('[AnalyticsChatKit] Component mounted', {
     hasWorkflowId: !!WORKFLOW_ID,
@@ -46,7 +45,10 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
     }
 
     try {
-      setIsInitializing(true)
+      // Only set initializing for the first session creation
+      if (!currentSecret) {
+        setIsInitializing(true)
+      }
 
       // Call Supabase Edge Function to create ChatKit session
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -88,9 +90,15 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       console.log('[AnalyticsChatKit] Session created successfully', {
         hasClientSecret: !!data.client_secret,
         expiresAfter: data.expires_after,
+        isFirstSession: !currentSecret,
       })
-      setIsInitializing(false)
+
       setError(null)
+
+      // Only clear initializing state after first session
+      if (!currentSecret) {
+        setIsInitializing(false)
+      }
 
       // ChatKit API returns client_secret directly as a string
       return typeof data.client_secret === 'string'
@@ -100,28 +108,18 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       console.error('[AnalyticsChatKit] Failed to create ChatKit session:', err)
       const errMsg = err instanceof Error ? err.message : 'Unknown error creating session'
       setError(errMsg)
-      setIsInitializing(false)
+
+      // Only clear initializing state on first session error
+      if (!currentSecret) {
+        setIsInitializing(false)
+      }
+
       throw err
     }
   }
 
-  // Initialize session on mount
-  useEffect(() => {
-    console.log('[AnalyticsChatKit] useEffect - initializing session')
-
-    const initSession = async () => {
-      try {
-        const secret = await getClientSecret(null)
-        setClientSecret(secret)
-        console.log('[AnalyticsChatKit] Initial session created in useEffect')
-      } catch (err) {
-        console.error('[AnalyticsChatKit] Failed to initialize session in useEffect:', err)
-      }
-    }
-
-    initSession()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Note: We don't call getClientSecret in useEffect
+  // ChatKit will call it automatically when needed
 
   const chatkit = useChatKit({
     api: {
