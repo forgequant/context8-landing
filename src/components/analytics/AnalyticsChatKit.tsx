@@ -6,16 +6,45 @@ interface AnalyticsChatKitProps {
   onWidgetData: (data: MarketData) => void
 }
 
-const MCP_URL = import.meta.env.VITE_CONTEXT8_MCP_URL || 'https://api.context8.markets/sse'
-const DOMAIN_KEY = import.meta.env.VITE_CONTEXT8_DOMAIN_KEY || 'context8'
+const WORKFLOW_ID = import.meta.env.VITE_CHATKIT_WORKFLOW_ID || ''
 
 export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   const [error, setError] = useState<string | null>(null)
 
+  // Create session with OpenAI ChatKit
+  const getClientSecret = async () => {
+    if (!WORKFLOW_ID) {
+      throw new Error('VITE_CHATKIT_WORKFLOW_ID not configured')
+    }
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-realtime-preview',
+          workflow: { id: WORKFLOW_ID },
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to create session: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data.client_secret.value
+    } catch (err) {
+      console.error('Failed to create ChatKit session:', err)
+      throw err
+    }
+  }
+
   const chatkit = useChatKit({
     api: {
-      url: MCP_URL,
-      domainKey: DOMAIN_KEY,
+      getClientSecret,
     },
     theme: {
       colorScheme: 'dark',
@@ -118,7 +147,7 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       )}
 
       <div className="mt-3 text-xs text-terminal-muted">
-        <span className="text-terminal-cyan">$</span> Connected to {MCP_URL}
+        <span className="text-terminal-cyan">$</span> ChatKit session ready (Workflow: {WORKFLOW_ID.slice(0, 12)}...)
       </div>
     </div>
   )
