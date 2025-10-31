@@ -72,11 +72,14 @@ openai-chatkit {
   --ck-color-background: #0B0C0E !important;
   --ck-color-surface: #1a1c20 !important;
   --ck-color-border: #2d3139 !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
 }
 
-/* Make ChatKit buttons more terminal-like */
-openai-chatkit button {
+/* Force monospace font everywhere in ChatKit */
+openai-chatkit,
+openai-chatkit *,
+openai-chatkit button,
+openai-chatkit input,
+openai-chatkit textarea {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
   text-transform: none !important;
   letter-spacing: 0.01em !important;

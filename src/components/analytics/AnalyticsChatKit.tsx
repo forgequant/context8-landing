@@ -160,9 +160,6 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
         },
       },
       radius: 'sharp',
-      font: {
-        family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-      },
     },
     startScreen: {
       greeting: 'Terminal-native crypto market analysis.\n\nTools: fetch (market data) | search (symbols)',
