@@ -10,14 +10,29 @@ const WORKFLOW_ID = import.meta.env.VITE_CHATKIT_WORKFLOW_ID || ''
 
 export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   const [error, setError] = useState<string | null>(null)
+  const [isInitializing, setIsInitializing] = useState(true)
 
   // Create session with OpenAI ChatKit
   const getClientSecret = async () => {
+    console.log('[AnalyticsChatKit] Creating session...', {
+      workflowId: WORKFLOW_ID,
+      hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY,
+    })
+
     if (!WORKFLOW_ID) {
-      throw new Error('VITE_CHATKIT_WORKFLOW_ID not configured')
+      const errMsg = 'VITE_CHATKIT_WORKFLOW_ID not configured'
+      setError(errMsg)
+      throw new Error(errMsg)
+    }
+
+    if (!import.meta.env.VITE_OPENAI_API_KEY) {
+      const errMsg = 'VITE_OPENAI_API_KEY not configured'
+      setError(errMsg)
+      throw new Error(errMsg)
     }
 
     try {
+      setIsInitializing(true)
       const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
         method: 'POST',
         headers: {
@@ -31,13 +46,25 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       })
 
       if (!response.ok) {
-        throw new Error(`Failed to create session: ${response.statusText}`)
+        const errorData = await response.json().catch(() => ({}))
+        console.error('[AnalyticsChatKit] Session creation failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+        })
+        throw new Error(`Failed to create session: ${response.status} ${response.statusText}`)
       }
 
       const data = await response.json()
+      console.log('[AnalyticsChatKit] Session created successfully')
+      setIsInitializing(false)
+      setError(null)
       return data.client_secret.value
     } catch (err) {
-      console.error('Failed to create ChatKit session:', err)
+      console.error('[AnalyticsChatKit] Failed to create ChatKit session:', err)
+      const errMsg = err instanceof Error ? err.message : 'Unknown error creating session'
+      setError(errMsg)
+      setIsInitializing(false)
       throw err
     }
   }
@@ -127,7 +154,15 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
 
   return (
     <div className="relative">
-      <div className="bg-graphite-900 border border-graphite-800 rounded-lg overflow-hidden h-[600px]">
+      <div className="bg-graphite-900 border border-graphite-800 rounded-lg overflow-hidden h-[600px] relative">
+        {isInitializing && (
+          <div className="absolute inset-0 flex items-center justify-center bg-graphite-950/80 z-10">
+            <div className="text-center">
+              <div className="text-terminal-cyan text-sm mb-2">Initializing ChatKit...</div>
+              <div className="text-terminal-muted text-xs">Creating session with OpenAI</div>
+            </div>
+          </div>
+        )}
         <ChatKit
           control={chatkit.control}
           className="block h-full w-full"
