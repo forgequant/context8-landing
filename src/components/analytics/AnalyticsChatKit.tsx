@@ -6,7 +6,7 @@ interface AnalyticsChatKitProps {
   onWidgetData: (data: MarketData) => void
 }
 
-const WORKFLOW_ID = import.meta.env.VITE_CHATKIT_WORKFLOW_ID || ''
+const WORKFLOW_ID = (import.meta.env.VITE_CHATKIT_WORKFLOW_ID || '').trim()
 
 export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   const [error, setError] = useState<string | null>(null)
@@ -54,13 +54,23 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
+        const errorText = await response.text()
+        let errorData: any = {}
+        try {
+          errorData = JSON.parse(errorText)
+        } catch {
+          errorData = { raw: errorText }
+        }
         console.error('[AnalyticsChatKit] Session creation failed:', {
           status: response.status,
           statusText: response.statusText,
           errorData,
+          requestBody: {
+            model: 'gpt-4o-realtime-preview',
+            workflow: { id: WORKFLOW_ID },
+          },
         })
-        throw new Error(`Failed to create session: ${response.status} ${response.statusText}`)
+        throw new Error(`Failed to create session: ${response.status} ${response.statusText}. ${JSON.stringify(errorData)}`)
       }
 
       const data = await response.json()
