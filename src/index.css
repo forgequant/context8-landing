@@ -70,8 +70,11 @@ button:focus-visible {
 /* ChatKit terminal styling overrides */
 openai-chatkit {
   --ck-color-background: #0B0C0E !important;
-  --ck-color-surface: #1a1c20 !important;
-  --ck-color-border: #2d3139 !important;
+  --ck-color-surface: #13151a !important;
+  --ck-color-surface-variant: #1a1c20 !important;
+  --ck-color-border: #252830 !important;
+  --ck-color-text: #e5e7eb !important;
+  --ck-color-text-secondary: #9ca3af !important;
 }
 
 /* Force monospace font everywhere in ChatKit */
