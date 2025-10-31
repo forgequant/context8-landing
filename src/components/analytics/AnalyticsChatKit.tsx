@@ -1,5 +1,5 @@
 import { ChatKit, useChatKit } from '@openai/chatkit-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { MarketData } from '@/types/analytics'
 
 interface AnalyticsChatKitProps {
@@ -11,6 +11,7 @@ const WORKFLOW_ID = import.meta.env.VITE_CHATKIT_WORKFLOW_ID || ''
 export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   const [error, setError] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
 
   console.log('[AnalyticsChatKit] Component mounted', {
     hasWorkflowId: !!WORKFLOW_ID,
@@ -19,8 +20,9 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   })
 
   // Create session with OpenAI ChatKit
-  const getClientSecret = async () => {
-    console.log('[AnalyticsChatKit] Creating session...', {
+  const getClientSecret = async (currentSecret: string | null) => {
+    console.log('[AnalyticsChatKit] getClientSecret called', {
+      currentSecret: currentSecret ? 'exists' : 'null',
       workflowId: WORKFLOW_ID,
       hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY,
     })
@@ -74,6 +76,24 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       throw err
     }
   }
+
+  // Initialize session on mount
+  useEffect(() => {
+    console.log('[AnalyticsChatKit] useEffect - initializing session')
+
+    const initSession = async () => {
+      try {
+        const secret = await getClientSecret(null)
+        setClientSecret(secret)
+        console.log('[AnalyticsChatKit] Initial session created in useEffect')
+      } catch (err) {
+        console.error('[AnalyticsChatKit] Failed to initialize session in useEffect:', err)
+      }
+    }
+
+    initSession()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const chatkit = useChatKit({
     api: {
