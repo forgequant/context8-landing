@@ -39,15 +39,23 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       throw new Error(errMsg)
     }
 
+    if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      const errMsg = 'VITE_SUPABASE_ANON_KEY not configured'
+      setError(errMsg)
+      throw new Error(errMsg)
+    }
+
     try {
       setIsInitializing(true)
 
       // Call Supabase Edge Function to create ChatKit session
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
       const response = await fetch(`${supabaseUrl}/functions/v1/chatkit-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
         },
         body: JSON.stringify({
           workflow_id: WORKFLOW_ID,
