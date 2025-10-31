@@ -168,7 +168,7 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
       },
     },
     startScreen: {
-      greeting: 'Terminal-native crypto market analysis.\n\nTools: fetch (market data) | search (symbols)',
+      greeting: '',
       prompts: [
         {
           label: '$ btc report',
