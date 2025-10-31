@@ -1,5 +1,5 @@
 import { ChatKit, useChatKit } from '@openai/chatkit-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { MarketData } from '@/types/analytics'
 
 interface AnalyticsChatKitProps {
@@ -121,6 +121,26 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   // Note: We don't call getClientSecret in useEffect
   // ChatKit will call it automatically when needed
 
+  // Check if ChatKit web component is loaded
+  useEffect(() => {
+    const checkWebComponent = () => {
+      const hasComponent = typeof window !== 'undefined' &&
+        window.customElements?.get('openai-chatkit')
+
+      console.log('[AnalyticsChatKit] Web component check:', {
+        hasCustomElements: !!window.customElements,
+        hasChatkitComponent: !!hasComponent,
+        windowDefined: typeof window !== 'undefined',
+      })
+    }
+
+    checkWebComponent()
+
+    // Check again after a delay
+    const timer = setTimeout(checkWebComponent, 2000)
+    return () => clearTimeout(timer)
+  }, [])
+
   const chatkit = useChatKit({
     api: {
       getClientSecret,
@@ -204,6 +224,15 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       setError(error instanceof Error ? error.message : 'Unknown error')
     },
   })
+
+  // Log chatkit control state
+  useEffect(() => {
+    console.log('[AnalyticsChatKit] ChatKit control state:', {
+      hasControl: !!chatkit.control,
+      isInitializing,
+      hasError: !!error,
+    })
+  }, [chatkit.control, isInitializing, error])
 
   return (
     <div className="relative">
