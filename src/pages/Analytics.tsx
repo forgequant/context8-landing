@@ -45,13 +45,13 @@ export function Analytics() {
   }
 
   return (
-    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono">
+    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono flex flex-col">
       {/* Background effects */}
       <div className="terminal-scanlines" />
       <div className="terminal-grid" />
 
       {/* Header */}
-      <header className="border-b border-graphite-800 bg-graphite-900/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-graphite-800 bg-graphite-900/50 backdrop-blur-sm sticky top-0 z-10 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -72,12 +72,13 @@ export function Analytics() {
       </header>
 
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Chat panel - 2 columns on large screens */}
-          <div className="lg:col-span-2">
-            <AnalyticsChatKit onWidgetData={handleWidgetData} />
-          </div>
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full max-w-7xl mx-auto px-6 py-8">
+          <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Chat panel - 2 columns on large screens */}
+            <div className="lg:col-span-2 h-full">
+              <AnalyticsChatKit onWidgetData={handleWidgetData} />
+            </div>
 
           {/* Widgets panel - 1 column on large screens */}
           <div className="space-y-4">

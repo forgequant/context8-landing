@@ -239,7 +239,7 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
               <div className="text-terminal-cyan text-sm font-mono mb-2">
                 <span className="animate-pulse">█</span> initializing_session
               </div>
-              <div className="text-terminal-muted text-xs font-mono">connecting to openai...</div>
+              <div className="text-terminal-muted text-xs font-mono">connecting...</div>
             </div>
           </div>
         )}
