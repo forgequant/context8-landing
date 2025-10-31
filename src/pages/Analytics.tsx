@@ -80,49 +80,50 @@ export function Analytics() {
               <AnalyticsChatKit onWidgetData={handleWidgetData} />
             </div>
 
-          {/* Widgets panel - 1 column on large screens */}
-          <div className="space-y-4">
-            <div className="text-sm text-terminal-muted mb-4">
-              <span className="text-terminal-cyan">#</span> Market Widgets
-            </div>
-
-            {widgets.length === 0 ? (
-              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-6 text-center">
-                <p className="text-terminal-muted text-sm">
-                  Ask for market data to see widgets here
-                </p>
-                <p className="text-terminal-muted/60 text-xs mt-2">
-                  Try: "Show BTC market report"
-                </p>
+            {/* Widgets panel - 1 column on large screens */}
+            <div className="space-y-4">
+              <div className="text-sm text-terminal-muted mb-4">
+                <span className="text-terminal-cyan">#</span> Market Widgets
               </div>
-            ) : (
-              widgets.map((widget, idx) => (
-                <div
-                  key={idx}
-                  className="bg-graphite-900 border border-graphite-800 rounded-lg p-4"
-                >
-                  <div className="text-xs text-terminal-cyan mb-2">
-                    {widget.symbol}
-                  </div>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-terminal-muted">Price:</span>
-                      <span className="text-terminal-text">${widget.price}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-terminal-muted">Volume:</span>
-                      <span className="text-terminal-text">${widget.volume}</span>
-                    </div>
-                    {widget.spread && (
-                      <div className="flex justify-between">
-                        <span className="text-terminal-muted">Spread:</span>
-                        <span className="text-terminal-green">{widget.spread}</span>
-                      </div>
-                    )}
-                  </div>
+
+              {widgets.length === 0 ? (
+                <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-6 text-center">
+                  <p className="text-terminal-muted text-sm">
+                    Ask for market data to see widgets here
+                  </p>
+                  <p className="text-terminal-muted/60 text-xs mt-2">
+                    Try: "Show BTC market report"
+                  </p>
                 </div>
-              ))
-            )}
+              ) : (
+                widgets.map((widget, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-graphite-900 border border-graphite-800 rounded-lg p-4"
+                  >
+                    <div className="text-xs text-terminal-cyan mb-2">
+                      {widget.symbol}
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-terminal-muted">Price:</span>
+                        <span className="text-terminal-text">${widget.price}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-terminal-muted">Volume:</span>
+                        <span className="text-terminal-text">${widget.volume}</span>
+                      </div>
+                      {widget.spread && (
+                        <div className="flex justify-between">
+                          <span className="text-terminal-muted">Spread:</span>
+                          <span className="text-terminal-green">{widget.spread}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>
