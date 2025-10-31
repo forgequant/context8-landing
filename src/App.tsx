@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 
 // Lazy-load heavy routes for better performance
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })))
+const Analytics = lazy(() => import('./pages/Analytics').then(m => ({ default: m.Analytics })))
 const Admin = lazy(() => import('./pages/Admin').then(m => ({ default: m.Admin })))
 const AdminRoute = lazy(() => import('./components/admin/AdminRoute').then(m => ({ default: m.AdminRoute })))
 const DailyReport = lazy(() => import('./pages/DailyReport').then(m => ({ default: m.DailyReport })))
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/analytics" element={<Analytics />} />
             <Route path="/reports/daily" element={<DailyReport />} />
             <Route path="/reports/daily-ru" element={<DailyReportRu />} />
             <Route

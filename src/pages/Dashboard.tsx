@@ -120,6 +120,13 @@ export function Dashboard() {
           </h1>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => navigate('/analytics')}
+              className="text-sm bg-graphite-900 px-4 py-1.5 rounded hover:bg-terminal-cyan/20 transition-colors border border-graphite-800 hover:border-terminal-cyan"
+              title="Crypto Analytics Chat"
+            >
+              📊 Analytics
+            </button>
+            <button
               onClick={() => setShowPaymentModal(true)}
               className="text-sm bg-graphite-900 px-4 py-1.5 rounded hover:bg-graphite-800 transition-colors"
               title="Upgrade to Pro"
