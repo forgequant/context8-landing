@@ -1,5 +1,5 @@
 import { ChatKit, useChatKit } from '@openai/chatkit-react'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import type { MarketData } from '@/types/analytics'
 
 interface AnalyticsChatKitProps {
@@ -8,7 +8,7 @@ interface AnalyticsChatKitProps {
 
 const WORKFLOW_ID = (import.meta.env.VITE_CHATKIT_WORKFLOW_ID || '').trim()
 
-export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
+export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   const [error, setError] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
 
@@ -268,4 +268,4 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       </div>
     </div>
   )
-}
+})

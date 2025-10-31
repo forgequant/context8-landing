@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { AnalyticsChatKit } from '@/components/analytics/AnalyticsChatKit'
@@ -32,9 +32,9 @@ export function Analytics() {
     setLoading(false)
   }
 
-  const handleWidgetData = (data: MarketData) => {
+  const handleWidgetData = useCallback((data: MarketData) => {
     setWidgets(prev => [...prev, data])
-  }
+  }, [])
 
   if (loading) {
     return (
