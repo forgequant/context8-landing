@@ -15,7 +15,7 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
 
   console.log('[AnalyticsChatKit] Component mounted', {
     hasWorkflowId: !!WORKFLOW_ID,
-    hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY,
+    hasSupabaseUrl: !!import.meta.env.VITE_SUPABASE_URL,
     workflowIdPrefix: WORKFLOW_ID.slice(0, 15),
   })
 
@@ -24,7 +24,7 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
     console.log('[AnalyticsChatKit] getClientSecret called', {
       currentSecret: currentSecret ? 'exists' : 'null',
       workflowId: WORKFLOW_ID,
-      hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY,
+      hasSupabaseUrl: !!import.meta.env.VITE_SUPABASE_URL,
     })
 
     if (!WORKFLOW_ID) {
@@ -33,24 +33,25 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
       throw new Error(errMsg)
     }
 
-    if (!import.meta.env.VITE_OPENAI_API_KEY) {
-      const errMsg = 'VITE_OPENAI_API_KEY not configured'
+    if (!import.meta.env.VITE_SUPABASE_URL) {
+      const errMsg = 'VITE_SUPABASE_URL not configured'
       setError(errMsg)
       throw new Error(errMsg)
     }
 
     try {
       setIsInitializing(true)
-      const response = await fetch('https://api.openai.com/v1/chatkit/sessions', {
+
+      // Call Supabase Edge Function to create ChatKit session
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const response = await fetch(`${supabaseUrl}/functions/v1/chatkit-session`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
-          'OpenAI-Beta': 'chatkit_beta=v1',
         },
         body: JSON.stringify({
-          workflow: { id: WORKFLOW_ID },
-          user: 'anonymous-' + Date.now(),
+          workflow_id: WORKFLOW_ID,
+          user_id: 'anonymous-' + Date.now(),
         }),
       })
 
@@ -66,10 +67,10 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
           status: response.status,
           statusText: response.statusText,
           errorData,
-          endpoint: '/v1/chatkit/sessions',
+          endpoint: 'supabase/functions/v1/chatkit-session',
           requestBody: {
-            workflow: { id: WORKFLOW_ID },
-            user: 'anonymous',
+            workflow_id: WORKFLOW_ID,
+            user_id: 'anonymous',
           },
         })
         throw new Error(`Failed to create session: ${response.status} ${response.statusText}. ${JSON.stringify(errorData)}`)
