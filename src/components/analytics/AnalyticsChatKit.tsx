@@ -231,8 +231,8 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
   }, [chatkit.control, isInitializing, error])
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 bg-graphite-900 border border-graphite-800 rounded overflow-hidden relative">
+    <div className="h-full flex flex-col min-h-[600px]">
+      <div className="flex-1 bg-graphite-900 border border-graphite-800 rounded overflow-hidden relative min-h-[600px]">
         {isInitializing && (
           <div className="absolute inset-0 flex items-center justify-center bg-graphite-950/90 z-50">
             <div className="text-center">
@@ -245,7 +245,7 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
         )}
         <ChatKit
           control={chatkit.control}
-          className="block h-full w-full"
+          className="block h-full w-full min-h-[600px]"
         />
       </div>
 
