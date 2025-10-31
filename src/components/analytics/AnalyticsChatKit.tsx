@@ -1,5 +1,5 @@
 import { ChatKit, useChatKit } from '@openai/chatkit-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import type { MarketData } from '@/types/analytics'
 
 interface AnalyticsChatKitProps {
@@ -18,8 +18,8 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
     workflowIdPrefix: WORKFLOW_ID.slice(0, 15),
   })
 
-  // Create session with OpenAI ChatKit
-  const getClientSecret = async (currentSecret: string | null) => {
+  // Create session with OpenAI ChatKit - wrapped in useCallback for stable reference
+  const getClientSecret = useCallback(async (currentSecret: string | null) => {
     console.log('[AnalyticsChatKit] getClientSecret called', {
       currentSecret: currentSecret ? 'exists' : 'null',
       workflowId: WORKFLOW_ID,
@@ -116,7 +116,7 @@ export function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
 
       throw err
     }
-  }
+  }, []) // Empty deps - function doesn't depend on any props/state
 
   // Note: We don't call getClientSecret in useEffect
   // ChatKit will call it automatically when needed
