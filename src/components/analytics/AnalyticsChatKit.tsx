@@ -231,30 +231,31 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
             detail: { symbol, interval, limit, data }
           }))
 
-          // Return KPI summary to agent
-          const result = {
-            success: true,
-            symbol: data.symbol,
-            interval: data.interval,
-            candles: data.limit,
-            price: data.ticker24h.lastPrice,
-            change24h: data.ticker24h.priceChangePercent,
-            change7d: data.change7dPct,
-            volume24h: data.ticker24h.volume,
-            high24h: data.ticker24h.highPrice,
-            low24h: data.ticker24h.lowPrice,
-            message: `Chart updated with ${data.candles.length} candles for ${data.symbol}`,
-          }
+          // Return formatted text summary to agent
+          const formatPrice = (price: number) => `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+          const formatPercent = (pct: number) => `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`
+          const formatVolume = (vol: number) => vol.toLocaleString('en-US', { maximumFractionDigits: 0 })
+
+          const result = `✓ Market Data: ${data.symbol}
+
+📊 Price & Change:
+   Current: ${formatPrice(data.ticker24h.lastPrice)}
+   24h: ${formatPercent(data.ticker24h.priceChangePercent)}
+   7d: ${data.change7dPct !== null ? formatPercent(data.change7dPct) : 'N/A'}
+
+📈 24h Range:
+   High: ${formatPrice(data.ticker24h.highPrice)}
+   Low: ${formatPrice(data.ticker24h.lowPrice)}
+   Volume: ${formatVolume(data.ticker24h.volume)} ${data.symbol.replace('USDT', '')}
+
+🎯 Chart: Updated with ${data.candles.length} candles (${data.interval})`
 
           console.log('[AnalyticsChatKit] Returning result to agent:', result)
-          return result
+          return { output: result }
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error'
           console.error('[AnalyticsChatKit] Failed to fetch market data:', errorMessage)
-          return {
-            success: false,
-            error: errorMessage,
-          }
+          return { output: `✗ Failed to fetch market data: ${errorMessage}` }
         }
       }
 
