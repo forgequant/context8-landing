@@ -200,7 +200,62 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
     }) => {
       console.log('[AnalyticsChatKit] Client tool invoked:', invocation)
 
-      // Handle widget rendering from LLM
+      // Handle Binance market data fetch
+      if (invocation.name === 'fetch_binance_marketdata') {
+        const symbol = String(invocation.params.symbol || 'BTCUSDT').toUpperCase()
+        const interval = String(invocation.params.interval || '1h')
+        const limit = Math.min(Math.max(Number(invocation.params.limit || 200), 10), 500)
+
+        try {
+          // Fetch data from Supabase Edge Function
+          const params = new URLSearchParams({ symbol, interval, limit: String(limit) })
+          const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/binance-proxy?${params}`
+
+          console.log('[AnalyticsChatKit] Fetching market data:', url)
+          const response = await fetch(url)
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+
+          const data = await response.json()
+          console.log('[AnalyticsChatKit] Market data received:', {
+            symbol: data.symbol,
+            candlesCount: data.candles.length,
+            lastPrice: data.ticker24h.lastPrice,
+          })
+
+          // Trigger widget update via CustomEvent
+          window.dispatchEvent(new CustomEvent('crypto:refresh', {
+            detail: { symbol, interval, limit, data }
+          }))
+
+          // Return KPI summary to agent
+          return {
+            ok: true,
+            symbol: data.symbol,
+            interval: data.interval,
+            limit: data.limit,
+            kpis: {
+              lastPrice: data.ticker24h.lastPrice,
+              pct24h: data.ticker24h.priceChangePercent,
+              pct7d: data.change7dPct,
+              volume: data.ticker24h.volume,
+              high: data.ticker24h.highPrice,
+              low: data.ticker24h.lowPrice,
+            }
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+          console.error('[AnalyticsChatKit] Failed to fetch market data:', errorMessage)
+          return {
+            ok: false,
+            error: errorMessage
+          }
+        }
+      }
+
+      // Handle legacy widget rendering from LLM
       if (invocation.name === 'render_market_widget') {
         const { symbol, price, volume, spread } = invocation.params
 

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { AnalyticsChatKit } from '@/components/analytics/AnalyticsChatKit'
+import { PriceVolumeWidget } from '@/components/analytics/PriceVolumeWidget'
 import type { MarketData } from '@/types/analytics'
 
 export function Analytics() {
@@ -82,6 +83,14 @@ export function Analytics() {
 
             {/* Widgets panel - 1 column on large screens */}
             <div className="space-y-4">
+              {/* Price/Volume Chart Widget */}
+              <PriceVolumeWidget
+                defaultSymbol="BTCUSDT"
+                defaultInterval="1h"
+                defaultLimit={200}
+              />
+
+              {/* Legacy Market Widgets */}
               <div className="text-sm text-terminal-muted mb-4">
                 <span className="text-terminal-cyan">#</span> Market Widgets
               </div>
