@@ -5,6 +5,8 @@ import {
   ISeriesApi,
   CandlestickData,
   HistogramData,
+  CandlestickSeries,
+  HistogramSeries,
 } from 'lightweight-charts'
 
 interface Candle {
@@ -50,8 +52,8 @@ export function PriceVolumeWidget({
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
-  const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
-  const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null)
+  const candleSeriesRef = useRef<ISeriesApi<any> | null>(null)
+  const volumeSeriesRef = useRef<ISeriesApi<any> | null>(null)
 
   const [symbol, setSymbol] = useState(defaultSymbol)
   const [interval, setInterval] = useState(defaultInterval)
@@ -146,7 +148,7 @@ export function PriceVolumeWidget({
         },
       })
 
-      const candleSeries = chart.addCandlestickSeries({
+      const candleSeries = chart.addSeries(CandlestickSeries, {
         upColor: '#10b981',
         downColor: '#ef4444',
         borderUpColor: '#10b981',
@@ -155,16 +157,12 @@ export function PriceVolumeWidget({
         wickDownColor: '#ef4444',
       })
 
-      const volumeSeries = chart.addHistogramSeries({
+      const volumeSeries = chart.addSeries(HistogramSeries, {
         color: '#06b6d4',
         priceFormat: {
           type: 'volume',
         },
         priceScaleId: '',
-        scaleMargins: {
-          top: 0.8,
-          bottom: 0,
-        },
       })
 
       chartRef.current = chart
