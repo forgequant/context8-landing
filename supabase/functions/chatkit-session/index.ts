@@ -10,6 +10,7 @@ const corsHeaders = {
 
 interface CreateSessionRequestBody {
   workflow_id?: string
+  workflow_version?: string
   user_id?: string
 }
 
@@ -40,6 +41,7 @@ serve(async (req) => {
     }
 
     const workflowId = requestBody.workflow_id || CHATKIT_WORKFLOW_ID
+    const workflowVersion = requestBody.workflow_version
     const userId = requestBody.user_id || `anonymous-${Date.now()}`
 
     if (!workflowId) {
@@ -52,7 +54,13 @@ serve(async (req) => {
       )
     }
 
-    console.log('[chatkit-session] Creating session', { workflowId, userId })
+    console.log('[chatkit-session] Creating session', { workflowId, workflowVersion, userId })
+
+    // Build workflow object
+    const workflow: any = { id: workflowId }
+    if (workflowVersion) {
+      workflow.version = workflowVersion
+    }
 
     // Call OpenAI ChatKit API
     const response = await fetch('https://api.openai.com/v1/chatkit/sessions', {
@@ -63,7 +71,7 @@ serve(async (req) => {
         'OpenAI-Beta': 'chatkit_beta=v1',
       },
       body: JSON.stringify({
-        workflow: { id: workflowId },
+        workflow,
         user: userId,
       }),
     })

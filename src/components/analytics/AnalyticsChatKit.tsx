@@ -61,6 +61,7 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
         },
         body: JSON.stringify({
           workflow_id: WORKFLOW_ID,
+          workflow_version: '3',
           user_id: 'anonymous-' + Date.now(),
         }),
       })
