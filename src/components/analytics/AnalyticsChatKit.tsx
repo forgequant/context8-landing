@@ -170,24 +170,28 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
             detail: { symbol, interval, limit, data }
           }))
 
-          // Return formatted text summary to agent
+          // Return formatted markdown summary to agent
           const formatPrice = (price: number) => `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
           const formatPercent = (pct: number) => `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`
           const formatVolume = (vol: number) => vol.toLocaleString('en-US', { maximumFractionDigits: 0 })
 
-          const result = `✓ Market Data: ${data.symbol}
+          const change24h = data.ticker24h.priceChangePercent
+          const change7d = data.change7dPct
+          const emoji24h = change24h >= 0 ? '🟢' : '🔴'
+          const emoji7d = change7d !== null ? (change7d >= 0 ? '🟢' : '🔴') : '⚪'
 
-📊 Price & Change:
-   Current: ${formatPrice(data.ticker24h.lastPrice)}
-   24h: ${formatPercent(data.ticker24h.priceChangePercent)}
-   7d: ${data.change7dPct !== null ? formatPercent(data.change7dPct) : 'N/A'}
+          const result = `### 📊 ${data.symbol} Market Report
 
-📈 24h Range:
-   High: ${formatPrice(data.ticker24h.highPrice)}
-   Low: ${formatPrice(data.ticker24h.lowPrice)}
-   Volume: ${formatVolume(data.ticker24h.volume)} ${data.symbol.replace('USDT', '')}
+| Metric | Value | 24h Change | 7d Change |
+|--------|-------|------------|-----------|
+| **Price** | **${formatPrice(data.ticker24h.lastPrice)}** | ${emoji24h} ${formatPercent(change24h)} | ${emoji7d} ${change7d !== null ? formatPercent(change7d) : 'N/A'} |
+| **Volume** | ${formatVolume(data.ticker24h.volume)} ${data.symbol.replace('USDT', '')} | — | — |
+| **High** | ${formatPrice(data.ticker24h.highPrice)} | 24h peak | — |
+| **Low** | ${formatPrice(data.ticker24h.lowPrice)} | 24h floor | — |
 
-🎯 Chart: Updated with ${data.candles.length} candles (${data.interval})`
+---
+
+✅ **Chart updated** with ${data.candles.length} candles (${data.interval} timeframe)`
 
           return result as any
         } catch (error) {
