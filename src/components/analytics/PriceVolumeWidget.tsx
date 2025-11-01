@@ -66,8 +66,6 @@ export function PriceVolumeWidget({
   useEffect(() => {
     const handleRefresh = (e: Event) => {
       const detail = (e as CustomEvent).detail || {}
-      console.log('[PriceVolumeWidget] Refresh event:', detail)
-
       if (detail.symbol) setSymbol(String(detail.symbol).toUpperCase())
       if (detail.interval) setInterval(String(detail.interval))
       if (detail.limit) setLimit(Number(detail.limit))
@@ -97,20 +95,12 @@ export function PriceVolumeWidget({
       })
 
       const url = `${fetchUrl}?${params}`
-      console.log('[PriceVolumeWidget] Fetching:', url)
-
       const response = await fetch(url)
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
       const data: MarketDataSnapshot = await response.json()
-      console.log('[PriceVolumeWidget] Data loaded:', {
-        symbol: data.symbol,
-        candlesCount: data.candles.length,
-        lastPrice: data.ticker24h.lastPrice,
-      })
-
       setSnapshot(data)
       updateChart(data)
     } catch (err) {

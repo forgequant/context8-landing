@@ -1,5 +1,5 @@
 import { ChatKit, useChatKit } from '@openai/chatkit-react'
-import { useState, useEffect, useRef, useCallback, memo } from 'react'
+import { useState, useCallback, memo } from 'react'
 import type { MarketData } from '@/types/analytics'
 
 interface AnalyticsChatKitProps {
@@ -12,19 +12,9 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
   const [error, setError] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
 
-  console.log('[AnalyticsChatKit] Component mounted', {
-    hasWorkflowId: !!WORKFLOW_ID,
-    hasSupabaseUrl: !!import.meta.env.VITE_SUPABASE_URL,
-    workflowIdPrefix: WORKFLOW_ID.slice(0, 15),
-  })
 
   // Create session with OpenAI ChatKit - wrapped in useCallback for stable reference
   const getClientSecret = useCallback(async (currentSecret: string | null) => {
-    console.log('[AnalyticsChatKit] getClientSecret called', {
-      currentSecret: currentSecret ? 'exists' : 'null',
-      workflowId: WORKFLOW_ID,
-      hasSupabaseUrl: !!import.meta.env.VITE_SUPABASE_URL,
-    })
 
     if (!WORKFLOW_ID) {
       const errMsg = 'VITE_CHATKIT_WORKFLOW_ID not configured'
@@ -67,33 +57,10 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
       })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        let errorData: any = {}
-        try {
-          errorData = JSON.parse(errorText)
-        } catch {
-          errorData = { raw: errorText }
-        }
-        console.error('[AnalyticsChatKit] Session creation failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorData,
-          endpoint: 'supabase/functions/v1/chatkit-session',
-          requestBody: {
-            workflow_id: WORKFLOW_ID,
-            user_id: 'anonymous',
-          },
-        })
-        throw new Error(`Failed to create session: ${response.status} ${response.statusText}. ${JSON.stringify(errorData)}`)
+        throw new Error(`Failed to create session: ${response.status} ${response.statusText}`)
       }
 
       const data = await response.json()
-      console.log('[AnalyticsChatKit] Session created successfully', {
-        hasClientSecret: !!data.client_secret,
-        expiresAfter: data.expires_after,
-        isFirstSession: !currentSecret,
-      })
-
       setError(null)
 
       // Only clear initializing state after first session
@@ -122,25 +89,6 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
   // Note: We don't call getClientSecret in useEffect
   // ChatKit will call it automatically when needed
 
-  // Check if ChatKit web component is loaded
-  useEffect(() => {
-    const checkWebComponent = () => {
-      const hasComponent = typeof window !== 'undefined' &&
-        window.customElements?.get('openai-chatkit')
-
-      console.log('[AnalyticsChatKit] Web component check:', {
-        hasCustomElements: !!window.customElements,
-        hasChatkitComponent: !!hasComponent,
-        windowDefined: typeof window !== 'undefined',
-      })
-    }
-
-    checkWebComponent()
-
-    // Check again after a delay
-    const timer = setTimeout(checkWebComponent, 2000)
-    return () => clearTimeout(timer)
-  }, [])
 
   const chatkit = useChatKit({
     api: {
@@ -199,8 +147,6 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
       name: string
       params: Record<string, unknown>
     }) => {
-      console.log('[AnalyticsChatKit] Client tool invoked:', invocation)
-
       // Handle Binance market data fetch
       if (invocation.name === 'fetch_binance_marketdata') {
         const symbol = String(invocation.params.symbol || 'BTCUSDT').toUpperCase()
@@ -211,8 +157,6 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
           // Fetch data from Supabase Edge Function
           const params = new URLSearchParams({ symbol, interval, limit: String(limit) })
           const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/binance-proxy?${params}`
-
-          console.log('[AnalyticsChatKit] Fetching market data:', url)
           const response = await fetch(url)
 
           if (!response.ok) {
@@ -220,11 +164,6 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
           }
 
           const data = await response.json()
-          console.log('[AnalyticsChatKit] Market data received:', {
-            symbol: data.symbol,
-            candlesCount: data.candles.length,
-            lastPrice: data.ticker24h.lastPrice,
-          })
 
           // Trigger widget update via CustomEvent
           window.dispatchEvent(new CustomEvent('crypto:refresh', {
@@ -250,8 +189,6 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
 
 🎯 Chart: Updated with ${data.candles.length} candles (${data.interval})`
 
-          console.log('[AnalyticsChatKit] Returning result to agent:', result)
-          // Return plain string for Text output format (ignore TypeScript warning)
           return result as any
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error'
@@ -287,14 +224,6 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
     },
   })
 
-  // Log chatkit control state
-  useEffect(() => {
-    console.log('[AnalyticsChatKit] ChatKit control state:', {
-      hasControl: !!chatkit.control,
-      isInitializing,
-      hasError: !!error,
-    })
-  }, [chatkit.control, isInitializing, error])
 
   return (
     <div className="h-full flex flex-col min-h-[600px]">
