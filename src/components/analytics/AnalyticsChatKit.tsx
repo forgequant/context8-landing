@@ -231,28 +231,29 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
             detail: { symbol, interval, limit, data }
           }))
 
-          // Return KPI summary to agent
-          return {
-            ok: true,
-            symbol: data.symbol,
-            interval: data.interval,
-            limit: data.limit,
-            kpis: {
-              lastPrice: data.ticker24h.lastPrice,
-              pct24h: data.ticker24h.priceChangePercent,
-              pct7d: data.change7dPct,
-              volume: data.ticker24h.volume,
-              high: data.ticker24h.highPrice,
-              low: data.ticker24h.lowPrice,
-            }
-          }
+          // Return KPI summary to agent as formatted string
+          const result = `✓ Market data fetched successfully
+
+Symbol: ${data.symbol}
+Interval: ${data.interval}
+Candles: ${data.limit}
+
+KPIs:
+- Current Price: $${data.ticker24h.lastPrice.toLocaleString()}
+- 24h Change: ${data.ticker24h.priceChangePercent >= 0 ? '+' : ''}${data.ticker24h.priceChangePercent}%
+- 7d Change: ${data.change7dPct !== null ? (data.change7dPct >= 0 ? '+' : '') + data.change7dPct.toFixed(2) + '%' : 'N/A'}
+- 24h Volume: ${data.ticker24h.volume.toLocaleString()} ${data.symbol.replace('USDT', '')}
+- 24h High: $${data.ticker24h.highPrice.toLocaleString()}
+- 24h Low: $${data.ticker24h.lowPrice.toLocaleString()}
+
+Chart updated with ${data.candles.length} candles.`
+
+          console.log('[AnalyticsChatKit] Returning result to agent:', result)
+          return result
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error'
           console.error('[AnalyticsChatKit] Failed to fetch market data:', errorMessage)
-          return {
-            ok: false,
-            error: errorMessage
-          }
+          return `✗ Failed to fetch market data: ${errorMessage}`
         }
       }
 
