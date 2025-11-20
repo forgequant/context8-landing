@@ -70,6 +70,30 @@ export function Landing() {
               ✓ Connected to api.context8.markets
             </motion.p>
 
+            {/* Service Update Notice */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-6 bg-terminal-cyan/10 border-l-4 border-terminal-cyan rounded p-4"
+            >
+              <p className="text-terminal-cyan text-sm font-semibold mb-2">
+                ⚡ Service Update
+              </p>
+              <p className="text-terminal-text text-sm mb-2">
+                До 1 декабря сервис в переработке
+              </p>
+              <p className="text-terminal-muted text-sm">
+                Daily reports continue at{' '}
+                <a
+                  href="/reports/daily"
+                  className="text-terminal-cyan hover:underline"
+                >
+                  context8.markets/reports/daily
+                </a>
+              </p>
+            </motion.div>
+
             {/* Typewriter headline - smaller size */}
             <div className="pt-4">
               <h2 className="text-xl md:text-2xl font-normal mb-4 text-terminal-text">
