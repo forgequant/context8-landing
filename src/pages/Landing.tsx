@@ -71,19 +71,14 @@ export function Landing() {
             </motion.p>
 
             {/* Service Update Notice */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="mt-6 bg-terminal-red/10 border-l-4 border-terminal-red rounded p-4"
+              className="text-terminal-red text-sm"
             >
-              <p className="text-terminal-red text-base font-semibold mb-1">
-                ⚠️ Service under maintenance until December 1st
-              </p>
-              <p className="text-terminal-muted text-sm">
-                Daily reports continue to be published below
-              </p>
-            </motion.div>
+              ⚠️ Service under maintenance until December 1st — daily reports continue below
+            </motion.p>
 
             {/* Typewriter headline - smaller size */}
             <div className="pt-4">
