@@ -75,22 +75,13 @@ export function Landing() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="mt-6 bg-terminal-cyan/10 border-l-4 border-terminal-cyan rounded p-4"
+              className="mt-6 bg-terminal-red/10 border-l-4 border-terminal-red rounded p-4"
             >
-              <p className="text-terminal-cyan text-sm font-semibold mb-2">
-                ⚡ Service Update
-              </p>
-              <p className="text-terminal-text text-sm mb-2">
-                До 1 декабря сервис в переработке
+              <p className="text-terminal-red text-base font-semibold mb-1">
+                ⚠️ Service under maintenance until December 1st
               </p>
               <p className="text-terminal-muted text-sm">
-                Daily reports continue at{' '}
-                <a
-                  href="/reports/daily"
-                  className="text-terminal-cyan hover:underline"
-                >
-                  context8.markets/reports/daily
-                </a>
+                Daily reports continue to be published below
               </p>
             </motion.div>
 
