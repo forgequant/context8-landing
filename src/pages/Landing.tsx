@@ -96,7 +96,7 @@ export function Landing() {
                 </button>
                 <div className="mt-4 space-y-2">
                   <a
-                    href="/reports/daily-ru"
+                    href="/reports/daily"
                     className="inline-block text-sm text-terminal-cyan hover:underline"
                   >
                     → Daily BTC Report (Nov 20)
