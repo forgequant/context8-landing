@@ -57,24 +57,11 @@ export function Landing() {
           className="mb-16"
         >
           <div className="space-y-4">
-            {/* Connection status */}
-            <p className="text-terminal-muted text-sm">
-              # Connecting to Context8 MCP Server...
-            </p>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-terminal-green text-sm"
-            >
-              ✓ Connected to api.context8.markets
-            </motion.p>
-
             {/* Service Update Notice */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.3 }}
               className="text-terminal-red text-sm"
             >
               ⚠️ Service under maintenance until December 1st — daily reports continue below

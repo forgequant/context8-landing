@@ -167,6 +167,21 @@ export function Dashboard() {
           </section>
         )}
 
+        {/* Service Maintenance Notice */}
+        <section className="mb-8">
+          <div className="bg-terminal-red/10 border-l-4 border-terminal-red rounded p-4">
+            <p className="text-terminal-red text-sm">
+              ⚠️ MCP Server under maintenance until December 1st
+            </p>
+            <p className="text-terminal-muted text-sm mt-1">
+              API integration temporarily unavailable. Daily reports continue at{' '}
+              <a href="/reports/daily" className="text-terminal-cyan hover:underline">
+                /reports/daily
+              </a>
+            </p>
+          </div>
+        </section>
+
         {/* Subscription section */}
         <section className="mb-12">
           <h2 className="text-sm text-terminal-muted italic mb-6">Your subscription</h2>

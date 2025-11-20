@@ -5,6 +5,16 @@ export function MCPInstructions() {
         Connect Context8 to ChatGPT
       </h3>
 
+      {/* Maintenance Notice */}
+      <div className="mb-6 bg-terminal-red/10 border border-terminal-red/30 rounded p-4">
+        <p className="text-terminal-red text-sm font-semibold">
+          ⚠️ API temporarily unavailable (maintenance until Dec 1)
+        </p>
+        <p className="text-terminal-muted text-xs mt-1">
+          Integration instructions below will be active after maintenance is complete
+        </p>
+      </div>
+
       <div className="space-y-4 text-sm">
         <div>
           <p className="text-terminal-muted mb-2">
