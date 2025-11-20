@@ -96,10 +96,10 @@ export function Landing() {
                 </button>
                 <div className="mt-4 space-y-2">
                   <a
-                    href="/reports/daily"
+                    href="/reports/daily-ru"
                     className="inline-block text-sm text-terminal-cyan hover:underline"
                   >
-                    → Daily BTC Report (Oct 31)
+                    → Daily BTC Report (Nov 20)
                   </a>
                   <p className="text-xs text-terminal-muted">
                     Informational only. Not financial advice.
