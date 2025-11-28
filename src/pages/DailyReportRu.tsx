@@ -1,254 +1,611 @@
 import { Link } from 'react-router-dom'
 
+// Progress bar для визуализации сентимента
+function SentimentBar({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs">
+        <span className="text-terminal-muted">{label}</span>
+        <span className="text-terminal-green font-semibold">{value}%</span>
+      </div>
+      <div className="h-2 bg-graphite-800 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-gradient-to-r from-terminal-green to-terminal-cyan rounded-full transition-all duration-500"
+          style={{ width: `${value}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+// Карточка метрики
+function MetricCard({ label, value, change, isPositive }: {
+  label: string;
+  value: string;
+  change?: string;
+  isPositive?: boolean;
+}) {
+  return (
+    <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4 hover:border-terminal-cyan/30 transition-colors">
+      <div className="text-xs text-terminal-muted uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-xl font-bold text-terminal-text font-mono">{value}</div>
+      {change && (
+        <div className={`text-xs mt-1 ${isPositive ? 'text-terminal-green' : 'text-terminal-red'}`}>
+          {isPositive ? '↑' : '↓'} {change}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Бейдж для нарративов
+function Badge({ children, variant = 'default' }: {
+  children: React.ReactNode;
+  variant?: 'default' | 'hot' | 'cold' | 'neutral';
+}) {
+  const variants = {
+    default: 'bg-terminal-cyan/20 text-terminal-cyan border-terminal-cyan/30',
+    hot: 'bg-terminal-green/20 text-terminal-green border-terminal-green/30',
+    cold: 'bg-terminal-red/20 text-terminal-red border-terminal-red/30',
+    neutral: 'bg-graphite-800 text-terminal-muted border-graphite-700',
+  }
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 text-xs font-mono rounded border ${variants[variant]}`}>
+      {children}
+    </span>
+  )
+}
+
+// Строка актива для таблицы
+function AssetRow({
+  symbol,
+  change24h,
+  change7d,
+  social,
+  sentiment,
+  comment,
+  isPositive
+}: {
+  symbol: string;
+  change24h: string;
+  change7d: string;
+  social: string;
+  sentiment: string;
+  comment: string;
+  isPositive: boolean;
+}) {
+  return (
+    <tr className="border-b border-graphite-800 hover:bg-graphite-800/50 transition-colors">
+      <td className="py-3 px-2">
+        <span className={`font-bold font-mono ${isPositive ? 'text-terminal-green' : 'text-terminal-red'}`}>
+          {symbol}
+        </span>
+      </td>
+      <td className={`py-3 px-2 font-mono text-sm ${isPositive ? 'text-terminal-green' : 'text-terminal-red'}`}>
+        {change24h}
+      </td>
+      <td className={`py-3 px-2 font-mono text-sm ${change7d.startsWith('+') ? 'text-terminal-green' : 'text-terminal-red'}`}>
+        {change7d}
+      </td>
+      <td className="py-3 px-2 text-sm text-terminal-cyan">{social}</td>
+      <td className="py-3 px-2 text-sm">
+        <span className="text-terminal-green">{sentiment}</span>
+      </td>
+      <td className="py-3 px-2 text-xs text-terminal-muted max-w-[200px]">{comment}</td>
+    </tr>
+  )
+}
+
+// Индикатор риска
+function RiskIndicator({ level, label }: { level: 'low' | 'medium' | 'high'; label: string }) {
+  const colors = {
+    low: 'bg-terminal-green',
+    medium: 'bg-yellow-500',
+    high: 'bg-terminal-red',
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <div className={`w-2 h-2 rounded-full ${colors[level]} animate-pulse`} />
+      <span className="text-sm text-terminal-muted">{label}</span>
+    </div>
+  )
+}
+
 export function DailyReportRu() {
   return (
-    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-6 py-8">
+    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-4 md:px-6 py-8">
       {/* Header */}
-      <header className="max-w-4xl mx-auto mb-12">
+      <header className="max-w-6xl mx-auto mb-8">
         <Link to="/" className="text-sm text-terminal-cyan hover:underline mb-4 inline-block">
           ← Назад на главную
         </Link>
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-3xl font-bold text-terminal-cyan">Ежедневный отчёт по BTC</h1>
-          <span className="text-sm text-terminal-muted">20 ноя 2025 09:30 UTC</span>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-terminal-cyan">Ежедневный обзор рынка</h1>
+            <p className="text-terminal-muted text-sm mt-1">Крипто-аналитика • Социальные сигналы • Ключевые нарративы</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 bg-terminal-cyan/10 border border-terminal-cyan/30 rounded text-terminal-cyan text-sm">
+              28 ноября 2025
+            </span>
+            <span className="px-3 py-1 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green text-sm">
+              LIVE
+            </span>
+          </div>
         </div>
-        <p className="text-terminal-muted">Комплексный анализ рынка • Факты, мнение и практические шаги</p>
       </header>
 
       {/* Content */}
-      <article className="max-w-4xl mx-auto space-y-8 text-sm leading-relaxed">
+      <article className="max-w-6xl mx-auto space-y-8">
 
-        {/* TL;DR */}
+        {/* Key Metrics Grid */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <MetricCard
+            label="Уникальные авторы"
+            value="249 766"
+            change="7.1% за 24ч"
+            isPositive={false}
+          />
+          <MetricCard
+            label="Сентимент рынка"
+            value="82%"
+            change="1-2% vs среднего"
+            isPositive={true}
+          />
+          <MetricCard
+            label="DeFi вовлечённость"
+            value="53M"
+            change="19% за неделю"
+            isPositive={false}
+          />
+          <MetricCard
+            label="AI креаторы"
+            value="—"
+            change="9.7% за 24ч"
+            isPositive={false}
+          />
+        </section>
+
+        {/* Executive Summary */}
         <section className="bg-graphite-900 border border-terminal-cyan/30 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4 text-terminal-cyan">TL;DR</h2>
-          <ul className="space-y-2 text-terminal-text">
-            <li>• <strong>Цена</strong>: BTC <span className="text-terminal-red">ниже $90k</span> после октябрьского ATH ≈ $126k, потеряв ~30% от пика и стерев прибыль 2025 года.</li>
-            <li>• <strong>Капитализация</strong>: За ~6 недель крипторынок потерял <span className="text-terminal-red">&gt; $1 трлн</span>.</li>
-            <li>• <strong>Технический анализ</strong>: Зафиксирован <span className="text-terminal-red">«death cross»</span> (50/200 MA) — одна из глубочайших коррекций с 2017 года.</li>
-            <li>• <strong>LunarCrush сентимент</strong>: Galaxy Score ≈ 67 (умеренно бычий), Sentiment 76% позитив, Mentions ~289k (↑1.8x), Social Dominance 30% (при среднем 17%).</li>
-            <li>• <strong>Polymarket</strong>: ≈62% на закрытие 2025 <span className="text-terminal-red">ниже $90k</span> — консенсус смещён к затяжной коррекции.</li>
-          </ul>
-        </section>
-
-        {/* 1. Что говорит рынок */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            1. Что сейчас говорит рынок (цена + макро-сентимент)
+          <h2 className="text-xl font-semibold mb-4 text-terminal-cyan flex items-center gap-2">
+            <span className="w-2 h-2 bg-terminal-cyan rounded-full animate-pulse" />
+            Ключевые выводы
           </h2>
-
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-base font-semibold text-terminal-cyan mb-2">Факты</h3>
-              <ul className="space-y-2 text-terminal-muted ml-4">
-                <li>• BTC после октябрьского ATH ≈ <span className="text-terminal-text">$126k</span> ушёл ниже <span className="text-terminal-red">$90k</span>, потеряв почти <span className="text-terminal-red">30%</span> от пика и стерев прибыль 2025 года. <span className="text-xs">[Reuters, Moneycontrol]</span></li>
-                <li>• Падение BTC за ~6 недель срезало с крипторынка <span className="text-terminal-red">&gt; $1 трлн</span> капитализации. <span className="text-xs">[Coinlive, Tom's Hardware]</span></li>
-                <li>• В новостях отмечают <span className="text-terminal-red">«death cross»</span> (пересечение 50/200 MA сверху вниз) и одну из самых глубоких коррекций с 2017 года. <span className="text-xs">[CoinDesk]</span></li>
-              </ul>
-            </div>
-
-            <div className="bg-yellow-900/20 border border-yellow-700/30 rounded p-4">
-              <h3 className="text-base font-semibold text-yellow-300 mb-2">💭 Моё мнение</h3>
-              <p className="text-terminal-muted">
-                С точки зрения классики циклов: мы уже не «локальный откат», а полноценная фаза перезагрузки плечей и ожиданий — сила тренда вниз сейчас больше, чем у среднего «здорового» отката.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* 2. Соцсети и сентимент */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            2. Соцсети и сентимент (LunarCrush)
-          </h2>
-
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-base font-semibold text-terminal-cyan mb-3">Факты по данным LunarCrush (MCP)</h3>
-              <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
-                <table className="w-full text-terminal-text text-sm">
-                  <tbody>
-                    <tr><td className="py-1"><strong>Galaxy Score™</strong></td><td className="py-1 text-right"><span className="text-terminal-green">≈ 67</span> при среднем ~60 → умеренно бычья комбинация</td></tr>
-                    <tr><td className="py-1"><strong>Sentiment</strong></td><td className="py-1 text-right"><span className="text-terminal-green">≈ 76%</span> позитивных упоминаний (средний ~79%)</td></tr>
-                    <tr><td className="py-1"><strong>Mentions</strong></td><td className="py-1 text-right"><span className="text-terminal-cyan">≈ 289k</span> за 24h при среднем ~160k → рост <span className="text-terminal-green">~1.8x</span></td></tr>
-                    <tr><td className="py-1"><strong>Creators</strong></td><td className="py-1 text-right">≈ 101k уникальных авторов за сутки</td></tr>
-                    <tr><td className="py-1"><strong>Social Dominance</strong></td><td className="py-1 text-right"><span className="text-terminal-cyan">≈ 30%</span> при среднем ~17% → BTC доминирует инфополе</td></tr>
-                  </tbody>
-                </table>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <span className="text-terminal-red mt-1">▼</span>
+                <p className="text-sm text-terminal-muted">
+                  <strong className="text-terminal-text">Соц. активность снизилась</strong> — уникальных авторов на 7.1% меньше (249 766 vs прошлые 24ч)
+                </p>
               </div>
-            </div>
-
-            <div className="bg-yellow-900/20 border border-yellow-700/30 rounded p-4">
-              <h3 className="text-base font-semibold text-yellow-300 mb-2">💭 Моё мнение</h3>
-              <div className="space-y-2 text-terminal-muted text-sm">
-                <p>
-                  <strong className="text-terminal-text">По цене</strong> — жёсткий «risk-off» и перезагрузка плечей.
+              <div className="flex items-start gap-2">
+                <span className="text-terminal-green mt-1">▲</span>
+                <p className="text-sm text-terminal-muted">
+                  <strong className="text-terminal-text">Сентимент бычий</strong> — 82% позитива (на 1-2% выше недельного/месячного среднего)
                 </p>
-                <p>
-                  <strong className="text-terminal-text">По соцсетям</strong> — не капитуляция, а истеричный интерес: рекордная активность, но sentiment только слегка сполз с «эйфории» к «осторожному бычьему».
-                </p>
-                <p>
-                  Это типичная картинка: <span className="text-terminal-red">паника в цене при живом интересе к нарративу</span> → хороший фон для среднесрочных контртрендовых идей, но не гарантия мгновенного разворота.
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-500 mt-1">◆</span>
+                <p className="text-sm text-terminal-muted">
+                  <strong className="text-terminal-text">Ценовое действие смешанное</strong> — узкий breadth, концентрация в privacy-монетах (новости ZEC ETF)
                 </p>
               </div>
             </div>
-
-            <div className="bg-blue-900/20 border border-blue-700/30 rounded p-4">
-              <h3 className="text-base font-semibold text-blue-300 mb-2">🔮 Предположение</h3>
-              <p className="text-terminal-muted text-sm">
-                Если соц-активность останется высокой, а цена ещё какое-то время постоит/прольётся ниже, мы увидим фазу <span className="text-terminal-cyan">«аккумуляции под негативный инфошум»</span> — классический фундамент для следующей ноги вверх.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* 3. Деривативы, ETF и левередж */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            3. Деривативы, ETF и левередж (через новости)
-          </h2>
-
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-base font-semibold text-terminal-cyan mb-2">Факты</h3>
-              <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
-                <ul className="space-y-2 text-terminal-muted text-sm">
-                  <li>• СМИ фиксируют сильное падение BTC на фоне:</li>
-                  <li className="ml-4">— снижения inflows в спотовые ETF и разворота в оттоки</li>
-                  <li className="ml-4">— <span className="text-terminal-red">«death cross»</span> на дневках</li>
-                  <li className="ml-4">— ужесточения ожиданий по ставкам ФРС и общего «risk-off» в акциях/AI-секторе</li>
-                  <li className="text-xs">→ [CoinDesk, The Guardian]</li>
-                  <li className="mt-2">• Отмечаются <span className="text-terminal-red">миллиардные ликвидации плеча</span> и одна из самых глубоких 43-дневных просадок BTC с 2017 года. <span className="text-xs">[Tom's Hardware]</span></li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="bg-yellow-900/20 border border-yellow-700/30 rounded p-4">
-              <h3 className="text-base font-semibold text-yellow-300 mb-2">💭 Моё мнение</h3>
-              <div className="space-y-2 text-terminal-muted text-sm">
-                <p>
-                  Это не «спекулянты ушли из рынка», а наоборот — <span className="text-terminal-text">слишком много плеча + ETF-потоки + макро одновременно ударили в одну сторону</span>.
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <span className="text-terminal-cyan mt-1">●</span>
+                <p className="text-sm text-terminal-muted">
+                  <strong className="text-terminal-text">BTC ETF притоки восстановились</strong>, в то время как Solana ETF — оттоки
                 </p>
-                <p>
-                  Пока ETF-оттоки не развернутся и кривая фандинга/перпетов не нормализуется, любой отскок вверх — <span className="text-terminal-red">скорее шорт-квизы, чем устойчивый тренд</span>.
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-terminal-red mt-1">!</span>
+                <p className="text-sm text-terminal-muted">
+                  <strong className="text-terminal-text">Аномалии:</strong> Upbit взлом на $36M в Solana; даунгрейд Tether от S&P
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-terminal-green mt-1">★</span>
+                <p className="text-sm text-terminal-muted">
+                  <strong className="text-terminal-text">Ключевые нарративы:</strong> Privacy coins, экосистема Solana, партнёрства Chainlink
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 4. Polymarket */}
+        {/* Sentiment Visualization */}
+        <section className="bg-graphite-900 border border-graphite-800 rounded-lg p-6">
+          <h2 className="text-lg font-semibold mb-4 text-terminal-text">Обзор сентимента</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <SentimentBar value={82} label="Общий рынок" />
+            <SentimentBar value={84} label="DeFi сектор" />
+            <SentimentBar value={83} label="AI сектор" />
+          </div>
+        </section>
+
+        {/* Narratives & Sectors */}
         <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2">
-            4. Polymarket: как толпа оценивает сценарии по BTC
+          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2 flex items-center gap-2">
+            <span className="text-terminal-cyan">02</span> Нарративы и секторы
           </h2>
 
-          <div className="space-y-4">
-            <p className="text-terminal-muted italic text-sm">
-              Собираем картину только из зафиксированных чисел (не додумывая между точками).
-            </p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Privacy Coins Card */}
+            <div className="bg-graphite-900 border border-terminal-green/30 rounded-lg p-4 hover:border-terminal-green/50 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-terminal-green">Privacy Coins</h3>
+                <Badge variant="hot">+1000% ZEC</Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Активы</span>
+                  <span className="text-terminal-text">ZEC, DASH, XMR</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Катализатор</span>
+                  <span className="text-terminal-cyan">Заявка Grayscale ETF</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Соц. сигнал</span>
+                  <span className="text-terminal-green">↑ Всплеск</span>
+                </div>
+              </div>
+            </div>
 
-            {/* 4.1 Долгосрочный 2025 */}
-            <div>
-              <h3 className="text-base font-semibold text-terminal-cyan mb-3">4.1. Долгосрочный 2025</h3>
-              <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <p className="text-terminal-text font-semibold mb-2">Факт (март 2025):</p>
-                    <p className="text-terminal-muted mb-2">Рынок Polymarket по ценам BTC в 2025 году оценивал: <span className="text-xs">[Bitget]</span></p>
-                    <table className="w-full text-terminal-muted text-sm ml-4">
-                      <tbody>
-                        <tr><td className="py-1">≥ $120k в 2025</td><td className="py-1 text-right"><span className="text-terminal-green">≈ 51%</span></td></tr>
-                        <tr><td className="py-1">≥ $130k</td><td className="py-1 text-right"><span className="text-terminal-green">≈ 40%</span></td></tr>
-                        <tr><td className="py-1">≥ $150k</td><td className="py-1 text-right"><span className="text-terminal-cyan">≈ 27%</span></td></tr>
-                        <tr><td className="py-1">≥ $200k</td><td className="py-1 text-right">≈ 17%</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
+            {/* Solana Ecosystem Card */}
+            <div className="bg-graphite-900 border border-yellow-500/30 rounded-lg p-4 hover:border-yellow-500/50 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-yellow-400">Экосистема Solana</h3>
+                <Badge variant="neutral">Смешанно</Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Активы</span>
+                  <span className="text-terminal-text">SOL ($140), MON</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">События</span>
+                  <span className="text-terminal-red">Взлом $36M, оттоки ETF</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Соц. сигнал</span>
+                  <span className="text-terminal-cyan">↑ Mentions, ↓ Engagement</span>
+                </div>
+              </div>
+            </div>
 
-                  <div>
-                    <p className="text-terminal-text font-semibold mb-2">Факт (середина лета):</p>
-                    <p className="text-terminal-muted mb-2">Отдельный рынок Polymarket давал: <span className="text-xs">[CryptoSlate]</span></p>
-                    <table className="w-full text-terminal-muted text-sm ml-4">
-                      <tbody>
-                        <tr><td className="py-1">BTC &gt; $120k в 2025</td><td className="py-1 text-right"><span className="text-terminal-green">~75%</span></td></tr>
-                        <tr><td className="py-1">&gt; $130k</td><td className="py-1 text-right"><span className="text-terminal-green">55%</span></td></tr>
-                        <tr><td className="py-1">&gt; $150k</td><td className="py-1 text-right">33%</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
+            {/* DeFi Card */}
+            <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4 hover:border-terminal-cyan/30 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-terminal-cyan">DeFi</h3>
+                <Badge variant="default">84% сентимент</Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Активы</span>
+                  <span className="text-terminal-text">SOL, ETH, XRP</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Вовлечённость</span>
+                  <span className="text-terminal-red">↓ 19%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Упоминания</span>
+                  <span className="text-terminal-green">↑ 9.4%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Card */}
+            <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4 hover:border-terminal-cyan/30 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-purple-400">AI сектор</h3>
+                <Badge variant="default">83% сентимент</Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Активы</span>
+                  <span className="text-terminal-text">AIOZ (+5%), NAO</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Фокус</span>
+                  <span className="text-terminal-cyan">Chainlink, Bittensor</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Объём</span>
+                  <span className="text-terminal-muted">Низкий</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bitcoin Ecosystem Card */}
+            <div className="bg-graphite-900 border border-orange-500/30 rounded-lg p-4 hover:border-orange-500/50 transition-colors">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-orange-400">Экосистема Bitcoin</h3>
+                <Badge variant="hot">Притоки ETF</Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Катализатор</span>
+                  <span className="text-terminal-green">Резерв BTC в Техасе</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">ETF потоки</span>
+                  <span className="text-terminal-green">↑ Восстановились</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-terminal-muted">Доминация</span>
+                  <span className="text-terminal-cyan">Стабильно</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Declining Card */}
+            <div className="bg-graphite-900 border border-terminal-red/30 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-terminal-red">В упадке</h3>
+                <Badge variant="cold">Снижение</Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="text-terminal-muted">
+                  <span className="text-terminal-red">↓</span> Мемкоины/pump-fun
+                </div>
+                <div className="text-terminal-muted">
+                  <span className="text-terminal-red">↓</span> Layer-1 (кроме SOL)
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Top Movers */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2 flex items-center gap-2">
+            <span className="text-terminal-cyan">03</span> Топ движений
+          </h2>
+
+          {/* Positive Movers */}
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-terminal-green mb-3 flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-terminal-green/20 flex items-center justify-center">↑</span>
+              Растущие
+            </h3>
+            <div className="bg-graphite-900 border border-graphite-800 rounded-lg overflow-hidden overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
+                <thead className="bg-graphite-800 text-terminal-muted text-xs uppercase">
+                  <tr>
+                    <th className="py-2 px-2 text-left">Тикер</th>
+                    <th className="py-2 px-2 text-left">24ч</th>
+                    <th className="py-2 px-2 text-left">7д</th>
+                    <th className="py-2 px-2 text-left">Соц.</th>
+                    <th className="py-2 px-2 text-left">Сентимент</th>
+                    <th className="py-2 px-2 text-left">Комментарий</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <AssetRow symbol="ZEC" change24h="N/A (взлёт)" change7d="-30% после ралли" social="Высокий" sentiment="Бычий" comment="Заявка Grayscale ETF — ралли 1000%" isPositive={true} />
+                  <AssetRow symbol="AIOZ" change24h="+4.95%" change7d="+16.3%" social="+45% mentions" sentiment="84%" comment="DePIN/AI интеграция; AltRank #132" isPositive={true} />
+                  <AssetRow symbol="SOL" change24h="→ $140" change7d="N/A" social="Высокий" sentiment="Смешанный" comment="ETF/токенизация несмотря на взлом" isPositive={true} />
+                  <AssetRow symbol="ISP" change24h="+14.3%" change7d="+30.8%" social="+138% engmt" sentiment="78%" comment="Покупки китов; Galaxy 79.5" isPositive={true} />
+                  <AssetRow symbol="VR" change24h="+0.7%" change7d="+6.9%" social="-58% engmt" sentiment="98%" comment="Метавселенная AI-инструменты; Galaxy 78.6" isPositive={true} />
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Negative Movers */}
+          <div>
+            <h3 className="text-sm font-semibold text-terminal-red mb-3 flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-terminal-red/20 flex items-center justify-center">↓</span>
+              Падающие
+            </h3>
+            <div className="bg-graphite-900 border border-graphite-800 rounded-lg overflow-hidden overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
+                <thead className="bg-graphite-800 text-terminal-muted text-xs uppercase">
+                  <tr>
+                    <th className="py-2 px-2 text-left">Тикер</th>
+                    <th className="py-2 px-2 text-left">24ч</th>
+                    <th className="py-2 px-2 text-left">7д</th>
+                    <th className="py-2 px-2 text-left">Соц.</th>
+                    <th className="py-2 px-2 text-left">Сентимент</th>
+                    <th className="py-2 px-2 text-left">Комментарий</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <AssetRow symbol="DDD" change24h="0%" change7d="-55.6%" social="Низкий" sentiment="N/A" comment="Резкое падение при Galaxy 100" isPositive={false} />
+                  <AssetRow symbol="EMC" change24h="-12.3%" change7d="-5.7%" social="+72% engmt" sentiment="67%" comment="Страхи скама перевешивают AI-промо" isPositive={false} />
+                  <AssetRow symbol="NAO" change24h="+0.1%" change7d="+0.9%" social="+300-467%" sentiment="N/A" comment="Низкий объём при Galaxy 100" isPositive={false} />
+                  <AssetRow symbol="USHI" change24h="-1.4%" change7d="-0.1%" social="+217% mentions" sentiment="67%" comment="Слабая ликвидность" isPositive={false} />
+                  <AssetRow symbol="MON" change24h="Дамп" change7d="N/A" social="Скандал" sentiment="Смешанный" comment="После запуска; Hayes: 'send to zero'" isPositive={false} />
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* Social & Influencer Highlights */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2 flex items-center gap-2">
+            <span className="text-terminal-cyan">04</span> Социалка и инфлюенсеры
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Top Influencers */}
+            <div className="space-y-3">
+              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-terminal-cyan">@MEXC_Official</span>
+                  <span className="text-xs text-terminal-muted">1.7M подписчиков</span>
+                </div>
+                <div className="text-sm text-terminal-muted">115 постов • 8.7M вовлечённости</div>
+                <Badge variant="hot">Бычий DeFi</Badge>
+              </div>
+
+              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-terminal-cyan">@WatcherGuru</span>
+                  <span className="text-xs text-terminal-muted">2M+ вовлечённости</span>
+                </div>
+                <div className="text-sm text-terminal-muted">Притоки ETF, ZEC ETF, взломы Solana</div>
+                <Badge variant="neutral">Смешанно</Badge>
+              </div>
+
+              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-terminal-red">@CryptoHayes</span>
+                  <span className="text-xs text-terminal-muted">816K вовлечённости</span>
+                </div>
+                <div className="text-sm text-terminal-muted">Медвежий по MON: "send to zero"</div>
+                <Badge variant="cold">Медведь MON</Badge>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-terminal-cyan">@lookonchain</span>
+                  <span className="text-xs text-terminal-muted">1M+ вовлечённости</span>
+                </div>
+                <div className="text-sm text-terminal-muted">Покупки китов $ENA, низкие резервы XRP</div>
+                <Badge variant="neutral">Аналитика</Badge>
+              </div>
+
+              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-terminal-cyan">@solana</span>
+                  <span className="text-xs text-terminal-muted">195K вовлечённости</span>
+                </div>
+                <div className="text-sm text-terminal-muted">"Amazon для финансов" — оборонительно</div>
+                <Badge variant="default">Защита</Badge>
+              </div>
+
+              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-terminal-green">DeFi посты</span>
+                  <span className="text-xs text-terminal-muted">Фокус на Chainlink</span>
+                </div>
+                <div className="text-sm text-terminal-muted">Рост Solana, страховка приватности ZEC</div>
+                <Badge variant="hot">84% бычьих</Badge>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Risks & Observations */}
+        <section className="bg-graphite-900 border border-terminal-red/30 rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-4 text-terminal-red flex items-center gap-2">
+            <span className="text-2xl">⚠</span> Риски и наблюдения на завтра
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-terminal-red/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-terminal-red text-sm">1</span>
+                </div>
+                <div>
+                  <RiskIndicator level="high" label="Всплеск Privacy (ZEC)" />
+                  <p className="text-sm text-terminal-muted mt-1">Ралли 1000% + хайп ETF — риск отката при слабой ликвидности</p>
                 </div>
               </div>
 
-              <div className="bg-yellow-900/20 border border-yellow-700/30 rounded p-4 mt-3">
-                <p className="text-yellow-300 font-semibold text-sm mb-1">💭 Моё мнение</p>
-                <p className="text-terminal-muted text-sm">
-                  Весна–лето 2025: рынок ставок был явно в режиме <span className="text-terminal-cyan">«extended bull»</span> — высокий консенсус на продолжение роста, при том что эти уровни позже действительно были достигнуты.
-                </p>
-              </div>
-            </div>
-
-            {/* 4.2 Актуальные ставки */}
-            <div>
-              <h3 className="text-base font-semibold text-terminal-cyan mb-3">4.2. Актуальные ставки (конец 2025)</h3>
-              <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4">
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <p className="text-terminal-text font-semibold mb-2">Факт (сейчас):</p>
-                    <p className="text-terminal-muted">
-                      Polymarket-рынки дают <span className="text-terminal-red">≈62% шанс</span>, что BTC закончит 2025 год <span className="text-terminal-red">ниже $90k</span>. <span className="text-xs">[KuCoin]</span>
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-terminal-text font-semibold mb-2">Факт (весна 2025):</p>
-                    <p className="text-terminal-muted">
-                      Polymarket давал &lt;&lt;10% на $200k к концу марта и наибольший вес сценариям ≤ $75k, то есть без сверхбычьего продолжения прямо тогда. <span className="text-xs">[reubenabati.com.ng]</span>
-                    </p>
-                  </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-terminal-red/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-terminal-red text-sm">2</span>
+                </div>
+                <div>
+                  <RiskIndicator level="high" label="Давление на Solana" />
+                  <p className="text-sm text-terminal-muted mt-1">Взлом Upbit $36M + оттоки ETF; следить за on-chain объёмами</p>
                 </div>
               </div>
 
-              <div className="bg-yellow-900/20 border border-yellow-700/30 rounded p-4 mt-3">
-                <p className="text-yellow-300 font-semibold text-sm mb-1">💭 Моё мнение</p>
-                <p className="text-terminal-muted text-sm">
-                  Ставки Polymarket сейчас смещены в сторону <span className="text-terminal-red">затяжной коррекции</span> (закрытие года &lt; $90k), но не отменяют сценарии нового ATH позже.
-                </p>
-                <p className="text-terminal-muted text-sm mt-2">
-                  Хорошо видно переоценку ожиданий: от весеннего «120–150k+ почти неизбежно» до текущего «скорее флет/снижение вокруг 90k».
-                </p>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-yellow-500 text-sm">3</span>
+                </div>
+                <div>
+                  <RiskIndicator level="medium" label="Пена после запуска Monad" />
+                  <p className="text-sm text-terminal-muted mt-1">93% аирдроп-кошельков продали; критика Hayes усиливает давление</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-yellow-500 text-sm">4</span>
+                </div>
+                <div>
+                  <RiskIndicator level="medium" label="Даунгрейд Tether S&P" />
+                  <p className="text-sm text-terminal-muted mt-1">Опасения по BTC/gold экспозиции могут перейти на стейблы/DeFi</p>
+                </div>
               </div>
 
-              <div className="bg-blue-900/20 border border-blue-700/30 rounded p-4 mt-3">
-                <p className="text-blue-300 font-semibold text-sm mb-1">🔮 Предположение</p>
-                <p className="text-terminal-muted text-sm">
-                  Если к концу года BTC удержится выше 90k, мы можем увидеть резкий перезаход денег в Polymarket-рынки с пересборкой вероятностей под новый бычий сценарий — <span className="text-terminal-cyan">материал для отдельного трейда «против текущего консенсуса»</span>.
-                </p>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-terminal-muted/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-terminal-muted text-sm">5</span>
+                </div>
+                <div>
+                  <RiskIndicator level="low" label="Низкая уверенность" />
+                  <p className="text-sm text-terminal-muted mt-1">Снижение соц. трендов — низкая conviction; следить за BTC ETF потоками</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-terminal-green/10 rounded-lg p-3 -mx-3">
+                <div className="w-8 h-8 rounded-full bg-terminal-green/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-terminal-green text-sm">+</span>
+                </div>
+                <div>
+                  <span className="text-terminal-green font-semibold text-sm">Бычьи якоря</span>
+                  <p className="text-sm text-terminal-muted mt-1">Резерв BTC в Техасе, накопление Chainlink — макро поддержка</p>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Summary */}
-        <section className="bg-graphite-900 border border-graphite-700 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4 text-terminal-cyan">Сводка</h2>
-          <ul className="space-y-2 text-terminal-muted text-sm">
-            <li>• <strong className="text-terminal-text">Цена</strong>: BTC потерял ~30% от ATH ($126k → &lt;$90k), рынок стер &gt;$1 трлн капы.</li>
-            <li>• <strong className="text-terminal-text">Техника</strong>: Death cross зафиксирован, глубочайшая коррекция с 2017.</li>
-            <li>• <strong className="text-terminal-text">Социалка</strong>: Рекордная активность (289k mentions, 1.8x от среднего), но sentiment умеренно позитивный (76%) — паника в цене при живом интересе.</li>
-            <li>• <strong className="text-terminal-text">Деривативы</strong>: Миллиардные ликвидации плеча, ETF-оттоки, макро risk-off. Отскоки вверх — скорее шорт-квизы.</li>
-            <li>• <strong className="text-terminal-text">Polymarket</strong>: Консенсус развернулся — 62% на закрытие года &lt;$90k (против весеннего «75% на &gt;$120k»).</li>
-            <li>• <strong className="text-terminal-text">Вывод</strong>: Не локальный откат, а полноценная фаза перезагрузки. Высокая соц-активность при падении цены — классический сетап для аккумуляции перед следующей ногой вверх, но разворот не гарантирован в ближайшие недели.</li>
-          </ul>
+        {/* Quick Stats Footer */}
+        <section className="grid grid-cols-2 md:grid-cols-5 gap-4 py-6 border-t border-graphite-800">
+          <div className="text-center">
+            <div className="text-2xl font-bold font-mono text-terminal-cyan">82%</div>
+            <div className="text-xs text-terminal-muted">Сентимент рынка</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold font-mono text-terminal-red">-7.1%</div>
+            <div className="text-xs text-terminal-muted">Активность авторов</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold font-mono text-terminal-green">+9.4%</div>
+            <div className="text-xs text-terminal-muted">DeFi упоминания</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold font-mono text-terminal-red">-19%</div>
+            <div className="text-xs text-terminal-muted">DeFi вовлечённость</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold font-mono text-orange-400">$36M</div>
+            <div className="text-xs text-terminal-muted">Взлом Upbit</div>
+          </div>
         </section>
 
       </article>
 
       {/* Footer */}
-      <footer className="max-w-4xl mx-auto mt-16 pt-8 border-t border-graphite-800 text-xs text-terminal-muted">
-        <p>Отчёт сгенерирован: 20 ноя 2025 09:30 UTC</p>
-        <p className="mt-2">Источник данных: Reuters, Moneycontrol, Coinlive, Tom's Hardware, CoinDesk, The Guardian, LunarCrush (MCP), Polymarket, Bitget, CryptoSlate, KuCoin</p>
-        <p className="mt-2">Этот отчёт объединяет факты (с источниками), качественный анализ и оценку сентимента. Не является финансовым советом.</p>
-        <p className="mt-4">
+      <footer className="max-w-6xl mx-auto mt-8 pt-8 border-t border-graphite-800 text-xs text-terminal-muted">
+        <div className="flex flex-col md:flex-row justify-between gap-4">
+          <div>
+            <p>Отчёт сгенерирован: 28 ноября 2025 • UTC</p>
+            <p className="mt-1">Источники: LunarCrush, CoinGecko, Grayscale, Polymarket, On-chain аналитика</p>
+          </div>
+          <div className="text-right">
+            <p>Отчёт объединяет факты, соц. сигналы и анализ сентимента.</p>
+            <p className="mt-1 text-terminal-red">Не является финансовым советом.</p>
+          </div>
+        </div>
+        <p className="mt-6">
           <Link to="/" className="text-terminal-cyan hover:underline">← Назад на Context8</Link>
         </p>
       </footer>
