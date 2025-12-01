@@ -171,12 +171,18 @@ export function Dashboard() {
         <section className="mb-8">
           <div className="bg-terminal-red/10 border-l-4 border-terminal-red rounded p-4">
             <p className="text-terminal-red text-sm">
-              ⚠️ MCP Server under maintenance until December 1st
+              ⚠️ MCP Server under maintenance until December 20th
             </p>
             <p className="text-terminal-muted text-sm mt-1">
               API integration temporarily unavailable. Daily reports continue at{' '}
               <a href="/reports/daily" className="text-terminal-cyan hover:underline">
                 /reports/daily
+              </a>
+            </p>
+            <p className="text-terminal-muted text-sm mt-2">
+              📝 We need your feedback to continue development!{' '}
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSfmaKzi3O-1V6ZAC4zasdQzPA9POclHrXvFM8cQd3gCffSb3g/viewform" target="_blank" rel="noopener noreferrer" className="text-terminal-cyan hover:underline">
+                Please fill out the feedback form
               </a>
             </p>
           </div>

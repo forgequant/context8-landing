@@ -64,7 +64,8 @@ export function Landing() {
               transition={{ delay: 0.3 }}
               className="text-terminal-red text-sm"
             >
-              ⚠️ Service under maintenance until December 1st — daily reports continue below
+              ⚠️ Service under maintenance until December 20th — daily reports continue below. We need your feedback to continue development:{' '}
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSfmaKzi3O-1V6ZAC4zasdQzPA9POclHrXvFM8cQd3gCffSb3g/viewform" target="_blank" rel="noopener noreferrer" className="underline hover:text-terminal-cyan">please fill out the form</a>
             </motion.p>
 
             {/* Typewriter headline - smaller size */}
