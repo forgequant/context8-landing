@@ -10,6 +10,7 @@ import { SubscriptionStatus } from '../components/subscription/SubscriptionStatu
 import { RenewalReminder } from '../components/subscription/RenewalReminder'
 import { PaymentHistory } from '../components/subscription/PaymentHistory'
 import { MCPInstructions } from '../components/dashboard/MCPInstructions'
+import { ApiKeySection } from '../components/dashboard/ApiKeySection'
 
 export function Dashboard() {
   const navigate = useNavigate()
@@ -243,6 +244,12 @@ export function Dashboard() {
             <PaymentHistory payments={payments} loading={paymentsLoading} />
           </section>
         )}
+
+        {/* API Key section */}
+        <section className="mb-12">
+          <h2 className="text-sm text-terminal-muted italic mb-6">API Key</h2>
+          <ApiKeySection />
+        </section>
 
         {/* API Integration section */}
         <section className="mb-12">
