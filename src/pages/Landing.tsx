@@ -430,7 +430,7 @@ export function Landing() {
             <a href="#" className="hover:text-terminal-text transition-colors">Privacy</a>
             <a href="#" className="hover:text-terminal-text transition-colors">Terms</a>
             <a href="#" className="hover:text-terminal-text transition-colors">Status</a>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-terminal-text transition-colors">GitHub</a>
+            <a href="https://github.com/forgequant/context8-mcp" target="_blank" rel="noopener noreferrer" className="hover:text-terminal-text transition-colors">GitHub</a>
           </nav>
         </div>
         <p className="text-center md:text-left text-xs text-terminal-muted mt-6">
