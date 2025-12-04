@@ -12,6 +12,12 @@ const AdminRoute = lazy(() => import('./components/admin/AdminRoute').then(m => 
 const DailyReport = lazy(() => import('./pages/DailyReport').then(m => ({ default: m.DailyReport })))
 const DailyReportRu = lazy(() => import('./pages/DailyReportRu').then(m => ({ default: m.DailyReportRu })))
 
+// Blog pages
+const BlogIndex = lazy(() => import('./pages/blog/BlogIndex').then(m => ({ default: m.BlogIndex })))
+const WhatIsMcp = lazy(() => import('./pages/blog/articles/WhatIsMcp').then(m => ({ default: m.WhatIsMcp })))
+const AiCryptoData = lazy(() => import('./pages/blog/articles/AiCryptoData').then(m => ({ default: m.AiCryptoData })))
+const McpVsRestApi = lazy(() => import('./pages/blog/articles/McpVsRestApi').then(m => ({ default: m.McpVsRestApi })))
+
 // Loading fallback component
 function LoadingFallback() {
   return (
@@ -33,6 +39,10 @@ export default function App() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/reports/daily" element={<DailyReport />} />
             <Route path="/reports/daily-ru" element={<DailyReportRu />} />
+            <Route path="/blog" element={<BlogIndex />} />
+            <Route path="/blog/what-is-mcp" element={<WhatIsMcp />} />
+            <Route path="/blog/ai-crypto-data-integration" element={<AiCryptoData />} />
+            <Route path="/blog/mcp-vs-rest-api" element={<McpVsRestApi />} />
             <Route
               path="/admin"
               element={
