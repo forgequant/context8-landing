@@ -56,7 +56,7 @@ export function Landing() {
         </svg>
       ),
       title: 'MCP Native',
-      description: 'Works with Claude Desktop, Cursor, and any MCP client. pip install coinglass-mcp.'
+      description: 'Works with Claude Desktop, Cursor, and any MCP client. Clone from GitHub and run.'
     },
     {
       icon: (
@@ -233,8 +233,8 @@ export function Landing() {
           {/* Steps */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {[
-              { step: '01', title: 'Install', desc: 'pip install coinglass-mcp' },
-              { step: '02', title: 'Configure', desc: 'Add API key to Claude Desktop config' },
+              { step: '01', title: 'Clone', desc: 'Get the repo from GitHub' },
+              { step: '02', title: 'Configure', desc: 'Add CoinGlass API key' },
               { step: '03', title: 'Query', desc: 'Ask about OI, funding, liquidations, whales' }
             ].map((item, index) => (
               <motion.div
@@ -477,26 +477,16 @@ export function Landing() {
               Give your AI CoinGlass superpowers
             </h3>
             <p className="text-terminal-muted mb-8 max-w-lg mx-auto">
-              pip install coinglass-mcp — that's it.
+              Clone the repo, add your API key, start querying.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
-                href="https://github.com/forgequant/context8-mcp"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-terminal-cyan text-graphite-950 px-8 py-3 rounded-lg text-base font-semibold hover:bg-terminal-cyan/90 hover:shadow-terminal-cyan transition-all"
-              >
-                View on GitHub
-              </a>
-              <a
-                href="https://pypi.org/project/coinglass-mcp/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-8 py-3 rounded-lg text-base font-medium text-terminal-muted border border-graphite-800 hover:border-terminal-cyan hover:text-terminal-text transition-all"
-              >
-                PyPI Package
-              </a>
-            </div>
+            <a
+              href="https://github.com/forgequant/context8-mcp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-terminal-cyan text-graphite-950 px-8 py-3 rounded-lg text-base font-semibold hover:bg-terminal-cyan/90 hover:shadow-terminal-cyan transition-all"
+            >
+              View on GitHub
+            </a>
           </div>
         </motion.section>
       </main>
