@@ -287,94 +287,89 @@ export function Landing() {
           transition={{ duration: 0.6 }}
           className="mb-24 md:mb-32"
         >
-          <h3 className="text-sm text-terminal-cyan mb-4 text-center">COINGLASS API TIERS</h3>
+          <h3 className="text-sm text-terminal-cyan mb-4 text-center">PRICING</h3>
           <p className="text-center text-terminal-muted mb-12 max-w-lg mx-auto">
-            MCP server is free. You need a CoinGlass API key.
+            Start free, upgrade when you need more.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-            {/* Hobbyist */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Free tier */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
               transition={{ duration: 0.5 }}
-              className="p-5 rounded-xl bg-graphite-900 border border-graphite-800"
+              className="p-6 rounded-xl bg-graphite-900 border border-graphite-800"
             >
-              <h4 className="text-base font-semibold text-terminal-text mb-1">Hobbyist</h4>
-              <p className="text-xl font-bold text-terminal-text mb-3">
-                Free
+              <h4 className="text-lg font-semibold text-terminal-text mb-2">Free</h4>
+              <p className="text-3xl font-bold text-terminal-text mb-4">
+                $0<span className="text-sm font-normal text-terminal-muted">/month</span>
               </p>
-              <ul className="space-y-2 text-xs text-terminal-muted">
-                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Basic intervals (h4, h8, d1)</li>
-                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Core derivatives data</li>
-                <li className="flex items-start gap-2"><span className="text-terminal-muted">—</span>No whale tracking</li>
+              <ul className="space-y-3 mb-6 text-sm">
+                <li className="flex items-start gap-2 text-terminal-muted">
+                  <span className="text-terminal-green mt-0.5">✓</span>
+                  2 requests/day or 5/week
+                </li>
+                <li className="flex items-start gap-2 text-terminal-muted">
+                  <span className="text-terminal-green mt-0.5">✓</span>
+                  All 22 MCP tools
+                </li>
+                <li className="flex items-start gap-2 text-terminal-muted">
+                  <span className="text-terminal-green mt-0.5">✓</span>
+                  Full CoinGlass data access
+                </li>
+                <li className="flex items-start gap-2 text-terminal-muted">
+                  <span className="text-terminal-green mt-0.5">✓</span>
+                  Community support
+                </li>
               </ul>
+              <a
+                href="/auth"
+                className="block w-full py-2.5 rounded-lg text-sm font-medium border border-graphite-800 text-terminal-muted hover:border-terminal-cyan hover:text-terminal-text transition-all text-center"
+              >
+                Get Started
+              </a>
             </motion.div>
 
-            {/* Startup */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
-              transition={{ duration: 0.5, delay: 0.05 }}
-              className="p-5 rounded-xl bg-graphite-900 border border-graphite-800"
-            >
-              <h4 className="text-base font-semibold text-terminal-text mb-1">Startup</h4>
-              <p className="text-xl font-bold text-terminal-text mb-3">
-                $29<span className="text-xs font-normal text-terminal-muted">/mo</span>
-              </p>
-              <ul className="space-y-2 text-xs text-terminal-muted">
-                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Extended intervals (m1-h1)</li>
-                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Whale alerts & positions</li>
-                <li className="flex items-start gap-2"><span className="text-terminal-muted">—</span>No liquidation orders</li>
-              </ul>
-            </motion.div>
-
-            {/* Standard */}
+            {/* Pro tier */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="p-5 rounded-xl bg-graphite-900 border-2 border-terminal-cyan relative"
+              className="p-6 rounded-xl bg-graphite-900 border-2 border-terminal-cyan relative"
             >
-              <span className="absolute -top-2.5 left-4 px-2 py-0.5 text-[10px] font-medium bg-terminal-cyan text-graphite-950 rounded">
-                POPULAR
+              <span className="absolute -top-3 left-4 px-2 py-0.5 text-xs font-medium bg-terminal-cyan text-graphite-950 rounded">
+                RECOMMENDED
               </span>
-              <h4 className="text-base font-semibold text-terminal-text mb-1">Standard</h4>
-              <p className="text-xl font-bold text-terminal-text mb-3">
-                $79<span className="text-xs font-normal text-terminal-muted">/mo</span>
+              <h4 className="text-lg font-semibold text-terminal-text mb-2">Pro</h4>
+              <p className="text-3xl font-bold text-terminal-text mb-4">
+                $8<span className="text-sm font-normal text-terminal-muted">/month</span>
               </p>
-              <ul className="space-y-2 text-xs text-terminal-muted">
-                <li className="flex items-start gap-2"><span className="text-terminal-cyan">✓</span>Liquidation orders stream</li>
-                <li className="flex items-start gap-2"><span className="text-terminal-cyan">✓</span>Real-time order flow</li>
-                <li className="flex items-start gap-2"><span className="text-terminal-muted">—</span>No heatmaps</li>
+              <ul className="space-y-3 mb-6 text-sm">
+                <li className="flex items-start gap-2 text-terminal-muted">
+                  <span className="text-terminal-cyan mt-0.5">↑</span>
+                  All Free features, plus:
+                </li>
+                <li className="flex items-start gap-2 text-terminal-text">
+                  <span className="text-terminal-cyan mt-0.5">✓</span>
+                  10 requests/day or 30/week
+                </li>
+                <li className="flex items-start gap-2 text-terminal-text">
+                  <span className="text-terminal-cyan mt-0.5">✓</span>
+                  Priority API access
+                </li>
+                <li className="flex items-start gap-2 text-terminal-text">
+                  <span className="text-terminal-cyan mt-0.5">✓</span>
+                  Email support
+                </li>
               </ul>
-            </motion.div>
-
-            {/* Professional */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              className="p-5 rounded-xl bg-graphite-900 border border-graphite-800"
-            >
-              <h4 className="text-base font-semibold text-terminal-text mb-1">Professional</h4>
-              <p className="text-xl font-bold text-terminal-text mb-3">
-                $199<span className="text-xs font-normal text-terminal-muted">/mo</span>
-              </p>
-              <ul className="space-y-2 text-xs text-terminal-muted">
-                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Liquidation heatmaps</li>
-                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Full API access</li>
-                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>All premium features</li>
-              </ul>
+              <a
+                href="/auth"
+                className="block w-full py-2.5 rounded-lg text-sm font-semibold bg-terminal-cyan text-graphite-950 hover:bg-terminal-cyan/90 transition-all text-center"
+              >
+                Upgrade to Pro
+              </a>
             </motion.div>
           </div>
-
-          <p className="text-center text-sm text-terminal-muted mt-8">
-            Get your API key at{' '}
-            <a href="https://www.coinglass.com/pricing" target="_blank" rel="noopener noreferrer" className="text-terminal-cyan hover:underline">
-              coinglass.com/pricing
-            </a>
-          </p>
         </motion.section>
 
         {/* Tools section */}
