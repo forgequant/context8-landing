@@ -29,22 +29,43 @@ export function Landing() {
 
   const features = [
     {
-      icon: '⚡',
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ),
       title: 'Instant Setup',
       description: 'One URL, one OAuth click. Your AI gets market data in under 60 seconds.'
     },
     {
-      icon: '🔌',
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2v4m0 12v4M2 12h4m12 0h4" strokeLinecap="round"/>
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 9V2M12 22v-7M9 12H2M22 12h-7" strokeLinecap="round" opacity="0.5"/>
+        </svg>
+      ),
       title: 'MCP Protocol',
       description: 'Native Model Context Protocol support. Works with Claude, GPT, and any MCP-compatible client.'
     },
     {
-      icon: '📊',
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M3 3v18h18" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M7 16l4-4 4 4 5-6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ),
       title: 'Rich Context',
       description: 'Prices, volume, sentiment, on-chain metrics — everything your AI needs for informed analysis.'
     },
     {
-      icon: '🔒',
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="3" y="11" width="18" height="11" rx="2" strokeLinecap="round"/>
+          <path d="M7 11V7a5 5 0 0110 0v4" strokeLinecap="round"/>
+          <circle cx="12" cy="16" r="1" fill="currentColor"/>
+        </svg>
+      ),
       title: 'Secure by Default',
       description: 'OAuth-only access. Your API key stays safe. No exposed credentials.'
     }
@@ -188,7 +209,7 @@ export function Landing() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="p-6 rounded-xl bg-graphite-900 border border-graphite-800 hover:border-terminal-cyan/30 transition-all group"
               >
-                <span className="text-2xl mb-4 block">{feature.icon}</span>
+                <span className="w-10 h-10 rounded-lg bg-graphite-800 flex items-center justify-center text-terminal-cyan mb-4">{feature.icon}</span>
                 <h4 className="text-lg font-semibold text-terminal-text mb-2 group-hover:text-terminal-cyan transition-colors">
                   {feature.title}
                 </h4>
