@@ -18,7 +18,7 @@ export function Landing() {
   const isFaqInView = useInView(faqRef, { once: true, margin: '-100px' })
 
   const { displayText: heroText, isComplete: heroComplete } = useTypewriter({
-    text: 'Real-time crypto data for your AI assistant',
+    text: 'CoinGlass data for your AI assistant',
     speed: 40,
     delay: 300
   })
@@ -31,22 +31,12 @@ export function Landing() {
     {
       icon: (
         <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M4 6h16M4 12h16M4 18h10" strokeLinecap="round"/>
+          <circle cx="19" cy="18" r="2"/>
         </svg>
       ),
-      title: 'Instant Setup',
-      description: 'One URL, one OAuth click. Your AI gets market data in under 60 seconds.'
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M12 2v4m0 12v4M2 12h4m12 0h4" strokeLinecap="round"/>
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 9V2M12 22v-7M9 12H2M22 12h-7" strokeLinecap="round" opacity="0.5"/>
-        </svg>
-      ),
-      title: 'MCP Protocol',
-      description: 'Native Model Context Protocol support. Works with Claude, GPT, and any MCP-compatible client.'
+      title: '22 MCP Tools',
+      description: 'Open Interest, Funding Rates, Liquidations, Whale Tracking, Options, ETF flows — all in one server.'
     },
     {
       icon: (
@@ -55,19 +45,27 @@ export function Landing() {
           <path d="M7 16l4-4 4 4 5-6" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       ),
-      title: 'Rich Context',
-      description: 'Prices, volume, sentiment, on-chain metrics — everything your AI needs for informed analysis.'
+      title: '80+ Endpoints',
+      description: 'Full CoinGlass API coverage. Derivatives, spot, on-chain, indicators, heatmaps — unified access.'
     },
     {
       icon: (
         <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="3" y="11" width="18" height="11" rx="2" strokeLinecap="round"/>
-          <path d="M7 11V7a5 5 0 0110 0v4" strokeLinecap="round"/>
-          <circle cx="12" cy="16" r="1" fill="currentColor"/>
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v4m0 12v4M2 12h4m12 0h4" strokeLinecap="round"/>
         </svg>
       ),
-      title: 'Secure by Default',
-      description: 'OAuth-only access. Your API key stays safe. No exposed credentials.'
+      title: 'MCP Native',
+      description: 'Works with Claude Desktop, Cursor, and any MCP client. pip install coinglass-mcp.'
+    },
+    {
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7L12 17l-6.3 4 2.3-7-6-4.6h7.6L12 2z" strokeLinejoin="round"/>
+        </svg>
+      ),
+      title: 'Pro Features',
+      description: 'Whale alerts, liquidation heatmaps, real-time order flow — tier-gated access to premium data.'
     }
   ]
 
@@ -117,7 +115,7 @@ export function Landing() {
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-graphite-900 border border-graphite-800 text-xs text-terminal-muted mb-8"
           >
             <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
-            MCP Server for Crypto Intelligence
+            CoinGlass MCP Server — 22 Tools, 80+ Endpoints
           </motion.div>
 
           {/* Main headline */}
@@ -133,8 +131,8 @@ export function Landing() {
             transition={{ duration: 0.5 }}
             className="text-lg md:text-xl text-terminal-muted mb-10 max-w-2xl mx-auto"
           >
-            Connect your AI to live market data via MCP.
-            Prices, volume, sentiment — one endpoint, zero config.
+            Open Interest, Funding Rates, Liquidations, Whale Tracking, Options, ETF flows.
+            Full CoinGlass API for Claude, Cursor, and any MCP client.
           </motion.p>
 
           {/* CTA buttons */}
@@ -235,9 +233,9 @@ export function Landing() {
           {/* Steps */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {[
-              { step: '01', title: 'Connect', desc: 'Add the MCP URL to your AI client' },
-              { step: '02', title: 'Authenticate', desc: 'One-click OAuth with Google or GitHub' },
-              { step: '03', title: 'Query', desc: 'Ask your AI about any crypto market' }
+              { step: '01', title: 'Install', desc: 'pip install coinglass-mcp' },
+              { step: '02', title: 'Configure', desc: 'Add API key to Claude Desktop config' },
+              { step: '03', title: 'Query', desc: 'Ask about OI, funding, liquidations, whales' }
             ].map((item, index) => (
               <motion.div
                 key={item.step}
@@ -259,19 +257,21 @@ export function Landing() {
               <span className="w-3 h-3 rounded-full bg-terminal-red/60" />
               <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
               <span className="w-3 h-3 rounded-full bg-terminal-green/60" />
-              <span className="text-xs text-terminal-muted ml-2">terminal</span>
+              <span className="text-xs text-terminal-muted ml-2">claude_desktop_config.json</span>
             </div>
             <div className="p-6 overflow-x-auto">
               <pre className="text-sm">
                 <code>
-                  <span className="text-terminal-muted"># Add to your MCP config</span>{'\n'}
-                  <span className="text-terminal-cyan">MCP_URL</span><span className="text-terminal-text">=</span><span className="text-terminal-green">"https://api.context8.markets"</span>{'\n\n'}
-                  <span className="text-terminal-muted"># Ask your AI</span>{'\n'}
-                  <span className="text-terminal-text">"Give me a BTC market briefing"</span>{'\n\n'}
-                  <span className="text-terminal-muted"># Response</span>{'\n'}
-                  <span className="text-terminal-green">✓</span> <span className="text-terminal-text">BTC $97,234</span> <span className="text-terminal-green">+2.8%</span>{'\n'}
-                  <span className="text-terminal-muted">  Volume: $48B | Fear & Greed: 72 (Greed)</span>{'\n'}
-                  <span className="text-terminal-muted">  Key levels: Support $95K | Resistance $100K</span>
+                  <span className="text-terminal-muted">{`{`}</span>{'\n'}
+                  <span className="text-terminal-muted">  </span><span className="text-terminal-cyan">"mcpServers"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
+                  <span className="text-terminal-muted">    </span><span className="text-terminal-cyan">"coinglass"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
+                  <span className="text-terminal-muted">      </span><span className="text-terminal-cyan">"command"</span><span className="text-terminal-muted">: </span><span className="text-terminal-green">"coinglass-mcp"</span><span className="text-terminal-muted">,</span>{'\n'}
+                  <span className="text-terminal-muted">      </span><span className="text-terminal-cyan">"env"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
+                  <span className="text-terminal-muted">        </span><span className="text-terminal-cyan">"COINGLASS_API_KEY"</span><span className="text-terminal-muted">: </span><span className="text-terminal-green">"your-api-key"</span>{'\n'}
+                  <span className="text-terminal-muted">      {`}`}</span>{'\n'}
+                  <span className="text-terminal-muted">    {`}`}</span>{'\n'}
+                  <span className="text-terminal-muted">  {`}`}</span>{'\n'}
+                  <span className="text-terminal-muted">{`}`}</span>
                 </code>
               </pre>
             </div>
@@ -287,79 +287,131 @@ export function Landing() {
           transition={{ duration: 0.6 }}
           className="mb-24 md:mb-32"
         >
-          <h3 className="text-sm text-terminal-cyan mb-4 text-center">PRICING</h3>
+          <h3 className="text-sm text-terminal-cyan mb-4 text-center">COINGLASS API TIERS</h3>
           <p className="text-center text-terminal-muted mb-12 max-w-lg mx-auto">
-            Start free, upgrade when you need more.
+            MCP server is free. You need a CoinGlass API key.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Free tier */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            {/* Hobbyist */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
               transition={{ duration: 0.5 }}
-              className="p-6 rounded-xl bg-graphite-900 border border-graphite-800"
+              className="p-5 rounded-xl bg-graphite-900 border border-graphite-800"
             >
-              <h4 className="text-lg font-semibold text-terminal-text mb-2">Free</h4>
-              <p className="text-3xl font-bold text-terminal-text mb-4">
-                $0<span className="text-sm font-normal text-terminal-muted">/month</span>
+              <h4 className="text-base font-semibold text-terminal-text mb-1">Hobbyist</h4>
+              <p className="text-xl font-bold text-terminal-text mb-3">
+                Free
               </p>
-              <ul className="space-y-3 mb-6 text-sm">
-                {[
-                  'Core price data (Binance)',
-                  '100 requests/day',
-                  'Basic market briefings',
-                  'Community support'
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-terminal-muted">
-                    <span className="text-terminal-green mt-0.5">✓</span>
-                    {item}
-                  </li>
-                ))}
+              <ul className="space-y-2 text-xs text-terminal-muted">
+                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Basic intervals (h4, h8, d1)</li>
+                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Core derivatives data</li>
+                <li className="flex items-start gap-2"><span className="text-terminal-muted">—</span>No whale tracking</li>
               </ul>
-              <button
-                onClick={handleAuth}
-                className="w-full py-2.5 rounded-lg text-sm font-medium border border-graphite-800 text-terminal-muted hover:border-terminal-cyan hover:text-terminal-text transition-all"
-              >
-                Get Started
-              </button>
             </motion.div>
 
-            {/* Pro tier */}
+            {/* Startup */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+              className="p-5 rounded-xl bg-graphite-900 border border-graphite-800"
+            >
+              <h4 className="text-base font-semibold text-terminal-text mb-1">Startup</h4>
+              <p className="text-xl font-bold text-terminal-text mb-3">
+                $29<span className="text-xs font-normal text-terminal-muted">/mo</span>
+              </p>
+              <ul className="space-y-2 text-xs text-terminal-muted">
+                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Extended intervals (m1-h1)</li>
+                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Whale alerts & positions</li>
+                <li className="flex items-start gap-2"><span className="text-terminal-muted">—</span>No liquidation orders</li>
+              </ul>
+            </motion.div>
+
+            {/* Standard */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="p-6 rounded-xl bg-graphite-900 border-2 border-terminal-cyan relative"
+              className="p-5 rounded-xl bg-graphite-900 border-2 border-terminal-cyan relative"
             >
-              <span className="absolute -top-3 left-4 px-2 py-0.5 text-xs font-medium bg-terminal-cyan text-graphite-950 rounded">
+              <span className="absolute -top-2.5 left-4 px-2 py-0.5 text-[10px] font-medium bg-terminal-cyan text-graphite-950 rounded">
                 POPULAR
               </span>
-              <h4 className="text-lg font-semibold text-terminal-text mb-2">Pro</h4>
-              <p className="text-3xl font-bold text-terminal-text mb-4">
-                $8<span className="text-sm font-normal text-terminal-muted">/month</span>
+              <h4 className="text-base font-semibold text-terminal-text mb-1">Standard</h4>
+              <p className="text-xl font-bold text-terminal-text mb-3">
+                $79<span className="text-xs font-normal text-terminal-muted">/mo</span>
               </p>
-              <ul className="space-y-3 mb-6 text-sm">
-                {[
-                  'All Free features, plus:',
-                  'Multi-source data (news, on-chain, social)',
-                  '10,000 requests/day',
-                  'Advanced analytics & sentiment',
-                  'Priority support'
-                ].map((item, i) => (
-                  <li key={item} className={`flex items-start gap-2 ${i === 0 ? 'text-terminal-muted' : 'text-terminal-text'}`}>
-                    <span className="text-terminal-cyan mt-0.5">{i === 0 ? '↑' : '✓'}</span>
-                    {item}
-                  </li>
-                ))}
+              <ul className="space-y-2 text-xs text-terminal-muted">
+                <li className="flex items-start gap-2"><span className="text-terminal-cyan">✓</span>Liquidation orders stream</li>
+                <li className="flex items-start gap-2"><span className="text-terminal-cyan">✓</span>Real-time order flow</li>
+                <li className="flex items-start gap-2"><span className="text-terminal-muted">—</span>No heatmaps</li>
               </ul>
-              <button
-                onClick={handleAuth}
-                className="w-full py-2.5 rounded-lg text-sm font-semibold bg-terminal-cyan text-graphite-950 hover:bg-terminal-cyan/90 transition-all"
-              >
-                Upgrade to Pro
-              </button>
             </motion.div>
+
+            {/* Professional */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="p-5 rounded-xl bg-graphite-900 border border-graphite-800"
+            >
+              <h4 className="text-base font-semibold text-terminal-text mb-1">Professional</h4>
+              <p className="text-xl font-bold text-terminal-text mb-3">
+                $199<span className="text-xs font-normal text-terminal-muted">/mo</span>
+              </p>
+              <ul className="space-y-2 text-xs text-terminal-muted">
+                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Liquidation heatmaps</li>
+                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>Full API access</li>
+                <li className="flex items-start gap-2"><span className="text-terminal-green">✓</span>All premium features</li>
+              </ul>
+            </motion.div>
+          </div>
+
+          <p className="text-center text-sm text-terminal-muted mt-8">
+            Get your API key at{' '}
+            <a href="https://www.coinglass.com/pricing" target="_blank" rel="noopener noreferrer" className="text-terminal-cyan hover:underline">
+              coinglass.com/pricing
+            </a>
+          </p>
+        </motion.section>
+
+        {/* Tools section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-24 md:mb-32"
+        >
+          <h3 className="text-sm text-terminal-cyan mb-4 text-center">22 MCP TOOLS</h3>
+          <p className="text-center text-terminal-muted mb-8 max-w-lg mx-auto">
+            Every CoinGlass feature, accessible via natural language.
+          </p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto text-xs">
+            {[
+              'coinglass_oi_history',
+              'coinglass_oi_distribution',
+              'coinglass_funding_history',
+              'coinglass_funding_current',
+              'coinglass_long_short',
+              'coinglass_liq_history',
+              'coinglass_liq_orders',
+              'coinglass_liq_heatmap',
+              'coinglass_whale_positions',
+              'coinglass_taker',
+              'coinglass_options',
+              'coinglass_etf',
+              'coinglass_indicators',
+              'coinglass_onchain',
+              'coinglass_spot',
+              'coinglass_market_data'
+            ].map((tool) => (
+              <div key={tool} className="px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-800 text-terminal-muted font-mono truncate">
+                {tool}
+              </div>
+            ))}
           </div>
         </motion.section>
 
@@ -379,24 +431,24 @@ export function Landing() {
           <div className="max-w-2xl mx-auto space-y-4">
             {[
               {
-                q: 'What is MCP?',
-                a: 'Model Context Protocol is an open standard that lets AI assistants securely connect to external data sources. Context8 is an MCP server that provides real-time crypto market data.'
+                q: 'What is this MCP server?',
+                a: 'coinglass-mcp wraps the entire CoinGlass API into 22 MCP tools. Install via pip, add your API key, and your AI assistant gets access to 80+ endpoints for derivatives data.'
+              },
+              {
+                q: 'Do I need a CoinGlass account?',
+                a: 'Yes. The MCP server is free and open source, but you need a CoinGlass API key. Free tier (Hobbyist) is available at coinglass.com.'
               },
               {
                 q: 'Which AI clients are supported?',
-                a: 'Any MCP-compatible client works — including Claude Desktop, Cursor, and custom implementations. More clients are adding MCP support regularly.'
+                a: 'Any MCP-compatible client — Claude Desktop, Cursor, Cline, and custom implementations. The server runs locally via stdio transport.'
               },
               {
-                q: 'Is authentication required?',
-                a: 'Yes. All access requires OAuth authentication (Google or GitHub) — even on the free tier. This ensures secure, rate-limited access to market data.'
+                q: 'What data is available?',
+                a: 'Open Interest, Funding Rates, Liquidations, Long/Short Ratios, Whale Tracking, Options, ETF flows, On-chain metrics, and 16 market indicators.'
               },
               {
-                q: 'What data sources do you use?',
-                a: 'Free tier uses Binance for price data. Pro tier adds news aggregation, on-chain metrics, social sentiment, and multi-exchange data.'
-              },
-              {
-                q: 'Do you support stocks or forex?',
-                a: 'Not yet. We\'re focused on crypto markets first. Stock and forex data is on the roadmap for future releases.'
+                q: 'Is it open source?',
+                a: 'Yes. The coinglass-mcp server is MIT licensed. Check the GitHub repo for source code, issues, and contributions.'
               }
             ].map((item, i) => (
               <motion.div
@@ -422,17 +474,29 @@ export function Landing() {
         >
           <div className="p-8 md:p-12 rounded-2xl bg-gradient-to-b from-graphite-900 to-graphite-950 border border-graphite-800">
             <h3 className="text-2xl md:text-3xl font-semibold text-terminal-text mb-4">
-              Ready to give your AI market intelligence?
+              Give your AI CoinGlass superpowers
             </h3>
             <p className="text-terminal-muted mb-8 max-w-lg mx-auto">
-              Connect in under 60 seconds. No credit card required.
+              pip install coinglass-mcp — that's it.
             </p>
-            <button
-              onClick={handleAuth}
-              className="bg-terminal-cyan text-graphite-950 px-8 py-3 rounded-lg text-base font-semibold hover:bg-terminal-cyan/90 hover:shadow-terminal-cyan transition-all"
-            >
-              Get Started Free
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a
+                href="https://github.com/forgequant/context8-mcp"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-terminal-cyan text-graphite-950 px-8 py-3 rounded-lg text-base font-semibold hover:bg-terminal-cyan/90 hover:shadow-terminal-cyan transition-all"
+              >
+                View on GitHub
+              </a>
+              <a
+                href="https://pypi.org/project/coinglass-mcp/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-8 py-3 rounded-lg text-base font-medium text-terminal-muted border border-graphite-800 hover:border-terminal-cyan hover:text-terminal-text transition-all"
+              >
+                PyPI Package
+              </a>
+            </div>
           </div>
         </motion.section>
       </main>
@@ -445,7 +509,7 @@ export function Landing() {
               <span className="text-terminal-cyan font-semibold">context8</span>
               <span className="text-terminal-muted">&gt;_</span>
             </span>
-            <span className="text-xs text-terminal-muted">MCP Server for Crypto Data</span>
+            <span className="text-xs text-terminal-muted">CoinGlass MCP Server</span>
           </div>
           <nav className="flex items-center gap-6 text-sm text-terminal-muted">
             <a href="#" className="hover:text-terminal-text transition-colors">Privacy</a>
