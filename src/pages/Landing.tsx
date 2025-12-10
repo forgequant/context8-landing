@@ -18,7 +18,7 @@ export function Landing() {
   const isFaqInView = useInView(faqRef, { once: true, margin: '-100px' })
 
   const { displayText: heroText, isComplete: heroComplete } = useTypewriter({
-    text: 'CoinGlass data for your AI assistant',
+    text: 'Crypto intelligence for your AI assistant',
     speed: 40,
     delay: 300
   })
@@ -31,12 +31,13 @@ export function Landing() {
     {
       icon: (
         <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M4 6h16M4 12h16M4 18h10" strokeLinecap="round"/>
-          <circle cx="19" cy="18" r="2"/>
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       ),
-      title: '22 MCP Tools',
-      description: 'Open Interest, Funding Rates, Liquidations, Whale Tracking, Options, ETF flows — all in one server.'
+      title: 'Social Sentiment',
+      description: 'Galaxy Score, AltRank, social volume, influencer activity, trending coins, news sentiment.'
     },
     {
       icon: (
@@ -45,27 +46,27 @@ export function Landing() {
           <path d="M7 16l4-4 4 4 5-6" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       ),
-      title: '80+ Endpoints',
-      description: 'Full CoinGlass API coverage. Derivatives, spot, on-chain, indicators, heatmaps — unified access.'
+      title: 'Derivatives Data',
+      description: 'Funding rates, open interest, liquidations, long/short ratios across all major exchanges.'
     },
     {
       icon: (
         <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <circle cx="12" cy="12" r="3"/>
           <path d="M12 2v4m0 12v4M2 12h4m12 0h4" strokeLinecap="round"/>
+          <circle cx="12" cy="12" r="3"/>
         </svg>
       ),
-      title: 'MCP Native',
-      description: 'Works with Claude Desktop, Cursor, and any MCP client. Clone from GitHub and run.'
+      title: 'On-Chain & Whales',
+      description: 'Exchange reserves, netflow, whale positions and alerts. Track smart money movements.'
     },
     {
       icon: (
         <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7L12 17l-6.3 4 2.3-7-6-4.6h7.6L12 2z" strokeLinejoin="round"/>
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       ),
-      title: 'Pro Features',
-      description: 'Whale alerts, liquidation heatmaps, real-time order flow — tier-gated access to premium data.'
+      title: 'Technical Analysis',
+      description: 'RSI, MACD, Bollinger Bands, EMA crossovers, Fear & Greed index — all calculated for you.'
     }
   ]
 
@@ -115,7 +116,7 @@ export function Landing() {
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-graphite-900 border border-graphite-800 text-xs text-terminal-muted mb-8"
           >
             <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
-            CoinGlass MCP Server — 22 Tools, 80+ Endpoints
+            Context8 MCP Server — 26 Tools for Crypto Intelligence
           </motion.div>
 
           {/* Main headline */}
@@ -131,8 +132,8 @@ export function Landing() {
             transition={{ duration: 0.5 }}
             className="text-lg md:text-xl text-terminal-muted mb-10 max-w-2xl mx-auto"
           >
-            Open Interest, Funding Rates, Liquidations, Whale Tracking, Options, ETF flows.
-            Full CoinGlass API for Claude, Cursor, and any MCP client.
+            Social sentiment, derivatives, on-chain data, technical analysis, market alerts.
+            26 tools for Claude, Cursor, and any MCP client.
           </motion.p>
 
           {/* CTA buttons */}
@@ -234,8 +235,8 @@ export function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {[
               { step: '01', title: 'Clone', desc: 'Get the repo from GitHub' },
-              { step: '02', title: 'Configure', desc: 'Add CoinGlass API key' },
-              { step: '03', title: 'Query', desc: 'Ask about OI, funding, liquidations, whales' }
+              { step: '02', title: 'Configure', desc: 'Add your Context8 API key' },
+              { step: '03', title: 'Query', desc: 'Ask about sentiment, funding, whales, technicals' }
             ].map((item, index) => (
               <motion.div
                 key={item.step}
@@ -264,10 +265,10 @@ export function Landing() {
                 <code>
                   <span className="text-terminal-muted">{`{`}</span>{'\n'}
                   <span className="text-terminal-muted">  </span><span className="text-terminal-cyan">"mcpServers"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
-                  <span className="text-terminal-muted">    </span><span className="text-terminal-cyan">"coinglass"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
-                  <span className="text-terminal-muted">      </span><span className="text-terminal-cyan">"command"</span><span className="text-terminal-muted">: </span><span className="text-terminal-green">"coinglass-mcp"</span><span className="text-terminal-muted">,</span>{'\n'}
+                  <span className="text-terminal-muted">    </span><span className="text-terminal-cyan">"context8"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
+                  <span className="text-terminal-muted">      </span><span className="text-terminal-cyan">"command"</span><span className="text-terminal-muted">: </span><span className="text-terminal-green">"context8-mcp"</span><span className="text-terminal-muted">,</span>{'\n'}
                   <span className="text-terminal-muted">      </span><span className="text-terminal-cyan">"env"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
-                  <span className="text-terminal-muted">        </span><span className="text-terminal-cyan">"COINGLASS_API_KEY"</span><span className="text-terminal-muted">: </span><span className="text-terminal-green">"your-api-key"</span>{'\n'}
+                  <span className="text-terminal-muted">        </span><span className="text-terminal-cyan">"CONTEXT8_API_KEY"</span><span className="text-terminal-muted">: </span><span className="text-terminal-green">"your-api-key"</span>{'\n'}
                   <span className="text-terminal-muted">      {`}`}</span>{'\n'}
                   <span className="text-terminal-muted">    {`}`}</span>{'\n'}
                   <span className="text-terminal-muted">  {`}`}</span>{'\n'}
@@ -311,11 +312,11 @@ export function Landing() {
                 </li>
                 <li className="flex items-start gap-2 text-terminal-muted">
                   <span className="text-terminal-green mt-0.5">✓</span>
-                  All 22 MCP tools
+                  All 26 MCP tools
                 </li>
                 <li className="flex items-start gap-2 text-terminal-muted">
                   <span className="text-terminal-green mt-0.5">✓</span>
-                  Full CoinGlass data access
+                  All data sources included
                 </li>
                 <li className="flex items-start gap-2 text-terminal-muted">
                   <span className="text-terminal-green mt-0.5">✓</span>
@@ -379,29 +380,39 @@ export function Landing() {
           transition={{ duration: 0.6 }}
           className="mb-24 md:mb-32"
         >
-          <h3 className="text-sm text-terminal-cyan mb-4 text-center">22 MCP TOOLS</h3>
+          <h3 className="text-sm text-terminal-cyan mb-4 text-center">26 MCP TOOLS</h3>
           <p className="text-center text-terminal-muted mb-8 max-w-lg mx-auto">
-            Every CoinGlass feature, accessible via natural language.
+            All tools accessible via natural language queries.
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto text-xs">
             {[
-              'coinglass_oi_history',
-              'coinglass_oi_distribution',
-              'coinglass_funding_history',
-              'coinglass_funding_current',
-              'coinglass_long_short',
-              'coinglass_liq_history',
-              'coinglass_liq_orders',
-              'coinglass_liq_heatmap',
-              'coinglass_whale_positions',
-              'coinglass_taker',
-              'coinglass_options',
-              'coinglass_etf',
-              'coinglass_indicators',
-              'coinglass_onchain',
-              'coinglass_spot',
-              'coinglass_market_data'
+              'get_coin',
+              'get_galaxy_score',
+              'get_altrank',
+              'get_social_volume',
+              'get_influencer_activity',
+              'list_trending_coins',
+              'get_news',
+              'get_sentiment',
+              'get_funding_rates',
+              'get_open_interest',
+              'get_liquidations',
+              'list_top_liquidations',
+              'get_long_short_ratio',
+              'get_exchange_reserves',
+              'get_exchange_netflow',
+              'get_whale_positions',
+              'get_whale_alerts',
+              'get_rsi',
+              'get_macd',
+              'get_bollinger_bands',
+              'get_ema_crossover',
+              'get_technical_summary',
+              'get_fear_greed_index',
+              'get_fear_greed_history',
+              'get_market_alerts',
+              'get_usage'
             ].map((tool) => (
               <div key={tool} className="px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-800 text-terminal-muted font-mono truncate">
                 {tool}
@@ -426,24 +437,24 @@ export function Landing() {
           <div className="max-w-2xl mx-auto space-y-4">
             {[
               {
-                q: 'What is this MCP server?',
-                a: 'coinglass-mcp wraps the entire CoinGlass API into 22 MCP tools. Install via pip, add your API key, and your AI assistant gets access to 80+ endpoints for derivatives data.'
-              },
-              {
-                q: 'Do I need a CoinGlass account?',
-                a: 'Yes. The MCP server is free and open source, but you need a CoinGlass API key. Free tier (Hobbyist) is available at coinglass.com.'
+                q: 'What is Context8?',
+                a: 'Context8 is an MCP server that gives your AI assistant access to 26 tools for crypto market analysis — social sentiment, derivatives, on-chain data, technical indicators, and market alerts.'
               },
               {
                 q: 'Which AI clients are supported?',
                 a: 'Any MCP-compatible client — Claude Desktop, Cursor, Cline, and custom implementations. The server runs locally via stdio transport.'
               },
               {
-                q: 'What data is available?',
-                a: 'Open Interest, Funding Rates, Liquidations, Long/Short Ratios, Whale Tracking, Options, ETF flows, On-chain metrics, and 16 market indicators.'
+                q: 'What data can I access?',
+                a: 'Social metrics (Galaxy Score, trending coins, influencers), derivatives (funding, OI, liquidations), on-chain (whale positions, exchange flows), and technical analysis (RSI, MACD, Bollinger Bands).'
+              },
+              {
+                q: 'How does pricing work?',
+                a: 'Free tier includes 2 requests/day. Pro ($8/mo) gives you 10 requests/day. All tools and data sources are available on both tiers.'
               },
               {
                 q: 'Is it open source?',
-                a: 'Yes. The coinglass-mcp server is MIT licensed. Check the GitHub repo for source code, issues, and contributions.'
+                a: 'Yes. The Context8 MCP server is MIT licensed. Check the GitHub repo for source code and contributions.'
               }
             ].map((item, i) => (
               <motion.div
@@ -469,7 +480,7 @@ export function Landing() {
         >
           <div className="p-8 md:p-12 rounded-2xl bg-gradient-to-b from-graphite-900 to-graphite-950 border border-graphite-800">
             <h3 className="text-2xl md:text-3xl font-semibold text-terminal-text mb-4">
-              Give your AI CoinGlass superpowers
+              Give your AI crypto superpowers
             </h3>
             <p className="text-terminal-muted mb-8 max-w-lg mx-auto">
               Clone the repo, add your API key, start querying.
@@ -494,7 +505,7 @@ export function Landing() {
               <span className="text-terminal-cyan font-semibold">context8</span>
               <span className="text-terminal-muted">&gt;_</span>
             </span>
-            <span className="text-xs text-terminal-muted">CoinGlass MCP Server</span>
+            <span className="text-xs text-terminal-muted">Crypto Intelligence MCP Server</span>
           </div>
           <nav className="flex items-center gap-6 text-sm text-terminal-muted">
             <a href="#" className="hover:text-terminal-text transition-colors">Privacy</a>
