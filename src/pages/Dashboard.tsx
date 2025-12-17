@@ -1,13 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { PaymentModal } from '../components/payment/PaymentModal'
 import { usePaymentSubmit } from '../hooks/usePaymentSubmit'
 import { useSubscription } from '../hooks/useSubscription'
 import { usePaymentHistory } from '../hooks/usePaymentHistory'
 import { usePendingPaymentsCount } from '../hooks/usePendingPaymentsCount'
-import { SubscriptionStatus } from '../components/subscription/SubscriptionStatus'
 import { RenewalReminder } from '../components/subscription/RenewalReminder'
 import { PaymentHistory } from '../components/subscription/PaymentHistory'
 import { MCPInstructions } from '../components/dashboard/MCPInstructions'
@@ -29,32 +28,359 @@ function SectionHeader({ number, title }: { number: string; title: string }) {
   )
 }
 
-// Skeleton loader for cards
-function SkeletonCard() {
+// Command Bar - Quick Actions
+function CommandBar({
+  onAnalytics,
+  onReport,
+  onUpgrade,
+  isActive
+}: {
+  onAnalytics: () => void
+  onReport: () => void
+  onUpgrade: () => void
+  isActive: boolean
+}) {
   return (
-    <div className="bg-graphite-900 rounded-lg p-4 animate-pulse">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <div className="h-4 bg-graphite-800 rounded w-32" />
-          <div className="h-3 bg-graphite-800 rounded w-48" />
-        </div>
-        <div className="h-4 bg-graphite-800 rounded w-12" />
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.1 }}
+      className="bg-graphite-900/80 backdrop-blur-sm border border-graphite-800 rounded-xl p-3 mb-6"
+    >
+      <div className="flex items-center gap-2 text-xs text-terminal-muted mb-2">
+        <span className="text-terminal-cyan">⌘</span>
+        <span>Quick Actions</span>
       </div>
-    </div>
+      <div className="flex flex-wrap gap-2">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onAnalytics}
+          className="flex items-center gap-2 px-4 py-2 bg-graphite-800 hover:bg-graphite-700 border border-graphite-700 hover:border-terminal-cyan/50 rounded-lg text-sm transition-all"
+        >
+          <span>📊</span>
+          <span>Analytics Chat</span>
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onReport}
+          className="flex items-center gap-2 px-4 py-2 bg-graphite-800 hover:bg-graphite-700 border border-graphite-700 hover:border-terminal-cyan/50 rounded-lg text-sm transition-all"
+        >
+          <span>📈</span>
+          <span>Daily Report</span>
+        </motion.button>
+        {!isActive && (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onUpgrade}
+            className="flex items-center gap-2 px-4 py-2 bg-terminal-cyan/20 hover:bg-terminal-cyan/30 border border-terminal-cyan/50 text-terminal-cyan rounded-lg text-sm font-medium transition-all"
+          >
+            <span>⚡</span>
+            <span>Upgrade to Pro</span>
+          </motion.button>
+        )}
+      </div>
+    </motion.div>
   )
 }
 
-// Skeleton loader for subscription
-function SubscriptionSkeleton() {
+// Enhanced Status Card with Progress Bar
+function StatusCard({
+  isActive,
+  daysRemaining,
+  planName,
+  expiresAt,
+  onUpgrade
+}: {
+  isActive: boolean
+  daysRemaining: number
+  planName: string
+  expiresAt: string | null
+  onUpgrade: () => void
+}) {
+  const progress = isActive ? Math.min((daysRemaining / 30) * 100, 100) : 0
+  const progressColor = daysRemaining > 7 ? 'bg-terminal-green' : daysRemaining > 3 ? 'bg-yellow-500' : 'bg-terminal-red'
+
   return (
-    <div className="bg-graphite-900 rounded-xl p-6 animate-pulse border border-graphite-800">
-      <div className="flex items-center justify-between mb-4">
-        <div className="h-5 bg-graphite-800 rounded w-24" />
-        <div className="h-6 bg-graphite-800 rounded w-16" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      viewport={{ once: true }}
+      className="bg-graphite-900 rounded-xl border border-graphite-800 p-6 hover:border-terminal-cyan/30 transition-all"
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-terminal-green animate-pulse' : 'bg-terminal-muted'}`} />
+            <span className="text-sm font-medium text-terminal-text">
+              {isActive ? planName : 'No Active Plan'}
+            </span>
+          </div>
+          <p className="text-xs text-terminal-muted">
+            {isActive ? `Renews: ${expiresAt ? new Date(expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}` : 'Upgrade to access Pro features'}
+          </p>
+        </div>
+        {isActive ? (
+          <div className="text-right">
+            <span className="text-2xl font-bold text-terminal-cyan">{daysRemaining}</span>
+            <span className="text-xs text-terminal-muted block">days left</span>
+          </div>
+        ) : (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onUpgrade}
+            className="px-4 py-2 bg-terminal-cyan text-graphite-950 rounded-lg text-sm font-semibold hover:bg-terminal-cyan/90 transition-all"
+          >
+            $8/mo
+          </motion.button>
+        )}
       </div>
-      <div className="h-3 bg-graphite-800 rounded w-full mb-2" />
-      <div className="h-3 bg-graphite-800 rounded w-2/3" />
-    </div>
+
+      {/* Progress Bar */}
+      {isActive && (
+        <div className="space-y-2">
+          <div className="h-2 bg-graphite-800 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className={`h-full ${progressColor} rounded-full`}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-terminal-muted">
+            <span>Subscription progress</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+// Activity Stats Card
+function ActivityStats() {
+  // Mock data - in real app would come from API
+  const apiCalls = 127
+  const apiLimit = 1000
+  const lastReportTime = '2h ago'
+  const lastReportSummary = 'BTC +2.3% • ETH stable'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      viewport={{ once: true }}
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
+    >
+      {/* API Usage */}
+      <div className="bg-graphite-900 rounded-xl border border-graphite-800 p-5 hover:border-terminal-cyan/30 transition-all">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-terminal-cyan">⚡</span>
+          <span className="text-xs text-terminal-muted uppercase tracking-wide">API Calls This Month</span>
+        </div>
+        <div className="flex items-end gap-2 mb-3">
+          <span className="text-3xl font-bold text-terminal-text">{apiCalls}</span>
+          <span className="text-sm text-terminal-muted mb-1">/ {apiLimit}</span>
+        </div>
+        <div className="h-1.5 bg-graphite-800 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${(apiCalls / apiLimit) * 100}%` }}
+            transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+            className="h-full bg-terminal-cyan rounded-full"
+          />
+        </div>
+        <p className="text-xs text-terminal-muted mt-2">{((apiCalls / apiLimit) * 100).toFixed(1)}% used</p>
+      </div>
+
+      {/* Last Report */}
+      <div className="bg-graphite-900 rounded-xl border border-graphite-800 p-5 hover:border-terminal-cyan/30 transition-all">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-terminal-green">📈</span>
+          <span className="text-xs text-terminal-muted uppercase tracking-wide">Last Report</span>
+        </div>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg font-semibold text-terminal-text">{lastReportTime}</span>
+          <span className="px-2 py-0.5 bg-terminal-green/20 text-terminal-green text-xs rounded">Live</span>
+        </div>
+        <p className="text-sm text-terminal-muted">{lastReportSummary}</p>
+        <a
+          href="/reports/daily"
+          className="inline-flex items-center gap-1 text-xs text-terminal-cyan hover:underline mt-3"
+        >
+          View full report
+          <span>→</span>
+        </a>
+      </div>
+    </motion.div>
+  )
+}
+
+// Collapsible Notice
+function CollapsibleNotice({
+  type,
+  title,
+  children,
+  storageKey
+}: {
+  type: 'warning' | 'info'
+  title: string
+  children: React.ReactNode
+  storageKey: string
+}) {
+  const [isDismissed, setIsDismissed] = useState(() => {
+    return localStorage.getItem(storageKey) === 'true'
+  })
+
+  const handleDismiss = () => {
+    setIsDismissed(true)
+    localStorage.setItem(storageKey, 'true')
+  }
+
+  const colors = type === 'warning'
+    ? 'bg-terminal-red/10 border-terminal-red/30 text-terminal-red'
+    : 'bg-terminal-cyan/10 border-terminal-cyan/30 text-terminal-cyan'
+
+  return (
+    <AnimatePresence>
+      {!isDismissed && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3 }}
+          className="overflow-hidden mb-6"
+        >
+          <div className={`${colors} border rounded-xl p-4`}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3 flex-1">
+                <span className="text-lg">{type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium mb-1">{title}</p>
+                  <div className="text-sm text-terminal-muted">{children}</div>
+                </div>
+              </div>
+              <button
+                onClick={handleDismiss}
+                className="text-terminal-muted hover:text-terminal-text transition-colors p-1"
+                title="Dismiss"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+// Getting Started Checklist
+function GettingStartedChecklist({
+  hasApiKey,
+  hasMcpSetup,
+  hasFirstQuery,
+  isActive
+}: {
+  hasApiKey: boolean
+  hasMcpSetup: boolean
+  hasFirstQuery: boolean
+  isActive: boolean
+}) {
+  const [isDismissed, setIsDismissed] = useState(() => {
+    return localStorage.getItem('dashboard_checklist_dismissed') === 'true'
+  })
+
+  const steps = [
+    { id: 'account', label: 'Create account', done: true },
+    { id: 'apikey', label: 'Get API key', done: hasApiKey },
+    { id: 'mcp', label: 'Connect MCP server', done: hasMcpSetup },
+    { id: 'query', label: 'Run first query', done: hasFirstQuery },
+    { id: 'pro', label: 'Upgrade to Pro', done: isActive, optional: true }
+  ]
+
+  const completedCount = steps.filter(s => s.done).length
+  const progress = (completedCount / steps.length) * 100
+
+  // Don't show if all done or dismissed
+  if (isDismissed || completedCount === steps.length) return null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-gradient-to-br from-graphite-900 to-graphite-900/50 rounded-xl border border-terminal-cyan/30 p-6 mb-8"
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="text-sm font-semibold text-terminal-cyan flex items-center gap-2">
+            <span>🚀</span>
+            Getting Started
+          </h3>
+          <p className="text-xs text-terminal-muted mt-1">Complete setup to unlock full potential</p>
+        </div>
+        <button
+          onClick={() => {
+            setIsDismissed(true)
+            localStorage.setItem('dashboard_checklist_dismissed', 'true')
+          }}
+          className="text-terminal-muted hover:text-terminal-text text-xs"
+        >
+          Hide
+        </button>
+      </div>
+
+      {/* Progress */}
+      <div className="mb-4">
+        <div className="flex justify-between text-xs text-terminal-muted mb-1">
+          <span>{completedCount}/{steps.length} completed</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <div className="h-1.5 bg-graphite-800 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="h-full bg-terminal-cyan rounded-full"
+          />
+        </div>
+      </div>
+
+      {/* Steps */}
+      <div className="space-y-2">
+        {steps.map((step, index) => (
+          <motion.div
+            key={step.id}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className={`flex items-center gap-3 p-2 rounded-lg ${step.done ? 'bg-terminal-green/10' : 'bg-graphite-800/50'}`}
+          >
+            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+              step.done
+                ? 'bg-terminal-green text-graphite-950'
+                : 'bg-graphite-700 text-terminal-muted'
+            }`}>
+              {step.done ? '✓' : index + 1}
+            </span>
+            <span className={`text-sm ${step.done ? 'text-terminal-green line-through' : 'text-terminal-text'}`}>
+              {step.label}
+            </span>
+            {step.optional && !step.done && (
+              <span className="text-xs text-terminal-muted">(optional)</span>
+            )}
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
   )
 }
 
@@ -102,6 +428,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pendingPayment, setPendingPayment] = useState<any>(null)
+  const [hasApiKey, setHasApiKey] = useState(false)
   const { submitPayment } = usePaymentSubmit()
 
   // Subscription data
@@ -143,6 +470,16 @@ export function Dashboard() {
         .single()
 
       setPendingPayment(payment)
+
+      // Check for API key
+      const { data: apiKey } = await supabase
+        .from('api_keys')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .single()
+
+      setHasApiKey(!!apiKey)
       setLoading(false)
     }
 
@@ -215,7 +552,7 @@ export function Dashboard() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto mb-12 relative z-10"
+        className="max-w-4xl mx-auto mb-6 relative z-10"
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -235,25 +572,6 @@ export function Dashboard() {
             )}
           </div>
           <div className="flex items-center gap-3">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate('/analytics')}
-              className="text-sm bg-graphite-900 px-4 py-2 rounded-lg hover:bg-terminal-cyan/20 transition-colors border border-graphite-800 hover:border-terminal-cyan flex items-center gap-2"
-              title="Crypto Analytics Chat"
-            >
-              <span>📊</span>
-              <span>Analytics</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowPaymentModal(true)}
-              className="text-sm bg-terminal-cyan/20 border border-terminal-cyan/50 text-terminal-cyan px-4 py-2 rounded-lg hover:bg-terminal-cyan/30 transition-colors font-medium"
-              title="Upgrade to Pro"
-            >
-              Pro $8
-            </motion.button>
             {user?.user_metadata?.is_admin && (
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -281,120 +599,110 @@ export function Dashboard() {
 
       {/* Main content */}
       <div className="max-w-4xl mx-auto relative z-10">
-        {/* Service Maintenance Notice */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-8"
-        >
-          <div className="bg-terminal-red/10 border border-terminal-red/30 rounded-xl p-5">
-            <div className="flex items-start gap-3">
-              <span className="text-terminal-red text-lg">⚠️</span>
-              <div>
-                <p className="text-terminal-red text-sm font-medium">
-                  MCP Server under maintenance until December 20th
-                </p>
-                <p className="text-terminal-muted text-sm mt-1">
-                  API integration temporarily unavailable. Daily reports continue at{' '}
-                  <a href="/reports/daily" className="text-terminal-cyan hover:underline">
-                    /reports/daily
-                  </a>
-                </p>
-                <p className="text-terminal-muted text-sm mt-2">
-                  📝 We need your feedback to continue development!{' '}
-                  <a
-                    href="https://docs.google.com/forms/d/e/1FAIpQLSfmaKzi3O-1V6ZAC4zasdQzPA9POclHrXvFM8cQd3gCffSb3g/viewform"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-terminal-cyan hover:underline"
-                  >
-                    Please fill out the feedback form
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.section>
+        {/* Command Bar */}
+        <CommandBar
+          onAnalytics={() => navigate('/analytics')}
+          onReport={() => navigate('/reports/daily')}
+          onUpgrade={() => setShowPaymentModal(true)}
+          isActive={isActive}
+        />
 
-        {/* Subscription section */}
+        {/* Collapsible Maintenance Notice */}
+        <CollapsibleNotice
+          type="warning"
+          title="MCP Server under maintenance until December 20th"
+          storageKey="dashboard_maintenance_dismissed"
+        >
+          <p>
+            API integration temporarily unavailable. Daily reports continue at{' '}
+            <a href="/reports/daily" className="text-terminal-cyan hover:underline">
+              /reports/daily
+            </a>
+          </p>
+          <p className="mt-2">
+            📝 We need your feedback!{' '}
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSfmaKzi3O-1V6ZAC4zasdQzPA9POclHrXvFM8cQd3gCffSb3g/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-terminal-cyan hover:underline"
+            >
+              Fill out the feedback form
+            </a>
+          </p>
+        </CollapsibleNotice>
+
+        {/* Getting Started Checklist */}
+        <GettingStartedChecklist
+          hasApiKey={hasApiKey}
+          hasMcpSetup={false}
+          hasFirstQuery={false}
+          isActive={isActive}
+        />
+
+        {/* Status & Activity Grid */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="mb-12"
+          className="mb-8"
         >
-          <SectionHeader number="01" title="SUBSCRIPTION" />
+          <SectionHeader number="01" title="STATUS & ACTIVITY" />
 
-          {subLoading ? (
-            <SubscriptionSkeleton />
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              viewport={{ once: true }}
-            >
-              {/* Subscription Status */}
-              <div className="mb-4">
-                <SubscriptionStatus
-                  subscription={subscription}
-                  loading={subLoading}
-                  daysRemaining={daysRemaining}
-                  isInGrace={isInGrace}
-                />
+          <div className="space-y-4">
+            {/* Status Card */}
+            {subLoading ? (
+              <div className="bg-graphite-900 rounded-xl p-6 animate-pulse border border-graphite-800">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-5 bg-graphite-800 rounded w-24" />
+                  <div className="h-8 bg-graphite-800 rounded w-16" />
+                </div>
+                <div className="h-2 bg-graphite-800 rounded w-full" />
               </div>
+            ) : (
+              <StatusCard
+                isActive={isActive}
+                daysRemaining={daysRemaining}
+                planName={subscription?.plan === 'pro' ? 'Pro Plan' : 'Free Plan'}
+                expiresAt={subscription?.end_date || null}
+                onUpgrade={() => setShowPaymentModal(true)}
+              />
+            )}
 
-              {/* Renewal Reminder */}
-              {subscription && !subLoading && (daysRemaining < 7 || isInGrace) && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="mb-4"
-                >
-                  <RenewalReminder
-                    daysRemaining={daysRemaining}
-                    isInGrace={isInGrace}
-                    onRenew={() => setShowPaymentModal(true)}
-                  />
-                </motion.div>
-              )}
-
-              {/* Pending Payment Notice */}
-              {pendingPayment && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="text-yellow-400">⏳</span>
-                    <div>
-                      <p className="text-sm text-yellow-200 font-medium">
-                        Payment pending admin verification
-                      </p>
-                      <p className="text-xs text-yellow-300/80 mt-1">
-                        Your payment is being reviewed. Pro access will be activated upon approval (typically within 24 hours).
-                      </p>
-                    </div>
+            {/* Pending Payment Notice */}
+            {pendingPayment && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-yellow-400">⏳</span>
+                  <div>
+                    <p className="text-sm text-yellow-200 font-medium">
+                      Payment pending admin verification
+                    </p>
+                    <p className="text-xs text-yellow-300/80 mt-1">
+                      Your payment is being reviewed. Pro access will be activated upon approval (typically within 24 hours).
+                    </p>
                   </div>
-                </motion.div>
-              )}
+                </div>
+              </motion.div>
+            )}
 
-              {/* Upgrade Button (show if not active or no pending payment) */}
-              {!isActive && !pendingPayment && (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowPaymentModal(true)}
-                  className="bg-terminal-cyan text-graphite-950 px-6 py-3 rounded-lg text-sm font-semibold hover:bg-terminal-cyan/90 transition-all hover:shadow-lg hover:shadow-terminal-cyan/20"
-                >
-                  Upgrade to Pro - $8/month
-                </motion.button>
-              )}
-            </motion.div>
-          )}
+            {/* Renewal Reminder */}
+            {subscription && !subLoading && (daysRemaining < 7 || isInGrace) && (
+              <RenewalReminder
+                daysRemaining={daysRemaining}
+                isInGrace={isInGrace}
+                onRenew={() => setShowPaymentModal(true)}
+              />
+            )}
+
+            {/* Activity Stats */}
+            <ActivityStats />
+          </div>
         </motion.section>
 
         {/* Payment History section */}
@@ -404,7 +712,7 @@ export function Dashboard() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="mb-12"
+            className="mb-8"
           >
             <SectionHeader number="02" title="PAYMENT HISTORY" />
             <PaymentHistory payments={payments} loading={paymentsLoading} />
@@ -417,17 +725,10 @@ export function Dashboard() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="mb-12"
+          className="mb-8"
         >
           <SectionHeader number={payments.length > 0 ? "03" : "02"} title="API KEY" />
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            viewport={{ once: true }}
-          >
-            <ApiKeySection />
-          </motion.div>
+          <ApiKeySection />
         </motion.section>
 
         {/* API Integration section */}
@@ -436,17 +737,10 @@ export function Dashboard() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="mb-12"
+          className="mb-8"
         >
           <SectionHeader number={payments.length > 0 ? "04" : "03"} title="API INTEGRATION" />
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            viewport={{ once: true }}
-          >
-            <MCPInstructions />
-          </motion.div>
+          <MCPInstructions />
         </motion.section>
 
         {/* Data sources section */}
