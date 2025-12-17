@@ -1,4 +1,6 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, useInView } from 'framer-motion'
 
 // Progress bar component for sentiment visualization
 function SentimentBar({ value, label }: { value: number; label: string }) {
@@ -9,9 +11,12 @@ function SentimentBar({ value, label }: { value: number; label: string }) {
         <span className="text-terminal-green font-semibold">{value}%</span>
       </div>
       <div className="h-2 bg-graphite-800 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-terminal-green to-terminal-cyan rounded-full transition-all duration-500"
-          style={{ width: `${value}%` }}
+        <motion.div
+          initial={{ width: 0 }}
+          whileInView={{ width: `${value}%` }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+          viewport={{ once: true }}
+          className="h-full bg-gradient-to-r from-terminal-green to-terminal-cyan rounded-full"
         />
       </div>
     </div>
@@ -19,22 +24,30 @@ function SentimentBar({ value, label }: { value: number; label: string }) {
 }
 
 // Metric card component
-function MetricCard({ label, value, change, isPositive }: {
+function MetricCard({ label, value, change, isPositive, delay = 0 }: {
   label: string;
   value: string;
   change?: string;
   isPositive?: boolean;
+  delay?: number;
 }) {
   return (
-    <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4 hover:border-terminal-cyan/30 transition-colors">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      viewport={{ once: true }}
+      whileHover={{ scale: 1.02, borderColor: 'rgba(125, 211, 252, 0.3)' }}
+      className="bg-graphite-900 border border-graphite-800 rounded-xl p-4 transition-all"
+    >
       <div className="text-xs text-terminal-muted uppercase tracking-wider mb-1">{label}</div>
-      <div className="text-xl font-bold text-terminal-text font-mono">{value}</div>
+      <div className="text-2xl font-bold text-terminal-text font-mono">{value}</div>
       {change && (
         <div className={`text-xs mt-1 ${isPositive ? 'text-terminal-green' : 'text-terminal-red'}`}>
           {isPositive ? '↑' : '↓'} {change}
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }
 
@@ -111,13 +124,56 @@ function RiskIndicator({ level, label }: { level: 'low' | 'medium' | 'high'; lab
   )
 }
 
-export function DailyReport() {
+// Section header component
+function SectionHeader({ number, title }: { number: string; title: string }) {
   return (
-    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-4 md:px-6 py-8">
+    <motion.h2
+      initial={{ opacity: 0, x: -20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5 }}
+      viewport={{ once: true }}
+      className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2 flex items-center gap-2"
+    >
+      <span className="text-terminal-cyan font-mono">{number}</span> {title}
+    </motion.h2>
+  )
+}
+
+export function DailyReport() {
+  const headerRef = useRef(null)
+  const metricsRef = useRef(null)
+  const summaryRef = useRef(null)
+  const narrativesRef = useRef(null)
+  const moversRef = useRef(null)
+  const socialRef = useRef(null)
+  const risksRef = useRef(null)
+
+  const isHeaderInView = useInView(headerRef, { once: true })
+  const isSummaryInView = useInView(summaryRef, { once: true })
+  const isNarrativesInView = useInView(narrativesRef, { once: true })
+  const isMoversInView = useInView(moversRef, { once: true })
+  const isSocialInView = useInView(socialRef, { once: true })
+  const isRisksInView = useInView(risksRef, { once: true })
+
+  return (
+    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-4 md:px-6 py-8 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="terminal-scanlines" />
+      <div className="terminal-grid" />
+
       {/* Header */}
-      <header className="max-w-6xl mx-auto mb-8">
-        <Link to="/" className="text-sm text-terminal-cyan hover:underline mb-4 inline-block">
-          ← Back to Home
+      <motion.header
+        ref={headerRef}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: isHeaderInView ? 1 : 0, y: isHeaderInView ? 0 : -20 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-6xl mx-auto mb-8 relative z-10"
+      >
+        <Link to="/" className="text-sm text-terminal-cyan hover:underline mb-4 inline-flex items-center gap-1">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Home
         </Link>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
           <div>
@@ -125,49 +181,60 @@ export function DailyReport() {
             <p className="text-terminal-muted text-sm mt-1">Crypto market intelligence • Social signals • Key narratives</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 bg-terminal-cyan/10 border border-terminal-cyan/30 rounded text-terminal-cyan text-sm">
+            <span className="px-3 py-1.5 bg-terminal-cyan/10 border border-terminal-cyan/30 rounded-lg text-terminal-cyan text-sm">
               Nov 28, 2025
             </span>
-            <span className="px-3 py-1 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green text-sm">
+            <span className="px-3 py-1.5 bg-terminal-green/10 border border-terminal-green/30 rounded-lg text-terminal-green text-sm flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
               LIVE
             </span>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Content */}
-      <article className="max-w-6xl mx-auto space-y-8">
+      <article className="max-w-6xl mx-auto space-y-10 relative z-10">
 
         {/* Key Metrics Grid */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <section ref={metricsRef} className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MetricCard
             label="Unique Creators"
             value="249,766"
             change="7.1% vs 24h"
             isPositive={false}
+            delay={0}
           />
           <MetricCard
             label="Market Sentiment"
             value="82%"
             change="1-2% vs avg"
             isPositive={true}
+            delay={0.1}
           />
           <MetricCard
             label="DeFi Engagements"
             value="53M"
             change="19% vs weekly"
             isPositive={false}
+            delay={0.2}
           />
           <MetricCard
             label="AI Creators"
             value="—"
             change="9.7% vs 24h"
             isPositive={false}
+            delay={0.3}
           />
         </section>
 
         {/* Executive Summary */}
-        <section className="bg-graphite-900 border border-terminal-cyan/30 rounded-lg p-6">
+        <motion.section
+          ref={summaryRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: isSummaryInView ? 1 : 0, y: isSummaryInView ? 0 : 20 }}
+          transition={{ duration: 0.6 }}
+          className="bg-graphite-900 border border-terminal-cyan/30 rounded-xl p-6"
+        >
           <h2 className="text-xl font-semibold mb-4 text-terminal-cyan flex items-center gap-2">
             <span className="w-2 h-2 bg-terminal-cyan rounded-full animate-pulse" />
             Executive Summary
@@ -214,27 +281,44 @@ export function DailyReport() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Sentiment Visualization */}
-        <section className="bg-graphite-900 border border-graphite-800 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4 text-terminal-text">Sentiment Overview</h2>
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="bg-graphite-900 border border-graphite-800 rounded-xl p-6"
+        >
+          <h2 className="text-lg font-semibold mb-4 text-terminal-text flex items-center gap-2">
+            <span className="text-terminal-cyan font-mono">01</span> Sentiment Overview
+          </h2>
           <div className="grid md:grid-cols-3 gap-6">
             <SentimentBar value={82} label="Overall Market" />
             <SentimentBar value={84} label="DeFi Sector" />
             <SentimentBar value={83} label="AI Sector" />
           </div>
-        </section>
+        </motion.section>
 
         {/* Narratives & Sectors */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2 flex items-center gap-2">
-            <span className="text-terminal-cyan">02</span> Narratives & Sectors
-          </h2>
+        <section ref={narrativesRef}>
+          <SectionHeader number="02" title="Narratives & Sectors" />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <motion.div
+            initial="hidden"
+            animate={isNarrativesInView ? "visible" : "hidden"}
+            variants={{
+              visible: { transition: { staggerChildren: 0.1 } }
+            }}
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
             {/* Privacy Coins Card */}
-            <div className="bg-graphite-900 border border-terminal-green/30 rounded-lg p-4 hover:border-terminal-green/50 transition-colors">
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-graphite-900 border border-terminal-green/30 rounded-xl p-4 hover:border-terminal-green/50 transition-all"
+            >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-terminal-green">Privacy Coins</h3>
                 <Badge variant="hot">+1000% ZEC</Badge>
@@ -253,10 +337,14 @@ export function DailyReport() {
                   <span className="text-terminal-green">↑ Surge</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Solana Ecosystem Card */}
-            <div className="bg-graphite-900 border border-yellow-500/30 rounded-lg p-4 hover:border-yellow-500/50 transition-colors">
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-graphite-900 border border-yellow-500/30 rounded-xl p-4 hover:border-yellow-500/50 transition-all"
+            >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-yellow-400">Solana Ecosystem</h3>
                 <Badge variant="neutral">Mixed</Badge>
@@ -275,10 +363,14 @@ export function DailyReport() {
                   <span className="text-terminal-cyan">↑ Mentions, ↓ Engagement</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* DeFi Card */}
-            <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4 hover:border-terminal-cyan/30 transition-colors">
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-graphite-900 border border-graphite-700 rounded-xl p-4 hover:border-terminal-cyan/30 transition-all"
+            >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-terminal-cyan">DeFi</h3>
                 <Badge variant="default">84% sentiment</Badge>
@@ -297,10 +389,14 @@ export function DailyReport() {
                   <span className="text-terminal-green">↑ 9.4%</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* AI Card */}
-            <div className="bg-graphite-900 border border-graphite-700 rounded-lg p-4 hover:border-terminal-cyan/30 transition-colors">
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-graphite-900 border border-graphite-700 rounded-xl p-4 hover:border-terminal-cyan/30 transition-all"
+            >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-purple-400">AI Sector</h3>
                 <Badge variant="default">83% sentiment</Badge>
@@ -319,10 +415,14 @@ export function DailyReport() {
                   <span className="text-terminal-muted">Low</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Bitcoin Ecosystem Card */}
-            <div className="bg-graphite-900 border border-orange-500/30 rounded-lg p-4 hover:border-orange-500/50 transition-colors">
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-graphite-900 border border-orange-500/30 rounded-xl p-4 hover:border-orange-500/50 transition-all"
+            >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-orange-400">Bitcoin Ecosystem</h3>
                 <Badge variant="hot">ETF Inflows</Badge>
@@ -341,10 +441,13 @@ export function DailyReport() {
                   <span className="text-terminal-cyan">Steady</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Declining Card */}
-            <div className="bg-graphite-900 border border-terminal-red/30 rounded-lg p-4">
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              className="bg-graphite-900 border border-terminal-red/30 rounded-xl p-4"
+            >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-terminal-red">Declining</h3>
                 <Badge variant="cold">Reduced</Badge>
@@ -357,32 +460,35 @@ export function DailyReport() {
                   <span className="text-terminal-red">↓</span> General Layer-1s (beyond SOL)
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* Top Movers */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2 flex items-center gap-2">
-            <span className="text-terminal-cyan">03</span> Top Movers
-          </h2>
+        <section ref={moversRef}>
+          <SectionHeader number="03" title="Top Movers" />
 
           {/* Positive Movers */}
-          <div className="mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: isMoversInView ? 1 : 0, y: isMoversInView ? 0 : 20 }}
+            transition={{ duration: 0.5 }}
+            className="mb-6"
+          >
             <h3 className="text-sm font-semibold text-terminal-green mb-3 flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-terminal-green/20 flex items-center justify-center">↑</span>
+              <span className="w-5 h-5 rounded-full bg-terminal-green/20 flex items-center justify-center text-xs">↑</span>
               Positive Movers
             </h3>
-            <div className="bg-graphite-900 border border-graphite-800 rounded-lg overflow-hidden overflow-x-auto">
+            <div className="bg-graphite-900 border border-graphite-800 rounded-xl overflow-hidden overflow-x-auto">
               <table className="w-full text-sm min-w-[600px]">
                 <thead className="bg-graphite-800 text-terminal-muted text-xs uppercase">
                   <tr>
-                    <th className="py-2 px-2 text-left">Symbol</th>
-                    <th className="py-2 px-2 text-left">24h</th>
-                    <th className="py-2 px-2 text-left">7d</th>
-                    <th className="py-2 px-2 text-left">Social</th>
-                    <th className="py-2 px-2 text-left">Sentiment</th>
-                    <th className="py-2 px-2 text-left">Comment</th>
+                    <th className="py-3 px-3 text-left">Symbol</th>
+                    <th className="py-3 px-3 text-left">24h</th>
+                    <th className="py-3 px-3 text-left">7d</th>
+                    <th className="py-3 px-3 text-left">Social</th>
+                    <th className="py-3 px-3 text-left">Sentiment</th>
+                    <th className="py-3 px-3 text-left">Comment</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -394,24 +500,28 @@ export function DailyReport() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
 
           {/* Negative Movers */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: isMoversInView ? 1 : 0, y: isMoversInView ? 0 : 20 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <h3 className="text-sm font-semibold text-terminal-red mb-3 flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-terminal-red/20 flex items-center justify-center">↓</span>
+              <span className="w-5 h-5 rounded-full bg-terminal-red/20 flex items-center justify-center text-xs">↓</span>
               Negative Movers
             </h3>
-            <div className="bg-graphite-900 border border-graphite-800 rounded-lg overflow-hidden overflow-x-auto">
+            <div className="bg-graphite-900 border border-graphite-800 rounded-xl overflow-hidden overflow-x-auto">
               <table className="w-full text-sm min-w-[600px]">
                 <thead className="bg-graphite-800 text-terminal-muted text-xs uppercase">
                   <tr>
-                    <th className="py-2 px-2 text-left">Symbol</th>
-                    <th className="py-2 px-2 text-left">24h</th>
-                    <th className="py-2 px-2 text-left">7d</th>
-                    <th className="py-2 px-2 text-left">Social</th>
-                    <th className="py-2 px-2 text-left">Sentiment</th>
-                    <th className="py-2 px-2 text-left">Comment</th>
+                    <th className="py-3 px-3 text-left">Symbol</th>
+                    <th className="py-3 px-3 text-left">24h</th>
+                    <th className="py-3 px-3 text-left">7d</th>
+                    <th className="py-3 px-3 text-left">Social</th>
+                    <th className="py-3 px-3 text-left">Sentiment</th>
+                    <th className="py-3 px-3 text-left">Comment</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -423,79 +533,76 @@ export function DailyReport() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* Social & Influencer Highlights */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-terminal-text border-b border-graphite-800 pb-2 flex items-center gap-2">
-            <span className="text-terminal-cyan">04</span> Social & Influencer Highlights
-          </h2>
+        <section ref={socialRef}>
+          <SectionHeader number="04" title="Social & Influencer Highlights" />
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <motion.div
+            initial="hidden"
+            animate={isSocialInView ? "visible" : "hidden"}
+            variants={{
+              visible: { transition: { staggerChildren: 0.1 } }
+            }}
+            className="grid md:grid-cols-2 gap-4"
+          >
             {/* Top Influencers */}
             <div className="space-y-3">
-              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-terminal-cyan">@MEXC_Official</span>
-                  <span className="text-xs text-terminal-muted">1.7M followers</span>
-                </div>
-                <div className="text-sm text-terminal-muted">115 posts • 8.7M engagements</div>
-                <Badge variant="hot">Bullish DeFi</Badge>
-              </div>
-
-              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-terminal-cyan">@WatcherGuru</span>
-                  <span className="text-xs text-terminal-muted">2M+ engagements</span>
-                </div>
-                <div className="text-sm text-terminal-muted">ETF inflows, ZEC ETF, Solana hacks</div>
-                <Badge variant="neutral">Mixed</Badge>
-              </div>
-
-              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-terminal-red">@CryptoHayes</span>
-                  <span className="text-xs text-terminal-muted">816K engagements</span>
-                </div>
-                <div className="text-sm text-terminal-muted">Bearish on MON: "send to zero"</div>
-                <Badge variant="cold">Bearish MON</Badge>
-              </div>
+              {[
+                { handle: '@MEXC_Official', followers: '1.7M followers', posts: '115 posts • 8.7M engagements', badge: 'Bullish DeFi', variant: 'hot' as const },
+                { handle: '@WatcherGuru', followers: '2M+ engagements', posts: 'ETF inflows, ZEC ETF, Solana hacks', badge: 'Mixed', variant: 'neutral' as const },
+                { handle: '@CryptoHayes', followers: '816K engagements', posts: 'Bearish on MON: "send to zero"', badge: 'Bearish MON', variant: 'cold' as const, isBearish: true }
+              ].map((influencer, i) => (
+                <motion.div
+                  key={influencer.handle}
+                  variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-graphite-900 border border-graphite-800 rounded-xl p-4 hover:border-terminal-cyan/30 transition-all"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`font-semibold ${influencer.isBearish ? 'text-terminal-red' : 'text-terminal-cyan'}`}>{influencer.handle}</span>
+                    <span className="text-xs text-terminal-muted">{influencer.followers}</span>
+                  </div>
+                  <div className="text-sm text-terminal-muted mb-2">{influencer.posts}</div>
+                  <Badge variant={influencer.variant}>{influencer.badge}</Badge>
+                </motion.div>
+              ))}
             </div>
 
             <div className="space-y-3">
-              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-terminal-cyan">@lookonchain</span>
-                  <span className="text-xs text-terminal-muted">1M+ engagements</span>
-                </div>
-                <div className="text-sm text-terminal-muted">Whale $ENA buys, XRP reserves low</div>
-                <Badge variant="neutral">Analytics</Badge>
-              </div>
-
-              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-terminal-cyan">@solana</span>
-                  <span className="text-xs text-terminal-muted">195K engagements</span>
-                </div>
-                <div className="text-sm text-terminal-muted">"Amazon for finance" — defensive</div>
-                <Badge variant="default">Defensive</Badge>
-              </div>
-
-              <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-terminal-green">DeFi Posts</span>
-                  <span className="text-xs text-terminal-muted">Chainlink focus</span>
-                </div>
-                <div className="text-sm text-terminal-muted">Solana growth, ZEC privacy insurance</div>
-                <Badge variant="hot">84% bullish</Badge>
-              </div>
+              {[
+                { handle: '@lookonchain', followers: '1M+ engagements', posts: 'Whale $ENA buys, XRP reserves low', badge: 'Analytics', variant: 'neutral' as const },
+                { handle: '@solana', followers: '195K engagements', posts: '"Amazon for finance" — defensive', badge: 'Defensive', variant: 'default' as const },
+                { handle: 'DeFi Posts', followers: 'Chainlink focus', posts: 'Solana growth, ZEC privacy insurance', badge: '84% bullish', variant: 'hot' as const }
+              ].map((influencer, i) => (
+                <motion.div
+                  key={influencer.handle}
+                  variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-graphite-900 border border-graphite-800 rounded-xl p-4 hover:border-terminal-cyan/30 transition-all"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`font-semibold ${influencer.handle === 'DeFi Posts' ? 'text-terminal-green' : 'text-terminal-cyan'}`}>{influencer.handle}</span>
+                    <span className="text-xs text-terminal-muted">{influencer.followers}</span>
+                  </div>
+                  <div className="text-sm text-terminal-muted mb-2">{influencer.posts}</div>
+                  <Badge variant={influencer.variant}>{influencer.badge}</Badge>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* Risks & Observations */}
-        <section className="bg-graphite-900 border border-terminal-red/30 rounded-lg p-6">
+        <motion.section
+          ref={risksRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: isRisksInView ? 1 : 0, y: isRisksInView ? 0 : 20 }}
+          transition={{ duration: 0.6 }}
+          className="bg-graphite-900 border border-terminal-red/30 rounded-xl p-6"
+        >
           <h2 className="text-xl font-semibold mb-4 text-terminal-red flex items-center gap-2">
             <span className="text-2xl">⚠</span> Risks & Observations for Next Day
           </h2>
@@ -504,7 +611,7 @@ export function DailyReport() {
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-terminal-red/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-terminal-red text-sm">1</span>
+                  <span className="text-terminal-red text-sm font-bold">1</span>
                 </div>
                 <div>
                   <RiskIndicator level="high" label="Privacy Surge (ZEC)" />
@@ -514,7 +621,7 @@ export function DailyReport() {
 
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-terminal-red/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-terminal-red text-sm">2</span>
+                  <span className="text-terminal-red text-sm font-bold">2</span>
                 </div>
                 <div>
                   <RiskIndicator level="high" label="Solana Ecosystem Pressure" />
@@ -524,7 +631,7 @@ export function DailyReport() {
 
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-yellow-500 text-sm">3</span>
+                  <span className="text-yellow-500 text-sm font-bold">3</span>
                 </div>
                 <div>
                   <RiskIndicator level="medium" label="Monad Post-Launch Froth" />
@@ -536,7 +643,7 @@ export function DailyReport() {
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-yellow-500 text-sm">4</span>
+                  <span className="text-yellow-500 text-sm font-bold">4</span>
                 </div>
                 <div>
                   <RiskIndicator level="medium" label="Tether S&P Downgrade" />
@@ -546,7 +653,7 @@ export function DailyReport() {
 
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-terminal-muted/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-terminal-muted text-sm">5</span>
+                  <span className="text-terminal-muted text-sm font-bold">5</span>
                 </div>
                 <div>
                   <RiskIndicator level="low" label="Low Conviction Environment" />
@@ -556,7 +663,7 @@ export function DailyReport() {
 
               <div className="flex items-start gap-3 bg-terminal-green/10 rounded-lg p-3 -mx-3">
                 <div className="w-8 h-8 rounded-full bg-terminal-green/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-terminal-green text-sm">+</span>
+                  <span className="text-terminal-green text-sm font-bold">+</span>
                 </div>
                 <div>
                   <span className="text-terminal-green font-semibold text-sm">Bullish Anchors</span>
@@ -565,36 +672,41 @@ export function DailyReport() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Quick Stats Footer */}
-        <section className="grid grid-cols-2 md:grid-cols-5 gap-4 py-6 border-t border-graphite-800">
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-terminal-cyan">82%</div>
-            <div className="text-xs text-terminal-muted">Market Sentiment</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-terminal-red">-7.1%</div>
-            <div className="text-xs text-terminal-muted">Creator Activity</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-terminal-green">+9.4%</div>
-            <div className="text-xs text-terminal-muted">DeFi Mentions</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-terminal-red">-19%</div>
-            <div className="text-xs text-terminal-muted">DeFi Engagements</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-orange-400">$36M</div>
-            <div className="text-xs text-terminal-muted">Upbit Hack</div>
-          </div>
-        </section>
+        <motion.section
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-2 md:grid-cols-5 gap-4 py-6 border-t border-graphite-800"
+        >
+          {[
+            { value: '82%', label: 'Market Sentiment', color: 'text-terminal-cyan' },
+            { value: '-7.1%', label: 'Creator Activity', color: 'text-terminal-red' },
+            { value: '+9.4%', label: 'DeFi Mentions', color: 'text-terminal-green' },
+            { value: '-19%', label: 'DeFi Engagements', color: 'text-terminal-red' },
+            { value: '$36M', label: 'Upbit Hack', color: 'text-orange-400' }
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.1 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className={`text-2xl font-bold font-mono ${stat.color}`}>{stat.value}</div>
+              <div className="text-xs text-terminal-muted">{stat.label}</div>
+            </motion.div>
+          ))}
+        </motion.section>
 
       </article>
 
       {/* Footer */}
-      <footer className="max-w-6xl mx-auto mt-8 pt-8 border-t border-graphite-800 text-xs text-terminal-muted">
+      <footer className="max-w-6xl mx-auto mt-8 pt-8 border-t border-graphite-800 text-xs text-terminal-muted relative z-10">
         <div className="flex flex-col md:flex-row justify-between gap-4">
           <div>
             <p>Report generated: Nov 28, 2025 • UTC</p>
@@ -606,7 +718,12 @@ export function DailyReport() {
           </div>
         </div>
         <p className="mt-6">
-          <Link to="/" className="text-terminal-cyan hover:underline">← Back to Context8</Link>
+          <Link to="/" className="text-terminal-cyan hover:underline inline-flex items-center gap-1">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Context8
+          </Link>
         </p>
       </footer>
     </div>
