@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { PaymentModal } from '../components/payment/PaymentModal'
 import { usePaymentSubmit } from '../hooks/usePaymentSubmit'
@@ -103,19 +103,6 @@ export function Dashboard() {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pendingPayment, setPendingPayment] = useState<any>(null)
   const { submitPayment } = usePaymentSubmit()
-
-  // Refs for scroll animations
-  const headerRef = useRef(null)
-  const subscriptionRef = useRef(null)
-  const apiKeyRef = useRef(null)
-  const integrationRef = useRef(null)
-  const dataSourcesRef = useRef(null)
-
-  const isHeaderInView = useInView(headerRef, { once: true })
-  const isSubscriptionInView = useInView(subscriptionRef, { once: true })
-  const isApiKeyInView = useInView(apiKeyRef, { once: true })
-  const isIntegrationInView = useInView(integrationRef, { once: true })
-  const isDataSourcesInView = useInView(dataSourcesRef, { once: true })
 
   // Subscription data
   const {
@@ -225,9 +212,8 @@ export function Dashboard() {
 
       {/* Header */}
       <motion.header
-        ref={headerRef}
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: isHeaderInView ? 1 : 0, y: isHeaderInView ? 0 : -20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="max-w-4xl mx-auto mb-12 relative z-10"
       >
@@ -333,10 +319,10 @@ export function Dashboard() {
 
         {/* Subscription section */}
         <motion.section
-          ref={subscriptionRef}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isSubscriptionInView ? 1 : 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
           className="mb-12"
         >
           <SectionHeader number="01" title="SUBSCRIPTION" />
@@ -427,10 +413,10 @@ export function Dashboard() {
 
         {/* API Key section */}
         <motion.section
-          ref={apiKeyRef}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isApiKeyInView ? 1 : 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
           className="mb-12"
         >
           <SectionHeader number={payments.length > 0 ? "03" : "02"} title="API KEY" />
@@ -446,10 +432,10 @@ export function Dashboard() {
 
         {/* API Integration section */}
         <motion.section
-          ref={integrationRef}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isIntegrationInView ? 1 : 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
           className="mb-12"
         >
           <SectionHeader number={payments.length > 0 ? "04" : "03"} title="API INTEGRATION" />
@@ -465,10 +451,10 @@ export function Dashboard() {
 
         {/* Data sources section */}
         <motion.section
-          ref={dataSourcesRef}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isDataSourcesInView ? 1 : 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
         >
           <SectionHeader number={payments.length > 0 ? "05" : "04"} title="DATA SOURCES" />
 
