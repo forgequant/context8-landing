@@ -37,7 +37,8 @@ export function Landing() {
         </svg>
       ),
       title: 'Social Sentiment',
-      description: 'Galaxy Score, AltRank, social volume, influencer activity, trending coins, news sentiment.'
+      description: 'Galaxy Score, AltRank, social volume, influencer activity, trending coins, news sentiment.',
+      badge: 'active'
     },
     {
       icon: (
@@ -47,7 +48,8 @@ export function Landing() {
         </svg>
       ),
       title: 'Derivatives Data',
-      description: 'Funding rates, open interest, liquidations, long/short ratios across all major exchanges.'
+      description: 'Funding rates, open interest, liquidations, long/short ratios across all major exchanges.',
+      badge: 'coming_soon'
     },
     {
       icon: (
@@ -57,7 +59,8 @@ export function Landing() {
         </svg>
       ),
       title: 'On-Chain & Whales',
-      description: 'Exchange reserves, netflow, whale positions and alerts. Track smart money movements.'
+      description: 'Exchange reserves, netflow, whale positions and alerts. Track smart money movements.',
+      badge: 'coming_soon'
     },
     {
       icon: (
@@ -66,7 +69,8 @@ export function Landing() {
         </svg>
       ),
       title: 'Technical Analysis',
-      description: 'RSI, MACD, Bollinger Bands, EMA crossovers, Fear & Greed index — all calculated for you.'
+      description: 'RSI, MACD, Bollinger Bands, EMA crossovers, Fear & Greed index — all calculated for you.',
+      badge: 'active'
     }
   ]
 
@@ -206,9 +210,16 @@ export function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: isFeaturesInView ? 1 : 0, y: isFeaturesInView ? 0 : 20 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="p-6 rounded-xl bg-graphite-900 border border-graphite-800 hover:border-terminal-cyan/30 transition-all group"
+                className={`p-6 rounded-xl bg-graphite-900 border border-graphite-800 hover:border-terminal-cyan/30 transition-all group ${feature.badge === 'coming_soon' ? 'opacity-70' : ''}`}
               >
-                <span className="w-10 h-10 rounded-lg bg-graphite-800 flex items-center justify-center text-terminal-cyan mb-4">{feature.icon}</span>
+                <div className="flex items-start justify-between mb-4">
+                  <span className="w-10 h-10 rounded-lg bg-graphite-800 flex items-center justify-center text-terminal-cyan">{feature.icon}</span>
+                  {feature.badge === 'coming_soon' && (
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                      Coming Soon
+                    </span>
+                  )}
+                </div>
                 <h4 className="text-lg font-semibold text-terminal-text mb-2 group-hover:text-terminal-cyan transition-colors">
                   {feature.title}
                 </h4>
@@ -217,6 +228,36 @@ export function Landing() {
                 </p>
               </motion.div>
             ))}
+          </div>
+        </motion.section>
+
+        {/* Roadmap section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: isFeaturesInView ? 1 : 0, y: isFeaturesInView ? 0 : 20 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mb-24 md:mb-32"
+        >
+          <h3 className="text-sm text-terminal-cyan mb-8 text-center">ROADMAP</h3>
+          <div className="max-w-2xl mx-auto p-8 rounded-xl bg-graphite-900 border border-graphite-800">
+            <p className="text-terminal-muted mb-4 text-center">
+              This is a <span className="text-terminal-text">solo project</span>. Currently only{' '}
+              <span className="text-terminal-green">LunarCrush</span> (social sentiment) is available.
+            </p>
+            <p className="text-terminal-muted mb-6 text-center">
+              <span className="text-yellow-400">CoinGlass</span> (derivatives, on-chain, whale data) will be enabled after{' '}
+              <span className="text-terminal-text font-semibold">10 paid subscribers</span>.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-terminal-green/10 border border-terminal-green/30">
+                <span className="w-2 h-2 rounded-full bg-terminal-green" />
+                <span className="text-sm text-terminal-green">LunarCrush — Active</span>
+              </div>
+              <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                <span className="text-sm text-yellow-400">CoinGlass — 0/10 subscribers</span>
+              </div>
+            </div>
           </div>
         </motion.section>
 
@@ -382,40 +423,48 @@ export function Landing() {
         >
           <h3 className="text-sm text-terminal-cyan mb-4 text-center">26 MCP TOOLS</h3>
           <p className="text-center text-terminal-muted mb-8 max-w-lg mx-auto">
-            All tools accessible via natural language queries.
+            All tools accessible via natural language queries.{' '}
+            <span className="text-yellow-400">Yellow = Coming Soon</span>
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto text-xs">
             {[
-              'get_coin',
-              'get_galaxy_score',
-              'get_altrank',
-              'get_social_volume',
-              'get_influencer_activity',
-              'list_trending_coins',
-              'get_news',
-              'get_sentiment',
-              'get_funding_rates',
-              'get_open_interest',
-              'get_liquidations',
-              'list_top_liquidations',
-              'get_long_short_ratio',
-              'get_exchange_reserves',
-              'get_exchange_netflow',
-              'get_whale_positions',
-              'get_whale_alerts',
-              'get_rsi',
-              'get_macd',
-              'get_bollinger_bands',
-              'get_ema_crossover',
-              'get_technical_summary',
-              'get_fear_greed_index',
-              'get_fear_greed_history',
-              'get_market_alerts',
-              'get_usage'
+              { name: 'get_coin', active: true },
+              { name: 'get_galaxy_score', active: true },
+              { name: 'get_altrank', active: true },
+              { name: 'get_social_volume', active: true },
+              { name: 'get_influencer_activity', active: true },
+              { name: 'list_trending_coins', active: true },
+              { name: 'get_news', active: true },
+              { name: 'get_sentiment', active: true },
+              { name: 'get_funding_rates', active: false },
+              { name: 'get_open_interest', active: false },
+              { name: 'get_liquidations', active: false },
+              { name: 'list_top_liquidations', active: false },
+              { name: 'get_long_short_ratio', active: false },
+              { name: 'get_exchange_reserves', active: false },
+              { name: 'get_exchange_netflow', active: false },
+              { name: 'get_whale_positions', active: false },
+              { name: 'get_whale_alerts', active: false },
+              { name: 'get_rsi', active: true },
+              { name: 'get_macd', active: true },
+              { name: 'get_bollinger_bands', active: true },
+              { name: 'get_ema_crossover', active: true },
+              { name: 'get_technical_summary', active: true },
+              { name: 'get_fear_greed_index', active: true },
+              { name: 'get_fear_greed_history', active: true },
+              { name: 'get_market_alerts', active: false },
+              { name: 'get_usage', active: true }
             ].map((tool) => (
-              <div key={tool} className="px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-800 text-terminal-muted font-mono truncate">
-                {tool}
+              <div
+                key={tool.name}
+                className={`px-3 py-2 rounded-lg bg-graphite-900 border font-mono truncate ${
+                  tool.active
+                    ? 'border-graphite-800 text-terminal-muted'
+                    : 'border-yellow-500/30 text-yellow-400/70'
+                }`}
+              >
+                {tool.name}
               </div>
             ))}
           </div>
@@ -451,6 +500,10 @@ export function Landing() {
               {
                 q: 'How does pricing work?',
                 a: 'Free tier includes 2 requests/day. Pro ($8/mo) gives you 10 requests/day. All tools and data sources are available on both tiers.'
+              },
+              {
+                q: 'Why are some features "Coming Soon"?',
+                a: 'This is a solo project. CoinGlass data (derivatives, whale tracking, on-chain) requires a paid subscription I can\'t justify yet. After 10 paid subscribers, I\'ll enable full CoinGlass access for everyone.'
               },
               {
                 q: 'Is it open source?',
