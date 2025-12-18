@@ -537,8 +537,10 @@ export function DailyReport() {
 
             <motion.div
               initial="hidden"
-              animate={isNarrativesInView ? "visible" : "hidden"}
+              whileInView="visible"
+              viewport={{ once: true }}
               variants={{
+                hidden: {},
                 visible: { transition: { staggerChildren: 0.1 } }
               }}
               className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -574,7 +576,8 @@ export function DailyReport() {
             {gainers.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: isMoversInView ? 1 : 0, y: isMoversInView ? 0 : 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
                 className="mb-6"
               >
@@ -608,7 +611,8 @@ export function DailyReport() {
             {losers.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: isMoversInView ? 1 : 0, y: isMoversInView ? 0 : 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
                 <h3 className="text-sm font-semibold text-terminal-red mb-3 flex items-center gap-2">
