@@ -145,18 +145,12 @@ async function fetchMarketData(apiKey: string) {
   console.log('[fetchMarketData] Phase 1 complete. Coins:', coinResults.filter(r => r?.data).length)
 
   // PHASE 2: Social & sentiment data
-  // Fetch sentiment for more coins to get closer to ~250K creators
-  const sentimentSymbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE']
+  // Fetch sentiment for BTC and ETH using raw fetch (more reliable)
+  console.log('[fetchMarketData] Fetching sentiment for BTC and ETH...')
   const sentimentResults: any[] = []
 
-  console.log('[fetchMarketData] Fetching sentiment for:', sentimentSymbols.join(', '))
-
-  for (const symbol of sentimentSymbols) {
-    console.log(`[fetchMarketData] Direct fetch: ${symbol}`)
+  for (const symbol of ['BTC', 'ETH']) {
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 15000)  // 15s timeout
-
       const res = await fetch(MCP_BASE, {
         method: 'POST',
         headers: {
@@ -165,54 +159,34 @@ async function fetchMarketData(apiKey: string) {
         },
         body: JSON.stringify({
           jsonrpc: '2.0',
-          id: `sentiment-${symbol}-${Date.now()}`,
+          id: `sentiment-${symbol}`,
           method: 'tools/call',
           params: {
             name: 'lunarcrush_get_sentiment',
             arguments: { symbol, api_key: apiKey },
           },
         }),
-        signal: controller.signal,
       })
 
-      clearTimeout(timeoutId)
-
-      if (!res.ok) {
-        console.error(`[fetchMarketData] ${symbol} HTTP error:`, res.status)
-        sentimentResults.push(null)
-        continue
-      }
-
-      const text = await res.text()
-      console.log(`[fetchMarketData] ${symbol} response length:`, text.length)
-
-      const dataLine = text.split('\n').find((line: string) => line.startsWith('data: '))
-      if (!dataLine) {
-        console.error(`[fetchMarketData] ${symbol} no data line. First 200:`, text.substring(0, 200))
-        sentimentResults.push(null)
-        continue
-      }
-
-      const data = JSON.parse(dataLine.replace('data: ', ''))
-      const content = data.result?.content?.[0]
-      if (content?.type === 'text') {
-        const parsed = JSON.parse(content.text)
-        console.log(`[fetchMarketData] ${symbol} parsed: contributors=${parsed.num_contributors}`)
-        sentimentResults.push(parsed)
-      } else {
-        console.error(`[fetchMarketData] ${symbol} unexpected content type`)
-        sentimentResults.push(null)
+      if (res.ok) {
+        const text = await res.text()
+        const dataLine = text.split('\n').find((l: string) => l.startsWith('data: '))
+        if (dataLine) {
+          const data = JSON.parse(dataLine.replace('data: ', ''))
+          const content = data.result?.content?.[0]
+          if (content?.type === 'text') {
+            const parsed = JSON.parse(content.text)
+            console.log(`[fetchMarketData] ${symbol} contributors:`, parsed.num_contributors)
+            sentimentResults.push(parsed)
+          }
+        }
       }
     } catch (err: any) {
-      console.error(`[fetchMarketData] ${symbol} error:`, err?.message || err)
-      sentimentResults.push(null)
+      console.error(`[fetchMarketData] ${symbol} sentiment error:`, err?.message || err)
     }
-    // Small delay
-    await new Promise(resolve => setTimeout(resolve, 200))
   }
 
-  console.log('[fetchMarketData] Sentiment results:', sentimentResults.length, 'items')
-  console.log('[fetchMarketData] Non-null results:', sentimentResults.filter(Boolean).length)
+  console.log('[fetchMarketData] Sentiment results:', sentimentResults.filter(Boolean).length)
 
   // Fetch other data in parallel
   const [newsResults, galaxyScores, altRanks] = await Promise.all([
