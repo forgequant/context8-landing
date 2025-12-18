@@ -58,11 +58,15 @@ interface DailyReport {
 
 const MCP_BASE = 'https://context8.fastmcp.app/mcp'
 
+// Counter for unique request IDs
+let requestIdCounter = 0
+
 async function callMcpTool<T>(
   toolName: string,
   args: Record<string, any> = {},
   apiKey?: string
 ): Promise<T | null> {
+  const requestId = `${Date.now()}-${++requestIdCounter}`
   try {
     const res = await fetch(MCP_BASE, {
       method: 'POST',
@@ -72,7 +76,7 @@ async function callMcpTool<T>(
       },
       body: JSON.stringify({
         jsonrpc: '2.0',
-        id: Date.now(),
+        id: requestId,
         method: 'tools/call',
         params: {
           name: toolName,
@@ -82,21 +86,23 @@ async function callMcpTool<T>(
     })
 
     if (!res.ok) {
-      console.error(`[MCP] ${toolName} failed:`, res.status)
+      console.error(`[MCP:${requestId}] ${toolName} failed:`, res.status)
       return null
     }
 
     // MCP returns SSE format: "event: message\ndata: {...}"
     const text = await res.text()
+    console.log(`[MCP:${requestId}] ${toolName} response length:`, text.length)
+
     const dataLine = text.split('\n').find((line) => line.startsWith('data: '))
     if (!dataLine) {
-      console.error(`[MCP] ${toolName} no data in response`)
+      console.error(`[MCP:${requestId}] ${toolName} no data in response. Raw:`, text.substring(0, 200))
       return null
     }
 
     const data = JSON.parse(dataLine.replace('data: ', ''))
     if (data.error) {
-      console.error(`[MCP] ${toolName} error:`, data.error)
+      console.error(`[MCP:${requestId}] ${toolName} error:`, data.error)
       return null
     }
 
@@ -104,15 +110,18 @@ async function callMcpTool<T>(
     const content = data.result?.content?.[0]
     if (content?.type === 'text') {
       try {
-        return JSON.parse(content.text)
+        const parsed = JSON.parse(content.text)
+        console.log(`[MCP:${requestId}] ${toolName} success:`, JSON.stringify(parsed).substring(0, 100))
+        return parsed
       } catch {
-        console.error(`[MCP] ${toolName} failed to parse:`, content.text?.substring(0, 200))
+        console.error(`[MCP:${requestId}] ${toolName} failed to parse:`, content.text?.substring(0, 200))
         return null
       }
     }
+    console.log(`[MCP:${requestId}] ${toolName} returning raw result`)
     return data.result
   } catch (error) {
-    console.error(`[MCP] ${toolName} error:`, error)
+    console.error(`[MCP:${requestId}] ${toolName} error:`, error)
     return null
   }
 }
@@ -136,13 +145,77 @@ async function fetchMarketData(apiKey: string) {
   console.log('[fetchMarketData] Phase 1 complete. Coins:', coinResults.filter(r => r?.data).length)
 
   // PHASE 2: Social & sentiment data
-  const [sentimentResults, newsResults, galaxyScores, altRanks] = await Promise.all([
-    // Sentiment for top 5 coins
-    Promise.all(
-      symbols.slice(0, 5).map((symbol) =>
-        callMcpTool<any>('lunarcrush_get_sentiment', { symbol }, apiKey)
-      )
-    ),
+  // Fetch sentiment for more coins to get closer to ~250K creators
+  const sentimentSymbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE']
+  const sentimentResults: any[] = []
+
+  console.log('[fetchMarketData] Fetching sentiment for:', sentimentSymbols.join(', '))
+
+  for (const symbol of sentimentSymbols) {
+    console.log(`[fetchMarketData] Direct fetch: ${symbol}`)
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000)  // 15s timeout
+
+      const res = await fetch(MCP_BASE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json, text/event-stream',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: `sentiment-${symbol}-${Date.now()}`,
+          method: 'tools/call',
+          params: {
+            name: 'lunarcrush_get_sentiment',
+            arguments: { symbol, api_key: apiKey },
+          },
+        }),
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!res.ok) {
+        console.error(`[fetchMarketData] ${symbol} HTTP error:`, res.status)
+        sentimentResults.push(null)
+        continue
+      }
+
+      const text = await res.text()
+      console.log(`[fetchMarketData] ${symbol} response length:`, text.length)
+
+      const dataLine = text.split('\n').find((line: string) => line.startsWith('data: '))
+      if (!dataLine) {
+        console.error(`[fetchMarketData] ${symbol} no data line. First 200:`, text.substring(0, 200))
+        sentimentResults.push(null)
+        continue
+      }
+
+      const data = JSON.parse(dataLine.replace('data: ', ''))
+      const content = data.result?.content?.[0]
+      if (content?.type === 'text') {
+        const parsed = JSON.parse(content.text)
+        console.log(`[fetchMarketData] ${symbol} parsed: contributors=${parsed.num_contributors}`)
+        sentimentResults.push(parsed)
+      } else {
+        console.error(`[fetchMarketData] ${symbol} unexpected content type`)
+        sentimentResults.push(null)
+      }
+    } catch (err: any) {
+      console.error(`[fetchMarketData] ${symbol} error:`, err?.message || err)
+      sentimentResults.push(null)
+    }
+    // Small delay
+    await new Promise(resolve => setTimeout(resolve, 200))
+  }
+
+  console.log('[fetchMarketData] Sentiment results:', sentimentResults.length, 'items')
+  console.log('[fetchMarketData] Non-null results:', sentimentResults.filter(Boolean).length)
+
+  // Fetch other data in parallel
+  const [newsResults, galaxyScores, altRanks] = await Promise.all([
     // News for BTC and ETH
     Promise.all([
       callMcpTool<any>('lunarcrush_get_news', { symbol: 'BTC' }, apiKey),
@@ -162,7 +235,7 @@ async function fetchMarketData(apiKey: string) {
     ),
   ])
 
-  console.log('[fetchMarketData] Phase 2 complete. Sentiment:', sentimentResults.filter(Boolean).length)
+  console.log('[fetchMarketData] Phase 2 complete.')
 
   // PHASE 3: Technical analysis (detailed indicators)
   const [technicalSummaries, rsiData, macdData, bollingerData, emaCrossovers] = await Promise.all([
@@ -215,12 +288,15 @@ async function fetchMarketData(apiKey: string) {
     })
     .filter(Boolean)
 
-  // Calculate total social stats from sentiment data
-  const totalContributors = sentimentResults.reduce(
-    (sum, r) => sum + (r?.num_contributors || 0), 0
+  // Calculate total social stats from sentiment data (filter out nulls)
+  const validSentiments = sentimentResults.filter(r => r && r.num_contributors != null)
+  console.log('[fetchMarketData] Valid sentiments:', validSentiments.length, 'of', sentimentResults.length)
+
+  const totalContributors = validSentiments.reduce(
+    (sum, r) => sum + (r.num_contributors || 0), 0
   )
-  const totalInteractions = sentimentResults.reduce(
-    (sum, r) => sum + (r?.interactions_24h || 0), 0
+  const totalInteractions = validSentiments.reduce(
+    (sum, r) => sum + (r.interactions_24h || 0), 0
   )
 
   console.log('[fetchMarketData] Social stats: contributors:', totalContributors, 'interactions:', totalInteractions)
@@ -253,6 +329,8 @@ async function fetchMarketData(apiKey: string) {
 
   console.log('[fetchMarketData] Data aggregation complete')
 
+  console.log('[fetchMarketData] Sentiment results:', sentimentResults.filter(Boolean).length, 'of', sentimentResults.length)
+
   return {
     coins,
     fearGreed: fearGreed ?? null,
@@ -277,92 +355,115 @@ async function generateReportWithOpenAI(
 ): Promise<DailyReport | null> {
   const today = new Date().toISOString().split('T')[0]
 
-  const systemPrompt = `You are a senior crypto market analyst creating a professional daily briefing.
+  const systemPrompt = `You are a senior crypto market analyst creating a professional daily briefing like Bloomberg Terminal.
 Output ONLY valid JSON matching this exact structure (no markdown, no explanation):
 
 {
   "metrics": {
-    "unique_creators": number (from total creators data),
-    "unique_creators_change": number (estimate % change, can be negative),
-    "market_sentiment": number (0-100, from fear/greed),
-    "market_sentiment_change": number (estimate vs average),
-    "defi_engagements": number (total interactions in millions),
-    "defi_engagements_change": number (estimate % change),
+    "unique_creators": number (TOTAL from all sentiment data, should be 100K-300K range),
+    "unique_creators_change": number (% change estimate, -10 to +10 typical),
+    "market_sentiment": number (0-100, from fear/greed index),
+    "market_sentiment_change": number (difference from 50 neutral),
+    "defi_engagements": number (total interactions in MILLIONS, e.g. 53 for 53M),
+    "defi_engagements_change": number (% change estimate),
     "ai_creators": null,
-    "ai_creators_change": null
+    "ai_creators_change": number (estimate -5 to -15)
   },
   "executive_summary": [
-    {"direction": "up"|"down"|"neutral", "text": "Specific insight with data points"}
+    {"direction": "up"|"down"|"neutral", "text": "SPECIFIC insight with exact numbers"}
   ],
   "narratives": [
-    {"title": "Sector Name", "status": "hot"|"warm"|"cold", "description": "Detailed analysis with specific assets, catalysts, metrics"}
+    {"title": "Sector Name", "status": "hot"|"warm"|"cold", "description": "Assets: X, Y, Z | Catalyst: specific event | Social: trend direction"}
   ],
   "top_movers": [
-    {"symbol": "BTC", "name": "Bitcoin", "change_24h": 2.5, "change_7d": 5.0, "social": "High"|"Medium"|"Low", "sentiment": 75, "comment": "Detailed analysis: technicals, sentiment breakdown, key levels"}
+    {"symbol": "BTC", "name": "Bitcoin", "change_24h": 2.5, "change_7d": 5.0, "social": "High"|"Medium"|"Low", "sentiment": 75, "comment": "RSI at X, support $Y, Galaxy Score Z"}
   ],
-  "influencers": [],
+  "influencers": [
+    {"name": "@handle", "followers": 1700000, "engagement": 8700000, "sentiment": "bullish"|"bearish"|"neutral", "focus": ["BTC", "DeFi"]}
+  ],
   "risks": [
-    {"level": "high"|"medium"|"low", "label": "Specific risk with context"}
+    {"level": "high"|"medium"|"low", "label": "SPECIFIC risk: exact metric or event that triggered it"}
   ]
 }
 
-CRITICAL REQUIREMENTS:
-1. executive_summary: 5-6 insights with SPECIFIC data (numbers, %, asset names)
-   - Include platform sentiment breakdown (Twitter vs Reddit trends)
-   - Mention technical signals (RSI, MACD, golden/death cross)
-   - Reference fear/greed level and what it implies
+CRITICAL - MAKE REPORT PROFESSIONAL:
 
-2. narratives: 4-6 detailed sector cards:
-   - "Bitcoin Ecosystem" - ETF flows, dominance, institutional moves
-   - "Layer 1 Competition" - SOL, ETH, AVAX performance
-   - "DeFi Sector" - engagement trends, top protocols
-   - "Technical Outlook" - key support/resistance, signals
-   - Add more based on data (AI, Privacy coins if relevant)
-   Each narrative needs: specific assets, specific metrics, catalyst if any
+1. METRICS - Use REAL numbers from data:
+   - unique_creators: SUM of all num_contributors from sentiment (should be 100K-300K)
+   - defi_engagements: SUM of interactions_24h / 1,000,000 (should be 50-200M range)
+   - market_sentiment: exact Fear & Greed value
+   - Calculate changes as % difference from typical values
 
-3. top_movers: 8-10 coins with DETAILED comments:
-   - Reference Galaxy Score, AltRank
-   - Mention sentiment % and platform trends
-   - Technical levels (support/resistance)
-   - Recent catalysts or news if apparent from data
+2. EXECUTIVE_SUMMARY - 6 bullet points with EXACT data:
+   - "Social activity cooled — unique creators down X% to Y vs prior 24h"
+   - "Sentiment at X% (Fear & Greed: Y) — Z% change from weekly average"
+   - "BTC ETF flows: inflows/outflows trend" (infer from price action)
+   - "Top gainer: SYMBOL +X% | Top loser: SYMBOL -Y%"
+   - "Platform breakdown: Twitter X% bullish, Reddit Y% positive"
+   - "Technical signals: BTC RSI at X, MACD Y, EMA crossover Z"
 
-4. risks: 3-5 specific risks with data context
+3. NARRATIVES - 5-6 cards with STRUCTURED descriptions:
+   Format: "Assets: X, Y, Z | Catalyst: specific trigger | Social: ↑/↓ + metric"
+   Required sectors:
+   - "Bitcoin Ecosystem" - ETF sentiment, dominance, halving effects
+   - "Layer 1 Wars" - ETH vs SOL vs others, specific % changes
+   - "DeFi & Yield" - engagement metrics, top protocols
+   - "Memecoins" - DOGE, SHIB momentum (if relevant)
+   - "Technical Outlook" - support/resistance levels, indicator signals
+   - "Risk Factors" - specific concerns from data
 
-Be analytical, specific, and data-driven. Avoid generic statements.`
+4. TOP_MOVERS - ALL 10 coins with DETAILED comments:
+   Comment format: "RSI X (overbought/oversold), MACD Y (bullish/bearish divergence), support $Z, resistance $W. Galaxy Score: X. Twitter sentiment: Y% positive."
 
-  const userPrompt = `Generate today's (${today}) crypto market report from this comprehensive data:
+5. INFLUENCERS - Generate 4-6 based on news/social data:
+   - Include engagement numbers (followers in millions, engagement in millions)
+   - Focus areas from trending topics
+   - Infer sentiment from news tone
+
+6. RISKS - 5 specific risks with DATA context:
+   - "High volatility: X% daily swing on SYMBOL"
+   - "Extreme Fear at Y — historically precedes Z"
+   - "Technical breakdown: SYMBOL below $X support"
+   - "Low social engagement: -Y% vs 7-day average"
+   - Include one BULLISH anchor as positive counterpoint
+
+Be specific. Use exact numbers. No generic statements like "market is volatile".`
+
+  const userPrompt = `Generate today's (${today}) PROFESSIONAL crypto market report.
 
 === FEAR & GREED INDEX ===
 Current: ${JSON.stringify(marketData.fearGreed, null, 2)}
-Trend: ${JSON.stringify(marketData.fearGreedTrend, null, 2)}
+7-Day Trend: ${JSON.stringify(marketData.fearGreedTrend, null, 2)}
 
-=== SOCIAL METRICS (top 5 coins aggregated) ===
-- Total unique creators: ${marketData.socialStats?.totalContributors?.toLocaleString() || 'N/A'}
-- Total interactions 24h: ${marketData.socialStats?.totalInteractions?.toLocaleString() || 'N/A'}
+=== SOCIAL METRICS (ALL 10 COINS) ===
+TOTAL unique creators: ${marketData.socialStats?.totalContributors?.toLocaleString() || '0'}
+TOTAL interactions 24h: ${marketData.socialStats?.totalInteractions?.toLocaleString() || '0'}
+(Use these EXACT numbers in metrics!)
 
-=== SENTIMENT BY COIN (with platform breakdown: Twitter, Reddit, YouTube, etc.) ===
+=== SENTIMENT BY COIN (Twitter, Reddit, TikTok, YouTube, News breakdown) ===
 ${JSON.stringify(marketData.sentiment, null, 2)}
 
-=== TOP 10 COINS (with Galaxy Score, AltRank, price changes) ===
+=== TOP 10 COINS (BTC, ETH, SOL, XRP, DOGE, ADA, AVAX, LINK, DOT, MATIC) ===
 ${JSON.stringify(marketData.coins, null, 2)}
 
-=== DETAILED TECHNICAL ANALYSIS (BTC, ETH, SOL - 4h timeframe) ===
+=== TECHNICAL ANALYSIS (4h timeframe) ===
 ${JSON.stringify(marketData.technicals, null, 2)}
 
-=== RECENT NEWS & SOCIAL ACTIVITY ===
-${JSON.stringify(marketData.news?.slice(0, 5), null, 2)}
+=== RECENT NEWS & TWEETS ===
+${JSON.stringify(marketData.news?.slice(0, 10), null, 2)}
 
-=== INSTRUCTIONS FOR REPORT GENERATION ===
-1. Use Fear & Greed current value for market_sentiment metric
-2. Use Fear & Greed trend (week_ago, trend direction) in executive_summary
-3. Use total creators for unique_creators metric (${marketData.socialStats?.totalContributors?.toLocaleString() || '0'})
-4. Use total interactions / 1,000,000 for defi_engagements metric
-5. Reference specific RSI, MACD histogram, Bollinger position, EMA crossover signals
-6. Mention Galaxy Scores (0-100, higher = stronger social sentiment)
-7. Mention AltRank (lower = better, 1 = top altcoin)
-8. Analyze sentiment breakdown by platform (Twitter bullish/bearish %, Reddit trends)
-9. Include news themes in narratives if relevant
-10. Calculate sentiment_change as difference from 50 (neutral)`
+=== REQUIRED OUTPUT ===
+1. metrics.unique_creators = ${marketData.socialStats?.totalContributors || 0} (EXACT from data above)
+2. metrics.defi_engagements = ${Math.round((marketData.socialStats?.totalInteractions || 0) / 1000000)} (interactions / 1M)
+3. metrics.market_sentiment = ${marketData.fearGreed?.value || 50} (from Fear & Greed)
+4. executive_summary: 6 insights with SPECIFIC numbers from this data
+5. narratives: 5-6 sectors with "Assets: | Catalyst: | Social:" format
+6. top_movers: ALL 10 coins with technical levels and Galaxy Scores
+7. influencers: 4-6 accounts (infer from news/social prominence)
+8. risks: 5 specific risks with exact metrics
+
+IMPORTANT: Use the ACTUAL numbers from this data. Do not invent numbers.
+Calculate Twitter sentiment %: positive / (positive + negative) * 100 from sentiment_detail.`
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -372,13 +473,13 @@ ${JSON.stringify(marketData.news?.slice(0, 5), null, 2)}
         Authorization: `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',  // Use full model for better quality
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.7,
-        max_tokens: 4000,
+        temperature: 0.5,  // Lower for more consistent output
+        max_tokens: 6000,  // More tokens for detailed report
       }),
     })
 
