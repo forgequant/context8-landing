@@ -118,20 +118,32 @@ async function callMcpTool<T>(
 }
 
 async function fetchMarketData(apiKey: string) {
-  const [coinsData, cryptoTopic, defiTopic] = await Promise.all([
-    callMcpTool<{ data: any[] }>(
-      'lunarcrush_list_trending_coins',
-      { limit: 50, sort: 'galaxy_score' },
-      apiKey
+  // Top coins to analyze (Individual plan has limited endpoints)
+  const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK', 'DOT', 'MATIC']
+
+  // Fetch coin data + fear/greed + technical indicators in parallel
+  const [fearGreed, ...coinResults] = await Promise.all([
+    callMcpTool<{ value: number; classification: string }>('get_fear_greed_index', {}, apiKey),
+    ...symbols.map((symbol) =>
+      callMcpTool<{ data: any }>('lunarcrush_get_coin', { symbol }, apiKey)
     ),
-    callMcpTool<{ data: any }>('lunarcrush_get_topic', { topic: 'crypto' }, apiKey),
-    callMcpTool<{ data: any }>('lunarcrush_get_topic', { topic: 'defi' }, apiKey),
   ])
 
+  // Fetch technical summaries for top 3 coins
+  const technicals = await Promise.all(
+    ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'].map((symbol) =>
+      callMcpTool<any>('get_technical_summary', { symbol, interval: '4h' }, apiKey)
+    )
+  )
+
+  const coins = coinResults
+    .filter((r) => r?.data)
+    .map((r) => r!.data)
+
   return {
-    coins: coinsData?.data ?? [],
-    crypto: cryptoTopic?.data ?? null,
-    defi: defiTopic?.data ?? null,
+    coins,
+    fearGreed: fearGreed ?? null,
+    technicals,
   }
 }
 
@@ -182,18 +194,18 @@ Rules:
 - Be concise and data-driven
 - sentiment is 0-100 scale`
 
-  const userPrompt = `Generate today's (${today}) crypto market report from this LunarCrush data:
+  const userPrompt = `Generate today's (${today}) crypto market report from this data:
 
-TOP COINS BY GALAXY SCORE:
-${JSON.stringify(marketData.coins.slice(0, 20), null, 2)}
+FEAR & GREED INDEX:
+${JSON.stringify(marketData.fearGreed, null, 2)}
 
-CRYPTO TOPIC OVERVIEW:
-${JSON.stringify(marketData.crypto, null, 2)}
+TOP COINS (with Galaxy Score, price changes, market data):
+${JSON.stringify(marketData.coins, null, 2)}
 
-DEFI TOPIC OVERVIEW:
-${JSON.stringify(marketData.defi, null, 2)}
+TECHNICAL INDICATORS (BTC, ETH, SOL - 4h timeframe):
+${JSON.stringify(marketData.technicals, null, 2)}
 
-Analyze the data and generate a comprehensive daily report.`
+Analyze the data and generate a comprehensive daily report. Use Fear & Greed for market_sentiment.`
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
