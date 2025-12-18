@@ -338,7 +338,7 @@ serve(async (req) => {
           influencers: report.influencers,
           risks: report.risks,
           raw_data: marketData,
-          status: 'draft',
+          status: 'published',
           generated_at: new Date().toISOString(),
         },
         { onConflict: 'report_date' }
