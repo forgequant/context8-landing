@@ -1,9 +1,58 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useInView } from 'framer-motion'
+import { useDailyReport } from '../hooks/useDailyReport'
+import {
+  DailyReportWithMeta,
+  ExecutiveSummaryItem,
+  Narrative,
+  TopMover,
+  Risk,
+  formatLargeNumber,
+  formatPercentChange,
+} from '../types/dailyReport'
 
-// Progress bar component for sentiment visualization
+// ============================================================================
+// SKELETON COMPONENTS
+// ============================================================================
+
+function SkeletonBox({ className = '' }: { className?: string }) {
+  return (
+    <div className={`bg-graphite-800 animate-pulse rounded ${className}`} />
+  )
+}
+
+function MetricCardSkeleton() {
+  return (
+    <div className="bg-graphite-900 border border-graphite-800 rounded-xl p-4">
+      <SkeletonBox className="h-3 w-20 mb-2" />
+      <SkeletonBox className="h-8 w-24 mb-1" />
+      <SkeletonBox className="h-3 w-16" />
+    </div>
+  )
+}
+
+function SectionSkeleton() {
+  return (
+    <div className="bg-graphite-900 border border-graphite-800 rounded-xl p-6 space-y-4">
+      <SkeletonBox className="h-6 w-48" />
+      <div className="space-y-3">
+        <SkeletonBox className="h-4 w-full" />
+        <SkeletonBox className="h-4 w-3/4" />
+        <SkeletonBox className="h-4 w-5/6" />
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// UI COMPONENTS
+// ============================================================================
+
 function SentimentBar({ value, label }: { value: number; label: string }) {
+  const color = value >= 70 ? 'from-terminal-green to-terminal-cyan' :
+                value >= 50 ? 'from-yellow-500 to-terminal-cyan' :
+                'from-terminal-red to-yellow-500'
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
@@ -16,20 +65,19 @@ function SentimentBar({ value, label }: { value: number; label: string }) {
           whileInView={{ width: `${value}%` }}
           transition={{ duration: 1, ease: 'easeOut' }}
           viewport={{ once: true }}
-          className="h-full bg-gradient-to-r from-terminal-green to-terminal-cyan rounded-full"
+          className={`h-full bg-gradient-to-r ${color} rounded-full`}
         />
       </div>
     </div>
   )
 }
 
-// Metric card component
 function MetricCard({ label, value, change, isPositive, delay = 0 }: {
-  label: string;
-  value: string;
-  change?: string;
-  isPositive?: boolean;
-  delay?: number;
+  label: string
+  value: string
+  change?: string
+  isPositive?: boolean
+  delay?: number
 }) {
   return (
     <motion.div
@@ -51,14 +99,14 @@ function MetricCard({ label, value, change, isPositive, delay = 0 }: {
   )
 }
 
-// Badge component for narratives
 function Badge({ children, variant = 'default' }: {
-  children: React.ReactNode;
-  variant?: 'default' | 'hot' | 'cold' | 'neutral';
+  children: React.ReactNode
+  variant?: 'default' | 'hot' | 'cold' | 'neutral' | 'warm'
 }) {
   const variants = {
     default: 'bg-terminal-cyan/20 text-terminal-cyan border-terminal-cyan/30',
     hot: 'bg-terminal-green/20 text-terminal-green border-terminal-green/30',
+    warm: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30',
     cold: 'bg-terminal-red/20 text-terminal-red border-terminal-red/30',
     neutral: 'bg-graphite-800 text-terminal-muted border-graphite-700',
   }
@@ -69,47 +117,32 @@ function Badge({ children, variant = 'default' }: {
   )
 }
 
-// Asset row for movers table
-function AssetRow({
-  symbol,
-  change24h,
-  change7d,
-  social,
-  sentiment,
-  comment,
-  isPositive
-}: {
-  symbol: string;
-  change24h: string;
-  change7d: string;
-  social: string;
-  sentiment: string;
-  comment: string;
-  isPositive: boolean;
-}) {
+function AssetRow({ mover }: { mover: TopMover }) {
+  const isPositive = mover.change_24h >= 0
   return (
     <tr className="border-b border-graphite-800 hover:bg-graphite-800/50 transition-colors">
       <td className="py-3 px-2">
         <span className={`font-bold font-mono ${isPositive ? 'text-terminal-green' : 'text-terminal-red'}`}>
-          {symbol}
+          {mover.symbol}
         </span>
       </td>
       <td className={`py-3 px-2 font-mono text-sm ${isPositive ? 'text-terminal-green' : 'text-terminal-red'}`}>
-        {change24h}
+        {formatPercentChange(mover.change_24h)}
       </td>
-      <td className={`py-3 px-2 font-mono text-sm ${change7d.startsWith('+') ? 'text-terminal-green' : 'text-terminal-red'}`}>
-        {change7d}
+      <td className={`py-3 px-2 font-mono text-sm ${(mover.change_7d ?? 0) >= 0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
+        {mover.change_7d !== null ? formatPercentChange(mover.change_7d) : 'N/A'}
       </td>
-      <td className="py-3 px-2 text-sm text-terminal-cyan">{social}</td>
+      <td className="py-3 px-2 text-sm text-terminal-cyan">{mover.social}</td>
       <td className="py-3 px-2 text-sm">
-        <span className="text-terminal-green">{sentiment}</span>
+        <span className={mover.sentiment >= 60 ? 'text-terminal-green' : mover.sentiment >= 40 ? 'text-yellow-500' : 'text-terminal-red'}>
+          {mover.sentiment}%
+        </span>
       </td>
-      <td className="py-3 px-2 text-xs text-terminal-muted max-w-[200px]">{comment}</td>
+      <td className="py-3 px-2 text-xs text-terminal-muted max-w-[200px]">{mover.comment}</td>
     </tr>
   )
 }
 
-// Risk indicator component
 function RiskIndicator({ level, label }: { level: 'low' | 'medium' | 'high'; label: string }) {
   const colors = {
     low: 'bg-terminal-green',
@@ -124,7 +157,6 @@ function RiskIndicator({ level, label }: { level: 'low' | 'medium' | 'high'; lab
   )
 }
 
-// Section header component
 function SectionHeader({ number, title }: { number: string; title: string }) {
   return (
     <motion.h2
@@ -139,21 +171,142 @@ function SectionHeader({ number, title }: { number: string; title: string }) {
   )
 }
 
+function getDirectionSymbol(direction: ExecutiveSummaryItem['direction']) {
+  switch (direction) {
+    case 'up': return { symbol: '▲', color: 'text-terminal-green' }
+    case 'down': return { symbol: '▼', color: 'text-terminal-red' }
+    default: return { symbol: '◆', color: 'text-yellow-500' }
+  }
+}
+
+function getNarrativeVariant(status: Narrative['status']): 'hot' | 'warm' | 'cold' {
+  return status
+}
+
+function getNarrativeBorderColor(status: Narrative['status']) {
+  switch (status) {
+    case 'hot': return 'border-terminal-green/30 hover:border-terminal-green/50'
+    case 'warm': return 'border-yellow-500/30 hover:border-yellow-500/50'
+    default: return 'border-graphite-700 hover:border-terminal-cyan/30'
+  }
+}
+
+function getNarrativeTitleColor(status: Narrative['status']) {
+  switch (status) {
+    case 'hot': return 'text-terminal-green'
+    case 'warm': return 'text-yellow-400'
+    default: return 'text-terminal-cyan'
+  }
+}
+
+// ============================================================================
+// ERROR/EMPTY STATES
+// ============================================================================
+
+function NoReportState() {
+  return (
+    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-4 md:px-6 py-8 flex items-center justify-center">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-graphite-800 flex items-center justify-center">
+          <svg className="w-8 h-8 text-terminal-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-terminal-text mb-2">No Report Available</h2>
+        <p className="text-terminal-muted mb-6">
+          The daily market report hasn't been published yet. Check back later for the latest insights.
+        </p>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-terminal-cyan/20 text-terminal-cyan rounded-lg hover:bg-terminal-cyan/30 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Home
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function ErrorState({ error }: { error: string }) {
+  return (
+    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-4 md:px-6 py-8 flex items-center justify-center">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-terminal-red/20 flex items-center justify-center">
+          <svg className="w-8 h-8 text-terminal-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-terminal-text mb-2">Failed to Load Report</h2>
+        <p className="text-terminal-muted mb-6">{error}</p>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-terminal-cyan/20 text-terminal-cyan rounded-lg hover:bg-terminal-cyan/30 transition-colors"
+        >
+          Back to Home
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function LoadingState() {
+  return (
+    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-4 md:px-6 py-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Header skeleton */}
+        <div className="space-y-4">
+          <SkeletonBox className="h-4 w-32" />
+          <SkeletonBox className="h-8 w-64" />
+          <SkeletonBox className="h-4 w-48" />
+        </div>
+
+        {/* Metrics skeleton */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <MetricCardSkeleton key={i} />
+          ))}
+        </div>
+
+        {/* Sections skeleton */}
+        <SectionSkeleton />
+        <SectionSkeleton />
+        <SectionSkeleton />
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 export function DailyReport() {
+  const { report, loading, error, exists } = useDailyReport()
+
   const headerRef = useRef(null)
-  const metricsRef = useRef(null)
   const summaryRef = useRef(null)
   const narrativesRef = useRef(null)
   const moversRef = useRef(null)
-  const socialRef = useRef(null)
   const risksRef = useRef(null)
 
   const isHeaderInView = useInView(headerRef, { once: true })
   const isSummaryInView = useInView(summaryRef, { once: true })
   const isNarrativesInView = useInView(narrativesRef, { once: true })
   const isMoversInView = useInView(moversRef, { once: true })
-  const isSocialInView = useInView(socialRef, { once: true })
   const isRisksInView = useInView(risksRef, { once: true })
+
+  if (loading) return <LoadingState />
+  if (error) return <ErrorState error={error} />
+  if (!exists || !report) return <NoReportState />
+
+  const { metrics, executive_summary, narratives, top_movers, risks } = report
+
+  // Separate gainers and losers
+  const gainers = top_movers.filter(m => m.change_24h >= 0).sort((a, b) => b.change_24h - a.change_24h)
+  const losers = top_movers.filter(m => m.change_24h < 0).sort((a, b) => a.change_24h - b.change_24h)
 
   return (
     <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-4 md:px-6 py-8 relative overflow-hidden">
@@ -182,12 +335,14 @@ export function DailyReport() {
           </div>
           <div className="flex items-center gap-3">
             <span className="px-3 py-1.5 bg-terminal-cyan/10 border border-terminal-cyan/30 rounded-lg text-terminal-cyan text-sm">
-              Nov 28, 2025
+              {report.formattedDate}
             </span>
-            <span className="px-3 py-1.5 bg-terminal-green/10 border border-terminal-green/30 rounded-lg text-terminal-green text-sm flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
-              LIVE
-            </span>
+            {report.isToday && (
+              <span className="px-3 py-1.5 bg-terminal-green/10 border border-terminal-green/30 rounded-lg text-terminal-green text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
+                TODAY
+              </span>
+            )}
           </div>
         </div>
       </motion.header>
@@ -196,483 +351,253 @@ export function DailyReport() {
       <article className="max-w-6xl mx-auto space-y-10 relative z-10">
 
         {/* Key Metrics Grid */}
-        <section ref={metricsRef} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MetricCard
             label="Unique Creators"
-            value="249,766"
-            change="7.1% vs 24h"
-            isPositive={false}
+            value={formatLargeNumber(metrics.unique_creators)}
+            change={metrics.unique_creators_change !== null ? `${Math.abs(metrics.unique_creators_change)}% vs 24h` : undefined}
+            isPositive={metrics.unique_creators_change !== null ? metrics.unique_creators_change >= 0 : undefined}
             delay={0}
           />
           <MetricCard
             label="Market Sentiment"
-            value="82%"
-            change="1-2% vs avg"
-            isPositive={true}
+            value={metrics.market_sentiment !== null ? `${metrics.market_sentiment}%` : 'N/A'}
+            change={metrics.market_sentiment_change !== null ? `${Math.abs(metrics.market_sentiment_change)}% vs avg` : undefined}
+            isPositive={metrics.market_sentiment_change !== null ? metrics.market_sentiment_change >= 0 : undefined}
             delay={0.1}
           />
           <MetricCard
             label="DeFi Engagements"
-            value="53M"
-            change="19% vs weekly"
-            isPositive={false}
+            value={formatLargeNumber(metrics.defi_engagements)}
+            change={metrics.defi_engagements_change !== null ? `${Math.abs(metrics.defi_engagements_change)}% vs weekly` : undefined}
+            isPositive={metrics.defi_engagements_change !== null ? metrics.defi_engagements_change >= 0 : undefined}
             delay={0.2}
           />
           <MetricCard
             label="AI Creators"
-            value="—"
-            change="9.7% vs 24h"
-            isPositive={false}
+            value={formatLargeNumber(metrics.ai_creators)}
+            change={metrics.ai_creators_change !== null ? `${Math.abs(metrics.ai_creators_change)}% vs 24h` : undefined}
+            isPositive={metrics.ai_creators_change !== null ? metrics.ai_creators_change >= 0 : undefined}
             delay={0.3}
           />
         </section>
 
         {/* Executive Summary */}
-        <motion.section
-          ref={summaryRef}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isSummaryInView ? 1 : 0, y: isSummaryInView ? 0 : 20 }}
-          transition={{ duration: 0.6 }}
-          className="bg-graphite-900 border border-terminal-cyan/30 rounded-xl p-6"
-        >
-          <h2 className="text-xl font-semibold mb-4 text-terminal-cyan flex items-center gap-2">
-            <span className="w-2 h-2 bg-terminal-cyan rounded-full animate-pulse" />
-            Executive Summary
-          </h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div className="flex items-start gap-2">
-                <span className="text-terminal-red mt-1">▼</span>
-                <p className="text-sm text-terminal-muted">
-                  <strong className="text-terminal-text">Social activity cooled</strong> — unique creators down 7.1% to 249,766 vs prior 24h
-                </p>
+        {executive_summary.length > 0 && (
+          <motion.section
+            ref={summaryRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: isSummaryInView ? 1 : 0, y: isSummaryInView ? 0 : 20 }}
+            transition={{ duration: 0.6 }}
+            className="bg-graphite-900 border border-terminal-cyan/30 rounded-xl p-6"
+          >
+            <h2 className="text-xl font-semibold mb-4 text-terminal-cyan flex items-center gap-2">
+              <span className="w-2 h-2 bg-terminal-cyan rounded-full animate-pulse" />
+              Executive Summary
+            </h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                {executive_summary.slice(0, Math.ceil(executive_summary.length / 2)).map((item, i) => {
+                  const { symbol, color } = getDirectionSymbol(item.direction)
+                  return (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className={`mt-1 ${color}`}>{symbol}</span>
+                      <p className="text-sm text-terminal-muted">{item.text}</p>
+                    </div>
+                  )
+                })}
               </div>
-              <div className="flex items-start gap-2">
-                <span className="text-terminal-green mt-1">▲</span>
-                <p className="text-sm text-terminal-muted">
-                  <strong className="text-terminal-text">Sentiment bullish</strong> — 82% positive (up 1-2% vs weekly/monthly averages)
-                </p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-yellow-500 mt-1">◆</span>
-                <p className="text-sm text-terminal-muted">
-                  <strong className="text-terminal-text">Price action mixed</strong> — narrow breadth, concentrated in privacy coins (ZEC ETF news)
-                </p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-start gap-2">
-                <span className="text-terminal-cyan mt-1">●</span>
-                <p className="text-sm text-terminal-muted">
-                  <strong className="text-terminal-text">BTC ETF inflows rebounded</strong> while Solana ETFs saw outflows
-                </p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-terminal-red mt-1">!</span>
-                <p className="text-sm text-terminal-muted">
-                  <strong className="text-terminal-text">Anomalies:</strong> Upbit $36M Solana hack; Tether downgrade by S&P
-                </p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-terminal-green mt-1">★</span>
-                <p className="text-sm text-terminal-muted">
-                  <strong className="text-terminal-text">Key narratives:</strong> Privacy coins, Solana ecosystem, Chainlink partnerships
-                </p>
+              <div className="space-y-3">
+                {executive_summary.slice(Math.ceil(executive_summary.length / 2)).map((item, i) => {
+                  const { symbol, color } = getDirectionSymbol(item.direction)
+                  return (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className={`mt-1 ${color}`}>{symbol}</span>
+                      <p className="text-sm text-terminal-muted">{item.text}</p>
+                    </div>
+                  )
+                })}
               </div>
             </div>
-          </div>
-        </motion.section>
+          </motion.section>
+        )}
 
         {/* Sentiment Visualization */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="bg-graphite-900 border border-graphite-800 rounded-xl p-6"
-        >
-          <h2 className="text-lg font-semibold mb-4 text-terminal-text flex items-center gap-2">
-            <span className="text-terminal-cyan font-mono">01</span> Sentiment Overview
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <SentimentBar value={82} label="Overall Market" />
-            <SentimentBar value={84} label="DeFi Sector" />
-            <SentimentBar value={83} label="AI Sector" />
-          </div>
-        </motion.section>
+        {metrics.market_sentiment !== null && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="bg-graphite-900 border border-graphite-800 rounded-xl p-6"
+          >
+            <h2 className="text-lg font-semibold mb-4 text-terminal-text flex items-center gap-2">
+              <span className="text-terminal-cyan font-mono">01</span> Sentiment Overview
+            </h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <SentimentBar value={metrics.market_sentiment} label="Overall Market" />
+              {/* Show additional sentiment bars if available in narratives */}
+              {narratives.find(n => n.title.toLowerCase().includes('defi')) && (
+                <SentimentBar
+                  value={narratives.find(n => n.title.toLowerCase().includes('defi'))?.status === 'hot' ? 85 : 65}
+                  label="DeFi Sector"
+                />
+              )}
+              {narratives.find(n => n.title.toLowerCase().includes('ai')) && (
+                <SentimentBar
+                  value={narratives.find(n => n.title.toLowerCase().includes('ai'))?.status === 'hot' ? 80 : 60}
+                  label="AI Sector"
+                />
+              )}
+            </div>
+          </motion.section>
+        )}
 
         {/* Narratives & Sectors */}
-        <section ref={narrativesRef}>
-          <SectionHeader number="02" title="Narratives & Sectors" />
+        {narratives.length > 0 && (
+          <section ref={narrativesRef}>
+            <SectionHeader number="02" title="Narratives & Sectors" />
 
-          <motion.div
-            initial="hidden"
-            animate={isNarrativesInView ? "visible" : "hidden"}
-            variants={{
-              visible: { transition: { staggerChildren: 0.1 } }
-            }}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            {/* Privacy Coins Card */}
             <motion.div
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              whileHover={{ scale: 1.02 }}
-              className="bg-graphite-900 border border-terminal-green/30 rounded-xl p-4 hover:border-terminal-green/50 transition-all"
+              initial="hidden"
+              animate={isNarrativesInView ? "visible" : "hidden"}
+              variants={{
+                visible: { transition: { staggerChildren: 0.1 } }
+              }}
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
             >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-terminal-green">Privacy Coins</h3>
-                <Badge variant="hot">+1000% ZEC</Badge>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Assets</span>
-                  <span className="text-terminal-text">ZEC, DASH, XMR</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Catalyst</span>
-                  <span className="text-terminal-cyan">Grayscale ETF filing</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Social</span>
-                  <span className="text-terminal-green">↑ Surge</span>
-                </div>
-              </div>
+              {narratives.map((narrative, i) => (
+                <motion.div
+                  key={i}
+                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+                  whileHover={{ scale: 1.02 }}
+                  className={`bg-graphite-900 border rounded-xl p-4 transition-all ${getNarrativeBorderColor(narrative.status)}`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className={`font-semibold ${getNarrativeTitleColor(narrative.status)}`}>
+                      {narrative.title}
+                    </h3>
+                    <Badge variant={getNarrativeVariant(narrative.status)}>
+                      {narrative.status.toUpperCase()}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-terminal-muted">{narrative.description}</p>
+                </motion.div>
+              ))}
             </motion.div>
-
-            {/* Solana Ecosystem Card */}
-            <motion.div
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              whileHover={{ scale: 1.02 }}
-              className="bg-graphite-900 border border-yellow-500/30 rounded-xl p-4 hover:border-yellow-500/50 transition-all"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-yellow-400">Solana Ecosystem</h3>
-                <Badge variant="neutral">Mixed</Badge>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Assets</span>
-                  <span className="text-terminal-text">SOL ($140), MON</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Events</span>
-                  <span className="text-terminal-red">$36M hack, ETF outflows</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Social</span>
-                  <span className="text-terminal-cyan">↑ Mentions, ↓ Engagement</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* DeFi Card */}
-            <motion.div
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              whileHover={{ scale: 1.02 }}
-              className="bg-graphite-900 border border-graphite-700 rounded-xl p-4 hover:border-terminal-cyan/30 transition-all"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-terminal-cyan">DeFi</h3>
-                <Badge variant="default">84% sentiment</Badge>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Assets</span>
-                  <span className="text-terminal-text">SOL, ETH, XRP</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Engagements</span>
-                  <span className="text-terminal-red">↓ 19%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Mentions</span>
-                  <span className="text-terminal-green">↑ 9.4%</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* AI Card */}
-            <motion.div
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              whileHover={{ scale: 1.02 }}
-              className="bg-graphite-900 border border-graphite-700 rounded-xl p-4 hover:border-terminal-cyan/30 transition-all"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-purple-400">AI Sector</h3>
-                <Badge variant="default">83% sentiment</Badge>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Assets</span>
-                  <span className="text-terminal-text">AIOZ (+5%), NAO</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Focus</span>
-                  <span className="text-terminal-cyan">Chainlink, Bittensor</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Volume</span>
-                  <span className="text-terminal-muted">Low</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Bitcoin Ecosystem Card */}
-            <motion.div
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              whileHover={{ scale: 1.02 }}
-              className="bg-graphite-900 border border-orange-500/30 rounded-xl p-4 hover:border-orange-500/50 transition-all"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-orange-400">Bitcoin Ecosystem</h3>
-                <Badge variant="hot">ETF Inflows</Badge>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Catalyst</span>
-                  <span className="text-terminal-green">Texas BTC reserve</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">ETF Flows</span>
-                  <span className="text-terminal-green">↑ Rebounded</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-terminal-muted">Dominance</span>
-                  <span className="text-terminal-cyan">Steady</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Declining Card */}
-            <motion.div
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              className="bg-graphite-900 border border-terminal-red/30 rounded-xl p-4"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-terminal-red">Declining</h3>
-                <Badge variant="cold">Reduced</Badge>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="text-terminal-muted">
-                  <span className="text-terminal-red">↓</span> Memecoins/pump-fun
-                </div>
-                <div className="text-terminal-muted">
-                  <span className="text-terminal-red">↓</span> General Layer-1s (beyond SOL)
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </section>
+          </section>
+        )}
 
         {/* Top Movers */}
-        <section ref={moversRef}>
-          <SectionHeader number="03" title="Top Movers" />
+        {top_movers.length > 0 && (
+          <section ref={moversRef}>
+            <SectionHeader number="03" title="Top Movers" />
 
-          {/* Positive Movers */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: isMoversInView ? 1 : 0, y: isMoversInView ? 0 : 20 }}
-            transition={{ duration: 0.5 }}
-            className="mb-6"
-          >
-            <h3 className="text-sm font-semibold text-terminal-green mb-3 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-terminal-green/20 flex items-center justify-center text-xs">↑</span>
-              Positive Movers
-            </h3>
-            <div className="bg-graphite-900 border border-graphite-800 rounded-xl overflow-hidden overflow-x-auto">
-              <table className="w-full text-sm min-w-[600px]">
-                <thead className="bg-graphite-800 text-terminal-muted text-xs uppercase">
-                  <tr>
-                    <th className="py-3 px-3 text-left">Symbol</th>
-                    <th className="py-3 px-3 text-left">24h</th>
-                    <th className="py-3 px-3 text-left">7d</th>
-                    <th className="py-3 px-3 text-left">Social</th>
-                    <th className="py-3 px-3 text-left">Sentiment</th>
-                    <th className="py-3 px-3 text-left">Comment</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <AssetRow symbol="ZEC" change24h="N/A (surge)" change7d="-30% post-rally" social="High" sentiment="Bullish" comment="Grayscale ETF filing drove 1000% rally" isPositive={true} />
-                  <AssetRow symbol="AIOZ" change24h="+4.95%" change7d="+16.3%" social="+45% mentions" sentiment="84%" comment="DePIN/AI integration; AltRank #132" isPositive={true} />
-                  <AssetRow symbol="SOL" change24h="→ $140" change7d="N/A" social="High" sentiment="Mixed" comment="ETF/tokenized assets despite hack" isPositive={true} />
-                  <AssetRow symbol="ISP" change24h="+14.3%" change7d="+30.8%" social="+138% engmt" sentiment="78%" comment="Whale buys; Galaxy 79.5" isPositive={true} />
-                  <AssetRow symbol="VR" change24h="+0.7%" change7d="+6.9%" social="-58% engmt" sentiment="98%" comment="Metaverse AI tools; Galaxy 78.6" isPositive={true} />
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
+            {/* Gainers */}
+            {gainers.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: isMoversInView ? 1 : 0, y: isMoversInView ? 0 : 20 }}
+                transition={{ duration: 0.5 }}
+                className="mb-6"
+              >
+                <h3 className="text-sm font-semibold text-terminal-green mb-3 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-terminal-green/20 flex items-center justify-center text-xs">↑</span>
+                  Positive Movers ({gainers.length})
+                </h3>
+                <div className="bg-graphite-900 border border-graphite-800 rounded-xl overflow-hidden overflow-x-auto">
+                  <table className="w-full text-sm min-w-[600px]">
+                    <thead className="bg-graphite-800 text-terminal-muted text-xs uppercase">
+                      <tr>
+                        <th className="py-3 px-3 text-left">Symbol</th>
+                        <th className="py-3 px-3 text-left">24h</th>
+                        <th className="py-3 px-3 text-left">7d</th>
+                        <th className="py-3 px-3 text-left">Social</th>
+                        <th className="py-3 px-3 text-left">Sentiment</th>
+                        <th className="py-3 px-3 text-left">Comment</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {gainers.slice(0, 5).map((mover, i) => (
+                        <AssetRow key={i} mover={mover} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
 
-          {/* Negative Movers */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: isMoversInView ? 1 : 0, y: isMoversInView ? 0 : 20 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <h3 className="text-sm font-semibold text-terminal-red mb-3 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-terminal-red/20 flex items-center justify-center text-xs">↓</span>
-              Negative Movers
-            </h3>
-            <div className="bg-graphite-900 border border-graphite-800 rounded-xl overflow-hidden overflow-x-auto">
-              <table className="w-full text-sm min-w-[600px]">
-                <thead className="bg-graphite-800 text-terminal-muted text-xs uppercase">
-                  <tr>
-                    <th className="py-3 px-3 text-left">Symbol</th>
-                    <th className="py-3 px-3 text-left">24h</th>
-                    <th className="py-3 px-3 text-left">7d</th>
-                    <th className="py-3 px-3 text-left">Social</th>
-                    <th className="py-3 px-3 text-left">Sentiment</th>
-                    <th className="py-3 px-3 text-left">Comment</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <AssetRow symbol="DDD" change24h="0%" change7d="-55.6%" social="Low" sentiment="N/A" comment="Sharp drop despite Galaxy 100" isPositive={false} />
-                  <AssetRow symbol="EMC" change24h="-12.3%" change7d="-5.7%" social="+72% engmt" sentiment="67%" comment="Scam fears outweigh AI promo" isPositive={false} />
-                  <AssetRow symbol="NAO" change24h="+0.1%" change7d="+0.9%" social="+300-467%" sentiment="N/A" comment="Low volume despite Galaxy 100" isPositive={false} />
-                  <AssetRow symbol="USHI" change24h="-1.4%" change7d="-0.1%" social="+217% mentions" sentiment="67%" comment="Thin liquidity" isPositive={false} />
-                  <AssetRow symbol="MON" change24h="Dump" change7d="N/A" social="Controversial" sentiment="Mixed" comment="Post-launch selloff; Hayes: 'send to zero'" isPositive={false} />
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        </section>
-
-        {/* Social & Influencer Highlights */}
-        <section ref={socialRef}>
-          <SectionHeader number="04" title="Social & Influencer Highlights" />
-
-          <motion.div
-            initial="hidden"
-            animate={isSocialInView ? "visible" : "hidden"}
-            variants={{
-              visible: { transition: { staggerChildren: 0.1 } }
-            }}
-            className="grid md:grid-cols-2 gap-4"
-          >
-            {/* Top Influencers */}
-            <div className="space-y-3">
-              {[
-                { handle: '@MEXC_Official', followers: '1.7M followers', posts: '115 posts • 8.7M engagements', badge: 'Bullish DeFi', variant: 'hot' as const },
-                { handle: '@WatcherGuru', followers: '2M+ engagements', posts: 'ETF inflows, ZEC ETF, Solana hacks', badge: 'Mixed', variant: 'neutral' as const },
-                { handle: '@CryptoHayes', followers: '816K engagements', posts: 'Bearish on MON: "send to zero"', badge: 'Bearish MON', variant: 'cold' as const, isBearish: true }
-              ].map((influencer, i) => (
-                <motion.div
-                  key={influencer.handle}
-                  variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-graphite-900 border border-graphite-800 rounded-xl p-4 hover:border-terminal-cyan/30 transition-all"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`font-semibold ${influencer.isBearish ? 'text-terminal-red' : 'text-terminal-cyan'}`}>{influencer.handle}</span>
-                    <span className="text-xs text-terminal-muted">{influencer.followers}</span>
-                  </div>
-                  <div className="text-sm text-terminal-muted mb-2">{influencer.posts}</div>
-                  <Badge variant={influencer.variant}>{influencer.badge}</Badge>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { handle: '@lookonchain', followers: '1M+ engagements', posts: 'Whale $ENA buys, XRP reserves low', badge: 'Analytics', variant: 'neutral' as const },
-                { handle: '@solana', followers: '195K engagements', posts: '"Amazon for finance" — defensive', badge: 'Defensive', variant: 'default' as const },
-                { handle: 'DeFi Posts', followers: 'Chainlink focus', posts: 'Solana growth, ZEC privacy insurance', badge: '84% bullish', variant: 'hot' as const }
-              ].map((influencer, i) => (
-                <motion.div
-                  key={influencer.handle}
-                  variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-graphite-900 border border-graphite-800 rounded-xl p-4 hover:border-terminal-cyan/30 transition-all"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`font-semibold ${influencer.handle === 'DeFi Posts' ? 'text-terminal-green' : 'text-terminal-cyan'}`}>{influencer.handle}</span>
-                    <span className="text-xs text-terminal-muted">{influencer.followers}</span>
-                  </div>
-                  <div className="text-sm text-terminal-muted mb-2">{influencer.posts}</div>
-                  <Badge variant={influencer.variant}>{influencer.badge}</Badge>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </section>
+            {/* Losers */}
+            {losers.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: isMoversInView ? 1 : 0, y: isMoversInView ? 0 : 20 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <h3 className="text-sm font-semibold text-terminal-red mb-3 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-terminal-red/20 flex items-center justify-center text-xs">↓</span>
+                  Negative Movers ({losers.length})
+                </h3>
+                <div className="bg-graphite-900 border border-graphite-800 rounded-xl overflow-hidden overflow-x-auto">
+                  <table className="w-full text-sm min-w-[600px]">
+                    <thead className="bg-graphite-800 text-terminal-muted text-xs uppercase">
+                      <tr>
+                        <th className="py-3 px-3 text-left">Symbol</th>
+                        <th className="py-3 px-3 text-left">24h</th>
+                        <th className="py-3 px-3 text-left">7d</th>
+                        <th className="py-3 px-3 text-left">Social</th>
+                        <th className="py-3 px-3 text-left">Sentiment</th>
+                        <th className="py-3 px-3 text-left">Comment</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {losers.slice(0, 5).map((mover, i) => (
+                        <AssetRow key={i} mover={mover} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+          </section>
+        )}
 
         {/* Risks & Observations */}
-        <motion.section
-          ref={risksRef}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isRisksInView ? 1 : 0, y: isRisksInView ? 0 : 20 }}
-          transition={{ duration: 0.6 }}
-          className="bg-graphite-900 border border-terminal-red/30 rounded-xl p-6"
-        >
-          <h2 className="text-xl font-semibold mb-4 text-terminal-red flex items-center gap-2">
-            <span className="text-2xl">⚠</span> Risks & Observations for Next Day
-          </h2>
+        {risks.length > 0 && (
+          <motion.section
+            ref={risksRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: isRisksInView ? 1 : 0, y: isRisksInView ? 0 : 20 }}
+            transition={{ duration: 0.6 }}
+            className="bg-graphite-900 border border-terminal-red/30 rounded-xl p-6"
+          >
+            <h2 className="text-xl font-semibold mb-4 text-terminal-red flex items-center gap-2">
+              <span className="text-2xl">⚠</span> Risk Indicators
+            </h2>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-terminal-red/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-terminal-red text-sm font-bold">1</span>
+            <div className="grid md:grid-cols-2 gap-4">
+              {risks.map((risk, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                    risk.level === 'high' ? 'bg-terminal-red/20' :
+                    risk.level === 'medium' ? 'bg-yellow-500/20' :
+                    'bg-terminal-green/20'
+                  }`}>
+                    <span className={`text-sm font-bold ${
+                      risk.level === 'high' ? 'text-terminal-red' :
+                      risk.level === 'medium' ? 'text-yellow-500' :
+                      'text-terminal-green'
+                    }`}>{i + 1}</span>
+                  </div>
+                  <div>
+                    <RiskIndicator level={risk.level} label={risk.level.toUpperCase()} />
+                    <p className="text-sm text-terminal-muted mt-1">{risk.label}</p>
+                  </div>
                 </div>
-                <div>
-                  <RiskIndicator level="high" label="Privacy Surge (ZEC)" />
-                  <p className="text-sm text-terminal-muted mt-1">1000% rally + ETF hype risks pullback amid thin liquidity</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-terminal-red/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-terminal-red text-sm font-bold">2</span>
-                </div>
-                <div>
-                  <RiskIndicator level="high" label="Solana Ecosystem Pressure" />
-                  <p className="text-sm text-terminal-muted mt-1">$36M Upbit hack + ETF outflows; monitor on-chain volume</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-yellow-500 text-sm font-bold">3</span>
-                </div>
-                <div>
-                  <RiskIndicator level="medium" label="Monad Post-Launch Froth" />
-                  <p className="text-sm text-terminal-muted mt-1">93% airdrop wallets sold; Hayes criticism amplifies downside</p>
-                </div>
-              </div>
+              ))}
             </div>
-
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-yellow-500 text-sm font-bold">4</span>
-                </div>
-                <div>
-                  <RiskIndicator level="medium" label="Tether S&P Downgrade" />
-                  <p className="text-sm text-terminal-muted mt-1">BTC/gold exposure concerns could spill to stables/DeFi</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-terminal-muted/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-terminal-muted text-sm font-bold">5</span>
-                </div>
-                <div>
-                  <RiskIndicator level="low" label="Low Conviction Environment" />
-                  <p className="text-sm text-terminal-muted mt-1">Downward social trends suggest low conviction; watch BTC ETF flows</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 bg-terminal-green/10 rounded-lg p-3 -mx-3">
-                <div className="w-8 h-8 rounded-full bg-terminal-green/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-terminal-green text-sm font-bold">+</span>
-                </div>
-                <div>
-                  <span className="text-terminal-green font-semibold text-sm">Bullish Anchors</span>
-                  <p className="text-sm text-terminal-muted mt-1">Texas BTC reserve, Chainlink accumulation provide macro support</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.section>
+          </motion.section>
+        )}
 
         {/* Quick Stats Footer */}
         <motion.section
@@ -680,27 +605,54 @@ export function DailyReport() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="grid grid-cols-2 md:grid-cols-5 gap-4 py-6 border-t border-graphite-800"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-t border-graphite-800"
         >
-          {[
-            { value: '82%', label: 'Market Sentiment', color: 'text-terminal-cyan' },
-            { value: '-7.1%', label: 'Creator Activity', color: 'text-terminal-red' },
-            { value: '+9.4%', label: 'DeFi Mentions', color: 'text-terminal-green' },
-            { value: '-19%', label: 'DeFi Engagements', color: 'text-terminal-red' },
-            { value: '$36M', label: 'Upbit Hack', color: 'text-orange-400' }
-          ].map((stat, i) => (
+          {metrics.market_sentiment !== null && (
             <motion.div
-              key={stat.label}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.1 }}
+              transition={{ duration: 0.3 }}
               viewport={{ once: true }}
               className="text-center"
             >
-              <div className={`text-2xl font-bold font-mono ${stat.color}`}>{stat.value}</div>
-              <div className="text-xs text-terminal-muted">{stat.label}</div>
+              <div className="text-2xl font-bold font-mono text-terminal-cyan">{metrics.market_sentiment}%</div>
+              <div className="text-xs text-terminal-muted">Market Sentiment</div>
             </motion.div>
-          ))}
+          )}
+          {metrics.unique_creators !== null && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-2xl font-bold font-mono text-terminal-green">{formatLargeNumber(metrics.unique_creators)}</div>
+              <div className="text-xs text-terminal-muted">Active Creators</div>
+            </motion.div>
+          )}
+          {metrics.defi_engagements !== null && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-2xl font-bold font-mono text-yellow-400">{formatLargeNumber(metrics.defi_engagements)}</div>
+              <div className="text-xs text-terminal-muted">DeFi Engagements</div>
+            </motion.div>
+          )}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <div className="text-2xl font-bold font-mono text-purple-400">{top_movers.length}</div>
+            <div className="text-xs text-terminal-muted">Assets Tracked</div>
+          </motion.div>
         </motion.section>
 
       </article>
@@ -709,8 +661,8 @@ export function DailyReport() {
       <footer className="max-w-6xl mx-auto mt-8 pt-8 border-t border-graphite-800 text-xs text-terminal-muted relative z-10">
         <div className="flex flex-col md:flex-row justify-between gap-4">
           <div>
-            <p>Report generated: Nov 28, 2025 • UTC</p>
-            <p className="mt-1">Data sources: LunarCrush, CoinGecko, Grayscale, Polymarket, On-chain analytics</p>
+            <p>Report generated: {new Date(report.generated_at).toLocaleString()} UTC</p>
+            <p className="mt-1">Data sources: LunarCrush, CoinGecko, On-chain analytics</p>
           </div>
           <div className="text-right">
             <p>This report combines facts, social signals, and sentiment analysis.</p>
