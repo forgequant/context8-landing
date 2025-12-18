@@ -215,13 +215,15 @@ async function fetchMarketData(apiKey: string) {
     })
     .filter(Boolean)
 
-  // Calculate total social stats
+  // Calculate total social stats from sentiment data
   const totalContributors = sentimentResults.reduce(
     (sum, r) => sum + (r?.num_contributors || 0), 0
   )
   const totalInteractions = sentimentResults.reduce(
     (sum, r) => sum + (r?.interactions_24h || 0), 0
   )
+
+  console.log('[fetchMarketData] Social stats: contributors:', totalContributors, 'interactions:', totalInteractions)
 
   // Calculate fear/greed trend
   const fgHistory = fearGreedHistory?.data || []
