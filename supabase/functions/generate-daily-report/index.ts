@@ -177,42 +177,58 @@ async function generateReportWithOpenAI(
 ): Promise<DailyReport | null> {
   const today = new Date().toISOString().split('T')[0]
 
-  const systemPrompt = `You are a crypto market analyst. Generate a daily market report based on the provided data.
+  const systemPrompt = `You are a senior crypto market analyst creating a professional daily briefing.
 Output ONLY valid JSON matching this exact structure (no markdown, no explanation):
 
 {
   "metrics": {
-    "unique_creators": number or null,
-    "unique_creators_change": number or null,
-    "market_sentiment": number (0-100) or null,
-    "market_sentiment_change": number or null,
-    "defi_engagements": number or null,
-    "defi_engagements_change": number or null,
+    "unique_creators": number (from total creators data),
+    "unique_creators_change": number (estimate % change, can be negative),
+    "market_sentiment": number (0-100, from fear/greed),
+    "market_sentiment_change": number (estimate vs average),
+    "defi_engagements": number (total interactions in millions),
+    "defi_engagements_change": number (estimate % change),
     "ai_creators": null,
     "ai_creators_change": null
   },
   "executive_summary": [
-    {"direction": "up"|"down"|"neutral", "text": "Brief insight about market"}
+    {"direction": "up"|"down"|"neutral", "text": "Specific insight with data points"}
   ],
   "narratives": [
-    {"title": "Theme name", "status": "hot"|"warm"|"cold", "description": "Brief description"}
+    {"title": "Sector Name", "status": "hot"|"warm"|"cold", "description": "Detailed analysis with specific assets, catalysts, metrics"}
   ],
   "top_movers": [
-    {"symbol": "BTC", "name": "Bitcoin", "change_24h": 2.5, "change_7d": 5.0, "social": "High"|"Medium"|"Low", "sentiment": 75, "comment": "Brief analysis"}
+    {"symbol": "BTC", "name": "Bitcoin", "change_24h": 2.5, "change_7d": 5.0, "social": "High"|"Medium"|"Low", "sentiment": 75, "comment": "Detailed analysis: technicals, sentiment breakdown, key levels"}
   ],
   "influencers": [],
   "risks": [
-    {"level": "high"|"medium"|"low", "label": "Risk description"}
+    {"level": "high"|"medium"|"low", "label": "Specific risk with context"}
   ]
 }
 
-Rules:
-- executive_summary: 3-5 key insights with direction indicators
-- narratives: 3-4 trending themes/sectors
-- top_movers: Top 5-8 movers by significance (mix of gainers and losers)
-- risks: 2-4 risk factors to watch
-- Be concise and data-driven
-- sentiment is 0-100 scale`
+CRITICAL REQUIREMENTS:
+1. executive_summary: 5-6 insights with SPECIFIC data (numbers, %, asset names)
+   - Include platform sentiment breakdown (Twitter vs Reddit trends)
+   - Mention technical signals (RSI, MACD, golden/death cross)
+   - Reference fear/greed level and what it implies
+
+2. narratives: 4-6 detailed sector cards:
+   - "Bitcoin Ecosystem" - ETF flows, dominance, institutional moves
+   - "Layer 1 Competition" - SOL, ETH, AVAX performance
+   - "DeFi Sector" - engagement trends, top protocols
+   - "Technical Outlook" - key support/resistance, signals
+   - Add more based on data (AI, Privacy coins if relevant)
+   Each narrative needs: specific assets, specific metrics, catalyst if any
+
+3. top_movers: 8-10 coins with DETAILED comments:
+   - Reference Galaxy Score, AltRank
+   - Mention sentiment % and platform trends
+   - Technical levels (support/resistance)
+   - Recent catalysts or news if apparent from data
+
+4. risks: 3-5 specific risks with data context
+
+Be analytical, specific, and data-driven. Avoid generic statements.`
 
   const userPrompt = `Generate today's (${today}) crypto market report from this data:
 
@@ -253,7 +269,7 @@ Generate a comprehensive daily report:
           { role: 'user', content: userPrompt },
         ],
         temperature: 0.7,
-        max_tokens: 2000,
+        max_tokens: 4000,
       }),
     })
 
