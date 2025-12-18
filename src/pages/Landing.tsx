@@ -171,26 +171,6 @@ export function Landing() {
             Free tier available • No credit card required
           </motion.p>
 
-          {/* Maintenance notice - moved lower, less prominent */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: heroComplete ? 1 : 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-12 p-4 rounded-lg bg-graphite-900/50 border border-terminal-red/20 max-w-xl mx-auto"
-          >
-            <p className="text-sm text-terminal-muted">
-              <span className="text-terminal-red">●</span> Maintenance until Dec 20 —
-              <a href="/reports/daily" className="text-terminal-cyan hover:underline ml-1">daily reports</a> continue.
-              <a
-                href="https://docs.google.com/forms/d/e/1FAIpQLSfmaKzi3O-1V6ZAC4zasdQzPA9POclHrXvFM8cQd3gCffSb3g/viewform"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-terminal-cyan hover:underline ml-1"
-              >
-                Share feedback →
-              </a>
-            </p>
-          </motion.div>
         </motion.section>
 
         {/* Features section */}

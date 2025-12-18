@@ -71,15 +71,6 @@ export function MCPInstructions() {
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Maintenance Notice - Compact */}
-        <div className="flex items-center gap-3 p-3 bg-terminal-red/10 border border-terminal-red/30 rounded-lg">
-          <span className="text-terminal-red">⚠️</span>
-          <div>
-            <span className="text-terminal-red text-sm font-medium">API under maintenance until Dec 20</span>
-            <span className="text-terminal-muted text-sm ml-2">• Instructions will work after</span>
-          </div>
-        </div>
-
         {/* Step 1 */}
         <div className="flex gap-4">
           <StepNumber num={1} />

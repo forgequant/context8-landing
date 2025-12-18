@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { PaymentModal } from '../components/payment/PaymentModal'
 import { usePaymentSubmit } from '../hooks/usePaymentSubmit'
@@ -218,67 +218,6 @@ function ActivityStats() {
         </a>
       </div>
     </motion.div>
-  )
-}
-
-// Collapsible Notice
-function CollapsibleNotice({
-  type,
-  title,
-  children,
-  storageKey
-}: {
-  type: 'warning' | 'info'
-  title: string
-  children: React.ReactNode
-  storageKey: string
-}) {
-  const [isDismissed, setIsDismissed] = useState(() => {
-    return localStorage.getItem(storageKey) === 'true'
-  })
-
-  const handleDismiss = () => {
-    setIsDismissed(true)
-    localStorage.setItem(storageKey, 'true')
-  }
-
-  const colors = type === 'warning'
-    ? 'bg-terminal-red/10 border-terminal-red/30 text-terminal-red'
-    : 'bg-terminal-cyan/10 border-terminal-cyan/30 text-terminal-cyan'
-
-  return (
-    <AnimatePresence>
-      {!isDismissed && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.3 }}
-          className="overflow-hidden mb-6"
-        >
-          <div className={`${colors} border rounded-xl p-4`}>
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3 flex-1">
-                <span className="text-lg">{type === 'warning' ? '⚠️' : 'ℹ️'}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium mb-1">{title}</p>
-                  <div className="text-sm text-terminal-muted">{children}</div>
-                </div>
-              </div>
-              <button
-                onClick={handleDismiss}
-                className="text-terminal-muted hover:text-terminal-text transition-colors p-1"
-                title="Dismiss"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
   )
 }
 
@@ -606,31 +545,6 @@ export function Dashboard() {
           onUpgrade={() => setShowPaymentModal(true)}
           isActive={isActive}
         />
-
-        {/* Collapsible Maintenance Notice */}
-        <CollapsibleNotice
-          type="warning"
-          title="MCP Server under maintenance until December 20th"
-          storageKey="dashboard_maintenance_dismissed"
-        >
-          <p>
-            API integration temporarily unavailable. Daily reports continue at{' '}
-            <a href="/reports/daily" className="text-terminal-cyan hover:underline">
-              /reports/daily
-            </a>
-          </p>
-          <p className="mt-2">
-            📝 We need your feedback!{' '}
-            <a
-              href="https://docs.google.com/forms/d/e/1FAIpQLSfmaKzi3O-1V6ZAC4zasdQzPA9POclHrXvFM8cQd3gCffSb3g/viewform"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-terminal-cyan hover:underline"
-            >
-              Fill out the feedback form
-            </a>
-          </p>
-        </CollapsibleNotice>
 
         {/* Getting Started Checklist */}
         <GettingStartedChecklist
