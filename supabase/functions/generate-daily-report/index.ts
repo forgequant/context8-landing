@@ -118,16 +118,23 @@ async function callMcpTool<T>(
 }
 
 async function fetchMarketData(apiKey: string) {
-  // Top coins to analyze (Individual plan has limited endpoints)
+  // Top coins to analyze
   const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK', 'DOT', 'MATIC']
 
-  // Fetch coin data + fear/greed + technical indicators in parallel
+  // Fetch coin data + fear/greed in parallel
   const [fearGreed, ...coinResults] = await Promise.all([
     callMcpTool<{ value: number; classification: string }>('get_fear_greed_index', {}, apiKey),
     ...symbols.map((symbol) =>
       callMcpTool<{ data: any }>('lunarcrush_get_coin', { symbol }, apiKey)
     ),
   ])
+
+  // Fetch sentiment data for top coins (has social metrics!)
+  const sentimentResults = await Promise.all(
+    symbols.slice(0, 5).map((symbol) =>
+      callMcpTool<any>('lunarcrush_get_sentiment', { symbol }, apiKey)
+    )
+  )
 
   // Fetch technical summaries for top 3 coins
   const technicals = await Promise.all(
@@ -140,10 +147,23 @@ async function fetchMarketData(apiKey: string) {
     .filter((r) => r?.data)
     .map((r) => r!.data)
 
+  // Calculate total social stats
+  const totalContributors = sentimentResults.reduce(
+    (sum, r) => sum + (r?.num_contributors || 0), 0
+  )
+  const totalInteractions = sentimentResults.reduce(
+    (sum, r) => sum + (r?.interactions_24h || 0), 0
+  )
+
   return {
     coins,
     fearGreed: fearGreed ?? null,
     technicals,
+    sentiment: sentimentResults.filter(Boolean),
+    socialStats: {
+      totalContributors,
+      totalInteractions,
+    },
   }
 }
 
@@ -199,13 +219,25 @@ Rules:
 FEAR & GREED INDEX:
 ${JSON.stringify(marketData.fearGreed, null, 2)}
 
+SOCIAL STATS (top 5 coins aggregated):
+- Total unique creators: ${marketData.socialStats?.totalContributors?.toLocaleString() || 'N/A'}
+- Total interactions 24h: ${marketData.socialStats?.totalInteractions?.toLocaleString() || 'N/A'}
+
+SENTIMENT BY COIN (with platform breakdown):
+${JSON.stringify(marketData.sentiment, null, 2)}
+
 TOP COINS (with Galaxy Score, price changes, market data):
 ${JSON.stringify(marketData.coins, null, 2)}
 
 TECHNICAL INDICATORS (BTC, ETH, SOL - 4h timeframe):
 ${JSON.stringify(marketData.technicals, null, 2)}
 
-Analyze the data and generate a comprehensive daily report. Use Fear & Greed for market_sentiment.`
+Generate a comprehensive daily report:
+- Use Fear & Greed value for market_sentiment
+- Use total creators for unique_creators metric
+- Use total interactions for defi_engagements (divide by 1M for display)
+- Analyze sentiment breakdown by platform in executive_summary
+- Include technical analysis insights in narratives`
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
