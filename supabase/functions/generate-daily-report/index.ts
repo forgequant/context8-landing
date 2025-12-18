@@ -120,32 +120,100 @@ async function callMcpTool<T>(
 async function fetchMarketData(apiKey: string) {
   // Top coins to analyze
   const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK', 'DOT', 'MATIC']
+  const tradingPairs = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT']
 
-  // Fetch coin data + fear/greed in parallel
-  const [fearGreed, ...coinResults] = await Promise.all([
+  console.log('[fetchMarketData] Starting parallel data fetch...')
+
+  // PHASE 1: Core data (coins, fear/greed, fear/greed history)
+  const [fearGreed, fearGreedHistory, ...coinResults] = await Promise.all([
     callMcpTool<{ value: number; classification: string }>('get_fear_greed_index', {}, apiKey),
+    callMcpTool<{ data: any[]; count: number }>('get_fear_greed_history', {}, apiKey),
     ...symbols.map((symbol) =>
       callMcpTool<{ data: any }>('lunarcrush_get_coin', { symbol }, apiKey)
     ),
   ])
 
-  // Fetch sentiment data for top coins (has social metrics!)
-  const sentimentResults = await Promise.all(
-    symbols.slice(0, 5).map((symbol) =>
-      callMcpTool<any>('lunarcrush_get_sentiment', { symbol }, apiKey)
-    )
-  )
+  console.log('[fetchMarketData] Phase 1 complete. Coins:', coinResults.filter(r => r?.data).length)
 
-  // Fetch technical summaries for top 3 coins
-  const technicals = await Promise.all(
-    ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'].map((symbol) =>
-      callMcpTool<any>('get_technical_summary', { symbol, interval: '4h' }, apiKey)
-    )
-  )
+  // PHASE 2: Social & sentiment data
+  const [sentimentResults, newsResults, galaxyScores, altRanks] = await Promise.all([
+    // Sentiment for top 5 coins
+    Promise.all(
+      symbols.slice(0, 5).map((symbol) =>
+        callMcpTool<any>('lunarcrush_get_sentiment', { symbol }, apiKey)
+      )
+    ),
+    // News for BTC and ETH
+    Promise.all([
+      callMcpTool<any>('lunarcrush_get_news', { symbol: 'BTC' }, apiKey),
+      callMcpTool<any>('lunarcrush_get_news', { symbol: 'ETH' }, apiKey),
+    ]),
+    // Galaxy scores for all coins
+    Promise.all(
+      symbols.map((symbol) =>
+        callMcpTool<{ symbol: string; galaxy_score: number }>('lunarcrush_get_galaxy_score', { symbol }, apiKey)
+      )
+    ),
+    // AltRank for all coins
+    Promise.all(
+      symbols.map((symbol) =>
+        callMcpTool<{ symbol: string; alt_rank: number }>('lunarcrush_get_altrank', { symbol }, apiKey)
+      )
+    ),
+  ])
 
+  console.log('[fetchMarketData] Phase 2 complete. Sentiment:', sentimentResults.filter(Boolean).length)
+
+  // PHASE 3: Technical analysis (detailed indicators)
+  const [technicalSummaries, rsiData, macdData, bollingerData, emaCrossovers] = await Promise.all([
+    // Technical summaries
+    Promise.all(
+      tradingPairs.map((symbol) =>
+        callMcpTool<any>('get_technical_summary', { symbol, interval: '4h' }, apiKey)
+      )
+    ),
+    // RSI for top 3
+    Promise.all(
+      tradingPairs.slice(0, 3).map((symbol) =>
+        callMcpTool<any>('get_rsi', { symbol, interval: '4h' }, apiKey)
+      )
+    ),
+    // MACD for top 3
+    Promise.all(
+      tradingPairs.slice(0, 3).map((symbol) =>
+        callMcpTool<any>('get_macd', { symbol, interval: '4h' }, apiKey)
+      )
+    ),
+    // Bollinger Bands for top 3
+    Promise.all(
+      tradingPairs.slice(0, 3).map((symbol) =>
+        callMcpTool<any>('get_bollinger_bands', { symbol, interval: '4h' }, apiKey)
+      )
+    ),
+    // EMA crossovers for top 3
+    Promise.all(
+      tradingPairs.slice(0, 3).map((symbol) =>
+        callMcpTool<any>('get_ema_crossover', { symbol, interval: '4h' }, apiKey)
+      )
+    ),
+  ])
+
+  console.log('[fetchMarketData] Phase 3 complete. Technicals:', technicalSummaries.filter(Boolean).length)
+
+  // Process coin data with additional metrics
   const coins = coinResults
-    .filter((r) => r?.data)
-    .map((r) => r!.data)
+    .map((r, idx) => {
+      if (!r?.data) return null
+      const coin = r.data
+      const gs = galaxyScores[idx]
+      const ar = altRanks[idx]
+      return {
+        ...coin,
+        galaxy_score: gs?.galaxy_score ?? coin.galaxy_score,
+        alt_rank: ar?.alt_rank ?? null,
+      }
+    })
+    .filter(Boolean)
 
   // Calculate total social stats
   const totalContributors = sentimentResults.reduce(
@@ -155,11 +223,41 @@ async function fetchMarketData(apiKey: string) {
     (sum, r) => sum + (r?.interactions_24h || 0), 0
   )
 
+  // Calculate fear/greed trend
+  const fgHistory = fearGreedHistory?.data || []
+  const fgTrend = fgHistory.length >= 7
+    ? {
+        week_ago: fgHistory[6]?.value,
+        trend: fgHistory[0]?.value > fgHistory[6]?.value ? 'improving' : 'declining',
+        avg_7d: Math.round(fgHistory.slice(0, 7).reduce((s, d) => s + d.value, 0) / 7),
+      }
+    : null
+
+  // Combine news
+  const allNews = [
+    ...(newsResults[0]?.data || []),
+    ...(newsResults[1]?.data || []),
+  ].slice(0, 10)
+
+  // Combine technical data
+  const technicals = tradingPairs.slice(0, 3).map((symbol, idx) => ({
+    symbol,
+    summary: technicalSummaries[idx],
+    rsi: rsiData[idx],
+    macd: macdData[idx],
+    bollinger: bollingerData[idx],
+    ema: emaCrossovers[idx],
+  }))
+
+  console.log('[fetchMarketData] Data aggregation complete')
+
   return {
     coins,
     fearGreed: fearGreed ?? null,
+    fearGreedTrend: fgTrend,
     technicals,
     sentiment: sentimentResults.filter(Boolean),
+    news: allNews,
     socialStats: {
       totalContributors,
       totalInteractions,
@@ -230,30 +328,39 @@ CRITICAL REQUIREMENTS:
 
 Be analytical, specific, and data-driven. Avoid generic statements.`
 
-  const userPrompt = `Generate today's (${today}) crypto market report from this data:
+  const userPrompt = `Generate today's (${today}) crypto market report from this comprehensive data:
 
-FEAR & GREED INDEX:
-${JSON.stringify(marketData.fearGreed, null, 2)}
+=== FEAR & GREED INDEX ===
+Current: ${JSON.stringify(marketData.fearGreed, null, 2)}
+Trend: ${JSON.stringify(marketData.fearGreedTrend, null, 2)}
 
-SOCIAL STATS (top 5 coins aggregated):
+=== SOCIAL METRICS (top 5 coins aggregated) ===
 - Total unique creators: ${marketData.socialStats?.totalContributors?.toLocaleString() || 'N/A'}
 - Total interactions 24h: ${marketData.socialStats?.totalInteractions?.toLocaleString() || 'N/A'}
 
-SENTIMENT BY COIN (with platform breakdown):
+=== SENTIMENT BY COIN (with platform breakdown: Twitter, Reddit, YouTube, etc.) ===
 ${JSON.stringify(marketData.sentiment, null, 2)}
 
-TOP COINS (with Galaxy Score, price changes, market data):
+=== TOP 10 COINS (with Galaxy Score, AltRank, price changes) ===
 ${JSON.stringify(marketData.coins, null, 2)}
 
-TECHNICAL INDICATORS (BTC, ETH, SOL - 4h timeframe):
+=== DETAILED TECHNICAL ANALYSIS (BTC, ETH, SOL - 4h timeframe) ===
 ${JSON.stringify(marketData.technicals, null, 2)}
 
-Generate a comprehensive daily report:
-- Use Fear & Greed value for market_sentiment
-- Use total creators for unique_creators metric
-- Use total interactions for defi_engagements (divide by 1M for display)
-- Analyze sentiment breakdown by platform in executive_summary
-- Include technical analysis insights in narratives`
+=== RECENT NEWS & SOCIAL ACTIVITY ===
+${JSON.stringify(marketData.news?.slice(0, 5), null, 2)}
+
+=== INSTRUCTIONS FOR REPORT GENERATION ===
+1. Use Fear & Greed current value for market_sentiment metric
+2. Use Fear & Greed trend (week_ago, trend direction) in executive_summary
+3. Use total creators for unique_creators metric (${marketData.socialStats?.totalContributors?.toLocaleString() || '0'})
+4. Use total interactions / 1,000,000 for defi_engagements metric
+5. Reference specific RSI, MACD histogram, Bollinger position, EMA crossover signals
+6. Mention Galaxy Scores (0-100, higher = stronger social sentiment)
+7. Mention AltRank (lower = better, 1 = top altcoin)
+8. Analyze sentiment breakdown by platform (Twitter bullish/bearish %, Reddit trends)
+9. Include news themes in narratives if relevant
+10. Calculate sentiment_change as difference from 50 (neutral)`
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
