@@ -230,7 +230,84 @@ function NoReportState() {
   )
 }
 
+function ComingSoonState() {
+  return (
+    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-4 md:px-6 py-8 flex items-center justify-center relative overflow-hidden">
+      {/* Background effects */}
+      <div className="terminal-scanlines" />
+      <div className="terminal-grid" />
+
+      <div className="text-center max-w-lg relative z-10">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-terminal-cyan/10 border border-terminal-cyan/30 flex items-center justify-center">
+          <svg className="w-10 h-10 text-terminal-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+
+        <h1 className="text-2xl md:text-3xl font-bold text-terminal-cyan mb-3">
+          Daily Reports Coming Soon
+        </h1>
+
+        <p className="text-terminal-muted mb-6 leading-relaxed">
+          We're building automated daily market intelligence reports powered by LunarCrush social data.
+          Get insights on market sentiment, top movers, trending narratives, and risk indicators.
+        </p>
+
+        <div className="grid grid-cols-2 gap-3 mb-8 text-left">
+          <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-3">
+            <div className="text-terminal-green text-xs font-semibold mb-1">SENTIMENT</div>
+            <div className="text-sm text-terminal-muted">Market mood analysis</div>
+          </div>
+          <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-3">
+            <div className="text-terminal-cyan text-xs font-semibold mb-1">TOP MOVERS</div>
+            <div className="text-sm text-terminal-muted">Biggest price changes</div>
+          </div>
+          <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-3">
+            <div className="text-yellow-500 text-xs font-semibold mb-1">NARRATIVES</div>
+            <div className="text-sm text-terminal-muted">Trending themes</div>
+          </div>
+          <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-3">
+            <div className="text-terminal-red text-xs font-semibold mb-1">RISKS</div>
+            <div className="text-sm text-terminal-muted">Warning indicators</div>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-terminal-cyan/20 text-terminal-cyan rounded-lg hover:bg-terminal-cyan/30 transition-colors border border-terminal-cyan/30"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Home
+          </Link>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-graphite-800 text-terminal-text rounded-lg hover:bg-graphite-700 transition-colors border border-graphite-700"
+          >
+            Try Dashboard
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ErrorState({ error }: { error: string }) {
+  // Check if this is a "table not found" error - show Coming Soon instead
+  const isTableMissing = error.toLowerCase().includes('schema cache') ||
+                         error.toLowerCase().includes('daily_reports') ||
+                         error.toLowerCase().includes('relation') ||
+                         error.toLowerCase().includes('does not exist')
+
+  if (isTableMissing) {
+    return <ComingSoonState />
+  }
+
   return (
     <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-4 md:px-6 py-8 flex items-center justify-center">
       <div className="text-center max-w-md">
