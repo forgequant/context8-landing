@@ -60,19 +60,23 @@ const MCP_BASE = 'https://context8.fastmcp.app/mcp'
 
 async function callMcpTool<T>(
   toolName: string,
-  args: Record<string, any> = {}
+  args: Record<string, any> = {},
+  apiKey?: string
 ): Promise<T | null> {
   try {
     const res = await fetch(MCP_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/event-stream',
+      },
       body: JSON.stringify({
         jsonrpc: '2.0',
         id: Date.now(),
         method: 'tools/call',
         params: {
           name: toolName,
-          arguments: args,
+          arguments: { ...args, api_key: apiKey },
         },
       }),
     })
@@ -82,7 +86,15 @@ async function callMcpTool<T>(
       return null
     }
 
-    const data = await res.json()
+    // MCP returns SSE format: "event: message\ndata: {...}"
+    const text = await res.text()
+    const dataLine = text.split('\n').find((line) => line.startsWith('data: '))
+    if (!dataLine) {
+      console.error(`[MCP] ${toolName} no data in response`)
+      return null
+    }
+
+    const data = JSON.parse(dataLine.replace('data: ', ''))
     if (data.error) {
       console.error(`[MCP] ${toolName} error:`, data.error)
       return null
@@ -91,7 +103,12 @@ async function callMcpTool<T>(
     // MCP returns result in content array
     const content = data.result?.content?.[0]
     if (content?.type === 'text') {
-      return JSON.parse(content.text)
+      try {
+        return JSON.parse(content.text)
+      } catch {
+        console.error(`[MCP] ${toolName} failed to parse:`, content.text?.substring(0, 200))
+        return null
+      }
     }
     return data.result
   } catch (error) {
@@ -100,14 +117,15 @@ async function callMcpTool<T>(
   }
 }
 
-async function fetchMarketData() {
+async function fetchMarketData(apiKey: string) {
   const [coinsData, cryptoTopic, defiTopic] = await Promise.all([
-    callMcpTool<{ data: any[] }>('lunarcrush_list_trending_coins', {
-      limit: 50,
-      sort: 'galaxy_score',
-    }),
-    callMcpTool<{ data: any }>('lunarcrush_get_topic', { topic: 'crypto' }),
-    callMcpTool<{ data: any }>('lunarcrush_get_topic', { topic: 'defi' }),
+    callMcpTool<{ data: any[] }>(
+      'lunarcrush_list_trending_coins',
+      { limit: 50, sort: 'galaxy_score' },
+      apiKey
+    ),
+    callMcpTool<{ data: any }>('lunarcrush_get_topic', { topic: 'crypto' }, apiKey),
+    callMcpTool<{ data: any }>('lunarcrush_get_topic', { topic: 'defi' }, apiKey),
   ])
 
   return {
@@ -264,15 +282,19 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const openaiKey = Deno.env.get('OPENAI_API_KEY')
+    const context8Key = Deno.env.get('CONTEXT8_API_KEY')
 
     if (!openaiKey) {
       return new Response('Missing OPENAI_API_KEY', { status: 500 })
+    }
+    if (!context8Key) {
+      return new Response('Missing CONTEXT8_API_KEY', { status: 500 })
     }
 
     console.log('[generate-daily-report] Fetching market data from MCP...')
 
     // 1. Fetch market data via MCP (Context8)
-    const marketData = await fetchMarketData()
+    const marketData = await fetchMarketData(context8Key)
 
     if (marketData.coins.length === 0) {
       return new Response('Failed to fetch market data', { status: 502 })
