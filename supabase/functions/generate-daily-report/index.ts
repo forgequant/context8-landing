@@ -53,42 +53,61 @@ interface DailyReport {
 }
 
 // ============================================================================
-// LUNARCRUSH API
+// MCP API (Context8)
 // ============================================================================
 
-const LUNARCRUSH_BASE = 'https://lunarcrush.com/api4/public'
+const MCP_BASE = 'https://context8.fastmcp.app/mcp'
 
-async function fetchLunarCrush<T>(
-  endpoint: string,
-  apiKey: string,
-  params: Record<string, string> = {}
+async function callMcpTool<T>(
+  toolName: string,
+  args: Record<string, any> = {}
 ): Promise<T | null> {
-  const url = new URL(`${LUNARCRUSH_BASE}${endpoint}`)
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
-
   try {
-    const res = await fetch(url.toString(), {
-      headers: { Authorization: `Bearer ${apiKey}` },
+    const res = await fetch(MCP_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: Date.now(),
+        method: 'tools/call',
+        params: {
+          name: toolName,
+          arguments: args,
+        },
+      }),
     })
+
     if (!res.ok) {
-      console.error(`[LunarCrush] ${endpoint} failed:`, res.status)
+      console.error(`[MCP] ${toolName} failed:`, res.status)
       return null
     }
-    return await res.json()
+
+    const data = await res.json()
+    if (data.error) {
+      console.error(`[MCP] ${toolName} error:`, data.error)
+      return null
+    }
+
+    // MCP returns result in content array
+    const content = data.result?.content?.[0]
+    if (content?.type === 'text') {
+      return JSON.parse(content.text)
+    }
+    return data.result
   } catch (error) {
-    console.error(`[LunarCrush] ${endpoint} error:`, error)
+    console.error(`[MCP] ${toolName} error:`, error)
     return null
   }
 }
 
-async function fetchMarketData(apiKey: string) {
+async function fetchMarketData() {
   const [coinsData, cryptoTopic, defiTopic] = await Promise.all([
-    fetchLunarCrush<{ data: any[] }>('/coins/list/v2', apiKey, {
+    callMcpTool<{ data: any[] }>('lunarcrush_list_trending_coins', {
+      limit: 50,
       sort: 'galaxy_score',
-      limit: '50',
     }),
-    fetchLunarCrush<{ data: any }>('/topic/crypto/v1', apiKey),
-    fetchLunarCrush<{ data: any }>('/topic/defi/v1', apiKey),
+    callMcpTool<{ data: any }>('lunarcrush_get_topic', { topic: 'crypto' }),
+    callMcpTool<{ data: any }>('lunarcrush_get_topic', { topic: 'defi' }),
   ])
 
   return {
@@ -244,20 +263,16 @@ serve(async (req) => {
     // Get environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const lunarcrushKey = Deno.env.get('LUNARCRUSH_API_KEY')
     const openaiKey = Deno.env.get('OPENAI_API_KEY')
 
-    if (!lunarcrushKey) {
-      return new Response('Missing LUNARCRUSH_API_KEY', { status: 500 })
-    }
     if (!openaiKey) {
       return new Response('Missing OPENAI_API_KEY', { status: 500 })
     }
 
-    console.log('[generate-daily-report] Fetching market data...')
+    console.log('[generate-daily-report] Fetching market data from MCP...')
 
-    // 1. Fetch market data from LunarCrush
-    const marketData = await fetchMarketData(lunarcrushKey)
+    // 1. Fetch market data via MCP (Context8)
+    const marketData = await fetchMarketData()
 
     if (marketData.coins.length === 0) {
       return new Response('Failed to fetch market data', { status: 502 })
