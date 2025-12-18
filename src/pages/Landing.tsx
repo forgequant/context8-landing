@@ -168,7 +168,10 @@ export function Landing() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-sm text-terminal-muted"
           >
-            Free tier available • No credit card required
+            Free tier available • No credit card required •{' '}
+            <a href="/reports/daily" className="text-terminal-cyan hover:underline">
+              Daily Report →
+            </a>
           </motion.p>
 
         </motion.section>
