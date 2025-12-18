@@ -37,30 +37,38 @@ export function useDailyReport(options: UseDailyReportOptions = {}): UseDailyRep
     setError(null)
 
     try {
-      let query = supabase
-        .from('daily_reports')
-        .select('*')
-        .eq('status', 'published')
+      let data: DailyReport | null = null
+      let fetchError: { code?: string; message: string } | null = null
 
       if (date) {
         // Fetch specific date
-        query = query.eq('report_date', date).single()
+        const result = await supabase
+          .from('daily_reports')
+          .select('*')
+          .eq('status', 'published')
+          .eq('report_date', date)
+          .single()
+        data = result.data
+        fetchError = result.error
       } else {
         // Fetch latest
-        query = query
+        const result = await supabase
+          .from('daily_reports')
+          .select('*')
+          .eq('status', 'published')
           .order('report_date', { ascending: false })
           .limit(1)
           .single()
+        data = result.data
+        fetchError = result.error
       }
-
-      const { data, error: fetchError } = await query
 
       if (fetchError) {
         // PGRST116 = no rows returned (not an error for us)
         if (fetchError.code === 'PGRST116') {
           setReport(null)
         } else {
-          throw fetchError
+          throw new Error(fetchError.message)
         }
       } else if (data) {
         // Add metadata
