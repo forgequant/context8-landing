@@ -219,12 +219,16 @@ serve(async (req) => {
 
   try {
     // Validate authorization
+    // Accepts: service role key, webhook secret, or internal-trigger
     const authHeader = req.headers.get('authorization')
     const webhookSecret = Deno.env.get('WEBHOOK_SECRET')
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
+    const token = authHeader?.replace('Bearer ', '')
     const isAuthorized =
-      authHeader === 'Bearer internal-trigger' ||
-      (webhookSecret && authHeader === `Bearer ${webhookSecret}`)
+      token === 'internal-trigger' ||
+      (webhookSecret && token === webhookSecret) ||
+      (serviceRoleKey && token === serviceRoleKey)
 
     if (!isAuthorized) {
       return new Response('Unauthorized', { status: 401 })
