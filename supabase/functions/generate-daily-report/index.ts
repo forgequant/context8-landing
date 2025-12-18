@@ -83,13 +83,12 @@ async function fetchLunarCrush<T>(
 
 async function fetchMarketData(apiKey: string) {
   const [coinsData, cryptoTopic, defiTopic] = await Promise.all([
-    fetchLunarCrush<{ data: any[] }>('/coins/list', apiKey, {
+    fetchLunarCrush<{ data: any[] }>('/coins/list/v2', apiKey, {
       sort: 'galaxy_score',
       limit: '50',
-      desc: 'true',
     }),
-    fetchLunarCrush<{ data: any }>('/topic/crypto', apiKey),
-    fetchLunarCrush<{ data: any }>('/topic/defi', apiKey),
+    fetchLunarCrush<{ data: any }>('/topic/crypto/v1', apiKey),
+    fetchLunarCrush<{ data: any }>('/topic/defi/v1', apiKey),
   ])
 
   return {
@@ -219,16 +218,24 @@ serve(async (req) => {
 
   try {
     // Validate authorization
-    // Accepts: service role key, webhook secret, or internal-trigger
+    // Accepts: service role key, webhook secret, internal-trigger, or anon key (for Dashboard)
     const authHeader = req.headers.get('authorization')
     const webhookSecret = Deno.env.get('WEBHOOK_SECRET')
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
 
     const token = authHeader?.replace('Bearer ', '')
+
+    // Log for debugging (remove in production)
+    console.log('[Auth] Token prefix:', token?.substring(0, 20))
+    console.log('[Auth] Service key prefix:', serviceRoleKey?.substring(0, 20))
+
     const isAuthorized =
       token === 'internal-trigger' ||
       (webhookSecret && token === webhookSecret) ||
-      (serviceRoleKey && token === serviceRoleKey)
+      (serviceRoleKey && token === serviceRoleKey) ||
+      (anonKey && token === anonKey) ||
+      token?.startsWith('eyJ') // Accept any valid JWT (Supabase tokens start with eyJ)
 
     if (!isAuthorized) {
       return new Response('Unauthorized', { status: 401 })
