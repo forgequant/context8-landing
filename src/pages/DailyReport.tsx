@@ -16,15 +16,20 @@ import {
 // ============================================================================
 
 function SentimentBar({ value, label }: { value: number; label: string }) {
+  const barColor = value >= 60
+    ? 'from-terminal-green to-emerald-400'
+    : value >= 40
+    ? 'from-yellow-500 to-amber-400'
+    : 'from-terminal-red to-rose-400'
   return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs">
-        <span className="text-terminal-muted">{label}</span>
-        <span className="text-terminal-green font-semibold">{value}%</span>
+    <div className="space-y-2">
+      <div className="flex justify-between items-baseline">
+        <span className="text-sm text-terminal-text font-medium">{label}</span>
+        <span className={`text-lg font-bold font-mono ${value >= 60 ? 'text-terminal-green' : value >= 40 ? 'text-yellow-500' : 'text-terminal-red'}`}>{value}%</span>
       </div>
-      <div className="h-2 bg-graphite-800 rounded-full overflow-hidden">
+      <div className="h-3 bg-graphite-800 rounded-full overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-terminal-green to-terminal-cyan rounded-full transition-all duration-500"
+          className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-500`}
           style={{ width: `${value}%` }}
         />
       </div>
@@ -56,40 +61,87 @@ function Badge({ children, variant = 'default' }: {
   variant?: 'default' | 'hot' | 'cold' | 'neutral' | 'warm'
 }) {
   const variants = {
-    default: 'bg-terminal-cyan/20 text-terminal-cyan border-terminal-cyan/30',
-    hot: 'bg-terminal-green/20 text-terminal-green border-terminal-green/30',
-    warm: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30',
-    cold: 'bg-terminal-red/20 text-terminal-red border-terminal-red/30',
-    neutral: 'bg-graphite-800 text-terminal-muted border-graphite-700',
+    default: 'bg-terminal-cyan/30 text-terminal-cyan border-terminal-cyan/50',
+    hot: 'bg-emerald-500/30 text-emerald-400 border-emerald-500/50',
+    warm: 'bg-amber-500/30 text-amber-400 border-amber-500/50',
+    cold: 'bg-rose-500/30 text-rose-400 border-rose-500/50',
+    neutral: 'bg-graphite-700 text-terminal-muted border-graphite-600',
   }
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 text-xs font-mono rounded border ${variants[variant]}`}>
+    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-mono font-semibold rounded border ${variants[variant]}`}>
       {children}
     </span>
   )
 }
 
+function shortenComment(comment: string): string {
+  // Extract key insight only, removing technical details
+  // Priority: Galaxy Score > key event > first sentence
+  const galaxyMatch = comment.match(/Galaxy Score[:\s]+(\d+\.?\d*)/i)
+  const supportMatch = comment.match(/support \$[\d,]+/i)
+  const keyEventMatch = comment.match(/(ETF|взлом|hack|rally|ралли|breakout|breakdown)[^.;]*/i)
+
+  // Remove RSI/MACD technical noise
+  const cleaned = comment
+    .replace(/RSI\s+[\d.]+\s*\([^)]+\),?\s*/gi, '')
+    .replace(/MACD\s+(neutral|bearish|bullish),?\s*/gi, '')
+    .replace(/support\s+\$[\d,]+,?\s*/gi, '')
+    .replace(/resistance\s+\$[\d,]+\.?\s*/gi, '')
+    .trim()
+
+  // Build concise comment
+  const parts: string[] = []
+
+  if (keyEventMatch) {
+    parts.push(keyEventMatch[0].trim())
+  } else if (cleaned.length > 0) {
+    // Take first meaningful phrase
+    const firstPart = cleaned.split(/[.;]/)[0].trim()
+    if (firstPart.length > 5 && firstPart.length < 60) {
+      parts.push(firstPart)
+    }
+  }
+
+  if (galaxyMatch) {
+    parts.push(`Galaxy ${galaxyMatch[1]}`)
+  }
+
+  if (parts.length === 0) {
+    // Fallback: just truncate
+    return comment.length > 50 ? comment.substring(0, 47) + '...' : comment
+  }
+
+  return parts.join('; ')
+}
+
 function AssetRow({ mover, isPositive }: { mover: TopMover; isPositive: boolean }) {
+  const shortComment = shortenComment(mover.comment)
   return (
     <tr className="border-b border-graphite-800 hover:bg-graphite-800/50 transition-colors">
-      <td className="py-3 px-2">
+      <td className="py-3 px-3">
         <span className={`font-bold font-mono ${isPositive ? 'text-terminal-green' : 'text-terminal-red'}`}>
           {mover.symbol}
         </span>
       </td>
-      <td className={`py-3 px-2 font-mono text-sm ${isPositive ? 'text-terminal-green' : 'text-terminal-red'}`}>
+      <td className={`py-3 px-3 font-mono text-sm ${isPositive ? 'text-terminal-green' : 'text-terminal-red'}`}>
         {formatPercentChange(mover.change_24h)}
       </td>
-      <td className={`py-3 px-2 font-mono text-sm ${(mover.change_7d ?? 0) >= 0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
+      <td className={`py-3 px-3 font-mono text-sm ${(mover.change_7d ?? 0) >= 0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
         {mover.change_7d !== null ? formatPercentChange(mover.change_7d) : 'N/A'}
       </td>
-      <td className="py-3 px-2 text-sm text-terminal-cyan">{mover.social}</td>
-      <td className="py-3 px-2 text-sm">
-        <span className={mover.sentiment >= 60 ? 'text-terminal-green' : 'text-terminal-muted'}>
+      <td className="py-3 px-3 text-sm">
+        <span className={`font-medium ${mover.social === 'High' ? 'text-terminal-cyan' : 'text-terminal-muted'}`}>
+          {mover.social}
+        </span>
+      </td>
+      <td className="py-3 px-3 text-sm">
+        <span className={`font-mono ${mover.sentiment >= 70 ? 'text-emerald-400' : mover.sentiment >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>
           {mover.sentiment}%
         </span>
       </td>
-      <td className="py-3 px-2 text-xs text-terminal-muted max-w-[200px]">{mover.comment}</td>
+      <td className="py-3 px-3 text-sm text-terminal-muted max-w-[180px]" title={mover.comment}>
+        {shortComment}
+      </td>
     </tr>
   )
 }
@@ -180,16 +232,16 @@ function getNarrativeBadge(narrative: Narrative): { label: string; variant: 'hot
 
 function getNarrativeBorderColor(status: Narrative['status']) {
   switch (status) {
-    case 'hot': return 'border-terminal-green/30 hover:border-terminal-green/50'
-    case 'warm': return 'border-yellow-500/30 hover:border-yellow-500/50'
-    default: return 'border-graphite-700 hover:border-terminal-cyan/30'
+    case 'hot': return 'border-emerald-500/40 hover:border-emerald-500/60'
+    case 'warm': return 'border-amber-500/40 hover:border-amber-500/60'
+    default: return 'border-graphite-700 hover:border-terminal-cyan/40'
   }
 }
 
 function getNarrativeTitleColor(status: Narrative['status']) {
   switch (status) {
-    case 'hot': return 'text-terminal-green'
-    case 'warm': return 'text-yellow-400'
+    case 'hot': return 'text-emerald-400'
+    case 'warm': return 'text-amber-400'
     default: return 'text-terminal-cyan'
   }
 }
@@ -296,14 +348,17 @@ export function DailyReport() {
             <p className="text-terminal-muted text-sm mt-1">Crypto market intelligence • Social signals • Key narratives</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 bg-terminal-cyan/10 border border-terminal-cyan/30 rounded text-terminal-cyan text-sm">
+            <span className="px-3 py-1.5 bg-graphite-800 border border-graphite-700 rounded text-terminal-text text-sm font-medium">
               {report.formattedDate}
             </span>
-            {report.isToday && (
-              <span className="px-3 py-1 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green text-sm">
-                LIVE
-              </span>
-            )}
+            <span className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 ${
+              report.isToday
+                ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-400'
+                : 'bg-terminal-cyan/20 border border-terminal-cyan/50 text-terminal-cyan'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${report.isToday ? 'bg-emerald-400 animate-pulse' : 'bg-terminal-cyan'}`} />
+              {report.isToday ? 'LIVE' : 'REPORT'}
+            </span>
           </div>
         </div>
       </header>
@@ -508,54 +563,31 @@ export function DailyReport() {
               <span className="text-terminal-cyan">04</span> Social & Influencer Highlights
             </h2>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              {/* Left column */}
-              <div className="space-y-3">
-                {influencers.slice(0, Math.ceil(influencers.length / 2)).map((inf, i) => (
-                  <div key={i} className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`font-semibold ${
-                        inf.sentiment === 'bullish' ? 'text-terminal-green' :
-                        inf.sentiment === 'bearish' ? 'text-terminal-red' :
-                        'text-terminal-cyan'
-                      }`}>{inf.name}</span>
-                      <span className="text-xs text-terminal-muted">
-                        {inf.followers >= 1000000 ? `${(inf.followers / 1000000).toFixed(1)}M` : `${(inf.followers / 1000).toFixed(0)}K`} followers
-                      </span>
-                    </div>
-                    <div className="text-sm text-terminal-muted mb-2">
-                      {inf.engagement >= 1000000 ? `${(inf.engagement / 1000000).toFixed(1)}M` : `${(inf.engagement / 1000).toFixed(0)}K`} engagements • {inf.focus.join(', ')}
-                    </div>
-                    <Badge variant={inf.sentiment === 'bullish' ? 'hot' : inf.sentiment === 'bearish' ? 'cold' : 'neutral'}>
-                      {inf.sentiment === 'bullish' ? `Bullish ${inf.focus[0] || ''}` : inf.sentiment === 'bearish' ? `Bearish ${inf.focus[0] || ''}` : 'Mixed'}
-                    </Badge>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {influencers.slice(0, 6).map((inf, i) => (
+                <div key={i} className={`bg-graphite-900 border rounded-lg p-4 transition-colors ${
+                  inf.sentiment === 'bullish' ? 'border-emerald-500/30 hover:border-emerald-500/50' :
+                  inf.sentiment === 'bearish' ? 'border-rose-500/30 hover:border-rose-500/50' :
+                  'border-graphite-700 hover:border-terminal-cyan/30'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`font-semibold ${
+                      inf.sentiment === 'bullish' ? 'text-emerald-400' :
+                      inf.sentiment === 'bearish' ? 'text-rose-400' :
+                      'text-terminal-cyan'
+                    }`}>{inf.name}</span>
+                    <span className="text-xs text-terminal-muted font-mono">
+                      {inf.followers >= 1000000 ? `${(inf.followers / 1000000).toFixed(1)}M` : `${(inf.followers / 1000).toFixed(0)}K`}
+                    </span>
                   </div>
-                ))}
-              </div>
-
-              {/* Right column */}
-              <div className="space-y-3">
-                {influencers.slice(Math.ceil(influencers.length / 2)).map((inf, i) => (
-                  <div key={i} className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`font-semibold ${
-                        inf.sentiment === 'bullish' ? 'text-terminal-green' :
-                        inf.sentiment === 'bearish' ? 'text-terminal-red' :
-                        'text-terminal-cyan'
-                      }`}>{inf.name}</span>
-                      <span className="text-xs text-terminal-muted">
-                        {inf.followers >= 1000000 ? `${(inf.followers / 1000000).toFixed(1)}M` : `${(inf.followers / 1000).toFixed(0)}K`} followers
-                      </span>
-                    </div>
-                    <div className="text-sm text-terminal-muted mb-2">
-                      {inf.engagement >= 1000000 ? `${(inf.engagement / 1000000).toFixed(1)}M` : `${(inf.engagement / 1000).toFixed(0)}K`} engagements • {inf.focus.join(', ')}
-                    </div>
-                    <Badge variant={inf.sentiment === 'bullish' ? 'hot' : inf.sentiment === 'bearish' ? 'cold' : 'neutral'}>
-                      {inf.sentiment === 'bullish' ? `Bullish ${inf.focus[0] || ''}` : inf.sentiment === 'bearish' ? `Bearish ${inf.focus[0] || ''}` : 'Mixed'}
-                    </Badge>
+                  <div className="text-sm text-terminal-muted mb-3">
+                    {inf.engagement >= 1000000 ? `${(inf.engagement / 1000000).toFixed(1)}M` : `${Math.round(inf.engagement / 1000)}K`} engagements • {inf.focus.slice(0, 2).join(', ')}
                   </div>
-                ))}
-              </div>
+                  <Badge variant={inf.sentiment === 'bullish' ? 'hot' : inf.sentiment === 'bearish' ? 'cold' : 'neutral'}>
+                    {inf.sentiment === 'bullish' ? `Bullish ${inf.focus[0] || ''}` : inf.sentiment === 'bearish' ? `Bearish ${inf.focus[0] || ''}` : 'Mixed'}
+                  </Badge>
+                </div>
+              ))}
             </div>
           </section>
         )}
@@ -627,29 +659,31 @@ export function DailyReport() {
 
         {/* Quick Stats Footer */}
         <section className="grid grid-cols-2 md:grid-cols-5 gap-4 py-6 border-t border-graphite-800">
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-terminal-cyan">{metrics.market_sentiment ?? 'N/A'}%</div>
-            <div className="text-xs text-terminal-muted">Market Sentiment</div>
+          <div className="text-center p-3 bg-graphite-900/50 rounded-lg">
+            <div className={`text-2xl font-bold font-mono ${(metrics.market_sentiment ?? 0) >= 50 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {metrics.market_sentiment ?? 'N/A'}%
+            </div>
+            <div className="text-xs text-terminal-muted mt-1">Market Sentiment</div>
           </div>
-          <div className="text-center">
-            <div className={`text-2xl font-bold font-mono ${(metrics.unique_creators_change ?? 0) >= 0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
+          <div className="text-center p-3 bg-graphite-900/50 rounded-lg">
+            <div className={`text-2xl font-bold font-mono ${(metrics.unique_creators_change ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
               {metrics.unique_creators_change !== null ? `${metrics.unique_creators_change >= 0 ? '+' : ''}${metrics.unique_creators_change}%` : 'N/A'}
             </div>
-            <div className="text-xs text-terminal-muted">Creator Activity</div>
+            <div className="text-xs text-terminal-muted mt-1">Creator Activity</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-yellow-400">{metrics.defi_engagements ?? 'N/A'}M</div>
-            <div className="text-xs text-terminal-muted">DeFi Engagements</div>
+          <div className="text-center p-3 bg-graphite-900/50 rounded-lg">
+            <div className="text-2xl font-bold font-mono text-amber-400">{metrics.defi_engagements ?? 'N/A'}M</div>
+            <div className="text-xs text-terminal-muted mt-1">DeFi Engagements</div>
           </div>
-          <div className="text-center">
-            <div className={`text-2xl font-bold font-mono ${(metrics.defi_engagements_change ?? 0) >= 0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
+          <div className="text-center p-3 bg-graphite-900/50 rounded-lg">
+            <div className={`text-2xl font-bold font-mono ${(metrics.defi_engagements_change ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
               {metrics.defi_engagements_change !== null ? `${metrics.defi_engagements_change >= 0 ? '+' : ''}${metrics.defi_engagements_change}%` : 'N/A'}
             </div>
-            <div className="text-xs text-terminal-muted">DeFi Change</div>
+            <div className="text-xs text-terminal-muted mt-1">Weekly Change</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-purple-400">{top_movers.length}</div>
-            <div className="text-xs text-terminal-muted">Assets Tracked</div>
+          <div className="text-center p-3 bg-graphite-900/50 rounded-lg">
+            <div className="text-2xl font-bold font-mono text-purple-400">{gainers.length}/{losers.length}</div>
+            <div className="text-xs text-terminal-muted mt-1">Gainers/Losers</div>
           </div>
         </section>
 
