@@ -199,6 +199,27 @@ function getNarrativeTitleColor(status: Narrative['status']) {
   }
 }
 
+// Parse narrative description like "Assets: BTC | Catalyst: ETF outflows | Social: ↓ -5%"
+function parseNarrativeDescription(description: string): { label: string; value: string }[] {
+  const parts = description.split('|').map(p => p.trim())
+  return parts.map(part => {
+    const colonIndex = part.indexOf(':')
+    if (colonIndex > 0) {
+      return {
+        label: part.substring(0, colonIndex).trim(),
+        value: part.substring(colonIndex + 1).trim()
+      }
+    }
+    return { label: '', value: part }
+  }).filter(p => p.value)
+}
+
+function getValueColor(value: string): string {
+  if (value.includes('↑') || value.includes('+')) return 'text-terminal-green'
+  if (value.includes('↓') || value.includes('-')) return 'text-terminal-red'
+  return 'text-terminal-text'
+}
+
 // ============================================================================
 // ERROR/EMPTY STATES
 // ============================================================================
@@ -547,24 +568,38 @@ export function DailyReport() {
               }}
               className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
             >
-              {narratives.map((narrative, i) => (
-                <motion.div
-                  key={i}
-                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                  whileHover={{ scale: 1.02 }}
-                  className={`bg-graphite-900 border rounded-xl p-4 transition-all ${getNarrativeBorderColor(narrative.status)}`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className={`font-semibold ${getNarrativeTitleColor(narrative.status)}`}>
-                      {narrative.title}
-                    </h3>
-                    <Badge variant={getNarrativeVariant(narrative.status)}>
-                      {narrative.status.toUpperCase()}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-terminal-muted">{narrative.description}</p>
-                </motion.div>
-              ))}
+              {narratives.map((narrative, i) => {
+                const parsedDesc = parseNarrativeDescription(narrative.description)
+                return (
+                  <motion.div
+                    key={i}
+                    variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+                    whileHover={{ scale: 1.02 }}
+                    className={`bg-graphite-900 border rounded-xl p-4 transition-all ${getNarrativeBorderColor(narrative.status)}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className={`font-semibold ${getNarrativeTitleColor(narrative.status)}`}>
+                        {narrative.title}
+                      </h3>
+                      <Badge variant={getNarrativeVariant(narrative.status)}>
+                        {narrative.status.toUpperCase()}
+                      </Badge>
+                    </div>
+                    {parsedDesc.length > 0 ? (
+                      <div className="space-y-2 text-sm">
+                        {parsedDesc.map((item, j) => (
+                          <div key={j} className="flex justify-between">
+                            <span className="text-terminal-muted">{item.label}</span>
+                            <span className={getValueColor(item.value)}>{item.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-terminal-muted">{narrative.description}</p>
+                    )}
+                  </motion.div>
+                )
+              })}
             </motion.div>
           </section>
         )}
@@ -687,12 +722,15 @@ export function DailyReport() {
                       ? `${(influencer.engagement / 1000000).toFixed(1)}M engagements`
                       : `${(influencer.engagement / 1000).toFixed(0)}K engagements`}
                   </div>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap items-center gap-1">
                     {influencer.focus.map((topic, j) => (
-                      <Badge key={j} variant={influencer.sentiment === 'bullish' ? 'hot' : influencer.sentiment === 'bearish' ? 'cold' : 'neutral'}>
+                      <Badge key={j} variant="neutral">
                         {topic}
                       </Badge>
                     ))}
+                    <Badge variant={influencer.sentiment === 'bullish' ? 'hot' : influencer.sentiment === 'bearish' ? 'cold' : 'neutral'}>
+                      {influencer.sentiment === 'bullish' ? 'Bullish' : influencer.sentiment === 'bearish' ? 'Bearish' : 'Neutral'}
+                    </Badge>
                   </div>
                 </motion.div>
               ))}
