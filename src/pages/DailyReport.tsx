@@ -367,19 +367,21 @@ export function DailyReport() {
   const summaryRef = useRef(null)
   const narrativesRef = useRef(null)
   const moversRef = useRef(null)
+  const influencersRef = useRef(null)
   const risksRef = useRef(null)
 
   const isHeaderInView = useInView(headerRef, { once: true })
   const isSummaryInView = useInView(summaryRef, { once: true })
   const isNarrativesInView = useInView(narrativesRef, { once: true })
   const isMoversInView = useInView(moversRef, { once: true })
+  const isInfluencersInView = useInView(influencersRef, { once: true })
   const isRisksInView = useInView(risksRef, { once: true })
 
   if (loading) return <LoadingState />
   if (error) return <ErrorState error={error} />
   if (!exists || !report) return <NoReportState />
 
-  const { metrics, executive_summary, narratives, top_movers, risks } = report
+  const { metrics, executive_summary, narratives, top_movers, influencers, risks } = report
 
   // Separate gainers and losers
   const gainers = top_movers.filter(m => m.change_24h >= 0).sort((a, b) => b.change_24h - a.change_24h)
@@ -417,7 +419,7 @@ export function DailyReport() {
             {report.isToday && (
               <span className="px-3 py-1.5 bg-terminal-green/10 border border-terminal-green/30 rounded-lg text-terminal-green text-sm flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
-                TODAY
+                LIVE
               </span>
             )}
           </div>
@@ -445,7 +447,7 @@ export function DailyReport() {
           />
           <MetricCard
             label="DeFi Engagements"
-            value={formatLargeNumber(metrics.defi_engagements)}
+            value={metrics.defi_engagements !== null ? `${metrics.defi_engagements}M` : 'N/A'}
             change={metrics.defi_engagements_change !== null ? `${Math.abs(metrics.defi_engagements_change)}% vs weekly` : undefined}
             isPositive={metrics.defi_engagements_change !== null ? metrics.defi_engagements_change >= 0 : undefined}
             delay={0.2}
@@ -643,6 +645,61 @@ export function DailyReport() {
           </section>
         )}
 
+        {/* Social & Influencer Highlights */}
+        {influencers && influencers.length > 0 && (
+          <section ref={influencersRef}>
+            <SectionHeader number="04" title="Social & Influencer Highlights" />
+
+            <motion.div
+              initial="hidden"
+              animate={isInfluencersInView ? "visible" : "hidden"}
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.1 } }
+              }}
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              {influencers.map((influencer, i) => (
+                <motion.div
+                  key={i}
+                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+                  whileHover={{ scale: 1.02 }}
+                  className={`bg-graphite-900 border rounded-xl p-4 transition-all ${
+                    influencer.sentiment === 'bullish' ? 'border-terminal-green/30 hover:border-terminal-green/50' :
+                    influencer.sentiment === 'bearish' ? 'border-terminal-red/30 hover:border-terminal-red/50' :
+                    'border-graphite-700 hover:border-terminal-cyan/30'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`font-semibold ${
+                      influencer.sentiment === 'bullish' ? 'text-terminal-green' :
+                      influencer.sentiment === 'bearish' ? 'text-terminal-red' :
+                      'text-terminal-cyan'
+                    }`}>{influencer.name}</span>
+                    <span className="text-xs text-terminal-muted">
+                      {influencer.followers >= 1000000
+                        ? `${(influencer.followers / 1000000).toFixed(1)}M followers`
+                        : `${(influencer.followers / 1000).toFixed(0)}K followers`}
+                    </span>
+                  </div>
+                  <div className="text-sm text-terminal-muted mb-2">
+                    {influencer.engagement >= 1000000
+                      ? `${(influencer.engagement / 1000000).toFixed(1)}M engagements`
+                      : `${(influencer.engagement / 1000).toFixed(0)}K engagements`}
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {influencer.focus.map((topic, j) => (
+                      <Badge key={j} variant={influencer.sentiment === 'bullish' ? 'hot' : influencer.sentiment === 'bearish' ? 'cold' : 'neutral'}>
+                        {topic}
+                      </Badge>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </section>
+        )}
+
         {/* Risks & Observations */}
         {risks.length > 0 && (
           <motion.section
@@ -657,7 +714,7 @@ export function DailyReport() {
             </h2>
 
             <div className="grid md:grid-cols-2 gap-4">
-              {risks.map((risk, i) => (
+              {risks.filter(r => r.level !== 'low').map((risk, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
                     risk.level === 'high' ? 'bg-terminal-red/20' :
@@ -676,6 +733,21 @@ export function DailyReport() {
                   </div>
                 </div>
               ))}
+
+              {/* Bullish Anchors - show LOW level risks as positive factors */}
+              {risks.filter(r => r.level === 'low').length > 0 && (
+                <div className="flex items-start gap-3 bg-terminal-green/10 rounded-lg p-3 md:col-span-2">
+                  <div className="w-8 h-8 rounded-full bg-terminal-green/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-terminal-green text-sm">+</span>
+                  </div>
+                  <div>
+                    <span className="text-terminal-green font-semibold text-sm">Bullish Anchors</span>
+                    <p className="text-sm text-terminal-muted mt-1">
+                      {risks.filter(r => r.level === 'low').map(r => r.label).join(' • ')}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.section>
         )}
@@ -686,7 +758,7 @@ export function DailyReport() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-t border-graphite-800"
+          className="grid grid-cols-2 md:grid-cols-5 gap-4 py-6 border-t border-graphite-800"
         >
           {metrics.market_sentiment !== null && (
             <motion.div
@@ -700,7 +772,7 @@ export function DailyReport() {
               <div className="text-xs text-terminal-muted">Market Sentiment</div>
             </motion.div>
           )}
-          {metrics.unique_creators !== null && (
+          {metrics.unique_creators_change !== null && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -708,8 +780,10 @@ export function DailyReport() {
               viewport={{ once: true }}
               className="text-center"
             >
-              <div className="text-2xl font-bold font-mono text-terminal-green">{formatLargeNumber(metrics.unique_creators)}</div>
-              <div className="text-xs text-terminal-muted">Active Creators</div>
+              <div className={`text-2xl font-bold font-mono ${metrics.unique_creators_change >= 0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
+                {metrics.unique_creators_change >= 0 ? '+' : ''}{metrics.unique_creators_change}%
+              </div>
+              <div className="text-xs text-terminal-muted">Creator Activity</div>
             </motion.div>
           )}
           {metrics.defi_engagements !== null && (
@@ -720,14 +794,28 @@ export function DailyReport() {
               viewport={{ once: true }}
               className="text-center"
             >
-              <div className="text-2xl font-bold font-mono text-yellow-400">{formatLargeNumber(metrics.defi_engagements)}</div>
+              <div className="text-2xl font-bold font-mono text-yellow-400">{metrics.defi_engagements}M</div>
               <div className="text-xs text-terminal-muted">DeFi Engagements</div>
+            </motion.div>
+          )}
+          {metrics.defi_engagements_change !== null && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className={`text-2xl font-bold font-mono ${metrics.defi_engagements_change >= 0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
+                {metrics.defi_engagements_change >= 0 ? '+' : ''}{metrics.defi_engagements_change}%
+              </div>
+              <div className="text-xs text-terminal-muted">DeFi Change</div>
             </motion.div>
           )}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
             viewport={{ once: true }}
             className="text-center"
           >
