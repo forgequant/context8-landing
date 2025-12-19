@@ -1011,3 +1011,4 @@ export function DailyReport() {
     </div>
   )
 }
+
