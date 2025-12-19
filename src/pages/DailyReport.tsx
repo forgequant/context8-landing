@@ -179,6 +179,24 @@ function getDirectionSymbol(direction: ExecutiveSummaryItem['direction']) {
   }
 }
 
+// Parse executive summary text to extract bold key phrase
+// Input: "Social activity cooled — unique creators down 5%"
+// Output: { boldPart: "Social activity cooled", rest: "— unique creators down 5%" }
+function parseExecutiveSummaryText(text: string): { boldPart: string; rest: string } {
+  // Try to split by em-dash, colon, or regular dash
+  const separators = [' — ', ' – ', ': ', ' - ']
+  for (const sep of separators) {
+    const idx = text.indexOf(sep)
+    if (idx > 0 && idx < 50) { // Only if separator is early in text
+      return {
+        boldPart: text.substring(0, idx),
+        rest: text.substring(idx)
+      }
+    }
+  }
+  return { boldPart: '', rest: text }
+}
+
 function getNarrativeVariant(status: Narrative['status']): 'hot' | 'warm' | 'cold' {
   return status
 }
@@ -218,6 +236,72 @@ function getValueColor(value: string): string {
   if (value.includes('↑') || value.includes('+')) return 'text-terminal-green'
   if (value.includes('↓') || value.includes('-')) return 'text-terminal-red'
   return 'text-terminal-text'
+}
+
+// Extract title and description from risk label
+// Input: "High volatility: 0.77% daily swing on BTC"
+// Output: { title: "High volatility", description: "0.77% daily swing on BTC" }
+function parseRiskLabel(label: string): { title: string; description: string } {
+  // Try to split by colon or em-dash
+  const separators = [': ', ' — ', ' - ']
+  for (const sep of separators) {
+    const idx = label.indexOf(sep)
+    if (idx > 0 && idx < 40) {
+      return {
+        title: label.substring(0, idx).trim(),
+        description: label.substring(idx + sep.length).trim()
+      }
+    }
+  }
+  // If no separator, try to extract first few words as title
+  const words = label.split(' ')
+  if (words.length > 4) {
+    return {
+      title: words.slice(0, 3).join(' '),
+      description: words.slice(3).join(' ')
+    }
+  }
+  return { title: '', description: label }
+}
+
+// Extract a dynamic badge label from narrative description
+// Looks for percentage changes, sentiment values, or key metrics
+function extractNarrativeBadgeLabel(narrative: Narrative): { label: string; variant: 'hot' | 'warm' | 'cold' | 'neutral' } {
+  const desc = narrative.description.toLowerCase()
+
+  // Look for percentage patterns in the Social field
+  const percentMatch = narrative.description.match(/([+-]?\d+(?:\.\d+)?%)/i)
+  const socialMatch = narrative.description.match(/Social[:\s]+([^|]+)/i)
+
+  // Check for specific keywords
+  if (desc.includes('etf outflow') || desc.includes('оттоки')) {
+    return { label: 'ETF Outflows', variant: 'cold' }
+  }
+  if (desc.includes('etf inflow') || desc.includes('притоки')) {
+    return { label: 'ETF Inflows', variant: 'hot' }
+  }
+  if (desc.includes('increased') || desc.includes('growing')) {
+    return { label: '↑ Growing', variant: 'hot' }
+  }
+  if (desc.includes('bearish') || desc.includes('breakdown')) {
+    return { label: 'Bearish', variant: 'cold' }
+  }
+
+  // If we found a percentage in the social signal
+  if (socialMatch && percentMatch) {
+    const percent = percentMatch[0]
+    const isPositive = !percent.includes('-') && (percent.includes('+') || socialMatch[1].includes('↑'))
+    return {
+      label: percent,
+      variant: isPositive ? 'hot' : 'cold'
+    }
+  }
+
+  // Default to status-based label
+  return {
+    label: narrative.status.toUpperCase(),
+    variant: narrative.status as 'hot' | 'warm' | 'cold'
+  }
 }
 
 // ============================================================================
@@ -499,10 +583,14 @@ export function DailyReport() {
               <div className="space-y-3">
                 {executive_summary.slice(0, Math.ceil(executive_summary.length / 2)).map((item, i) => {
                   const { symbol, color } = getDirectionSymbol(item.direction)
+                  const { boldPart, rest } = parseExecutiveSummaryText(item.text)
                   return (
                     <div key={i} className="flex items-start gap-2">
                       <span className={`mt-1 ${color}`}>{symbol}</span>
-                      <p className="text-sm text-terminal-muted">{item.text}</p>
+                      <p className="text-sm text-terminal-muted">
+                        {boldPart && <strong className="text-terminal-text">{boldPart}</strong>}
+                        {rest}
+                      </p>
                     </div>
                   )
                 })}
@@ -510,10 +598,14 @@ export function DailyReport() {
               <div className="space-y-3">
                 {executive_summary.slice(Math.ceil(executive_summary.length / 2)).map((item, i) => {
                   const { symbol, color } = getDirectionSymbol(item.direction)
+                  const { boldPart, rest } = parseExecutiveSummaryText(item.text)
                   return (
                     <div key={i} className="flex items-start gap-2">
                       <span className={`mt-1 ${color}`}>{symbol}</span>
-                      <p className="text-sm text-terminal-muted">{item.text}</p>
+                      <p className="text-sm text-terminal-muted">
+                        {boldPart && <strong className="text-terminal-text">{boldPart}</strong>}
+                        {rest}
+                      </p>
                     </div>
                   )
                 })}
@@ -570,6 +662,7 @@ export function DailyReport() {
             >
               {narratives.map((narrative, i) => {
                 const parsedDesc = parseNarrativeDescription(narrative.description)
+                const badgeInfo = extractNarrativeBadgeLabel(narrative)
                 return (
                   <motion.div
                     key={i}
@@ -581,8 +674,8 @@ export function DailyReport() {
                       <h3 className={`font-semibold ${getNarrativeTitleColor(narrative.status)}`}>
                         {narrative.title}
                       </h3>
-                      <Badge variant={getNarrativeVariant(narrative.status)}>
-                        {narrative.status.toUpperCase()}
+                      <Badge variant={badgeInfo.variant}>
+                        {badgeInfo.label}
                       </Badge>
                     </div>
                     {parsedDesc.length > 0 ? (
@@ -694,46 +787,58 @@ export function DailyReport() {
               }}
               className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
             >
-              {influencers.map((influencer, i) => (
-                <motion.div
-                  key={i}
-                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                  whileHover={{ scale: 1.02 }}
-                  className={`bg-graphite-900 border rounded-xl p-4 transition-all ${
-                    influencer.sentiment === 'bullish' ? 'border-terminal-green/30 hover:border-terminal-green/50' :
-                    influencer.sentiment === 'bearish' ? 'border-terminal-red/30 hover:border-terminal-red/50' :
-                    'border-graphite-700 hover:border-terminal-cyan/30'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`font-semibold ${
-                      influencer.sentiment === 'bullish' ? 'text-terminal-green' :
-                      influencer.sentiment === 'bearish' ? 'text-terminal-red' :
-                      'text-terminal-cyan'
-                    }`}>{influencer.name}</span>
-                    <span className="text-xs text-terminal-muted">
-                      {influencer.followers >= 1000000
-                        ? `${(influencer.followers / 1000000).toFixed(1)}M followers`
-                        : `${(influencer.followers / 1000).toFixed(0)}K followers`}
-                    </span>
-                  </div>
-                  <div className="text-sm text-terminal-muted mb-2">
-                    {influencer.engagement >= 1000000
-                      ? `${(influencer.engagement / 1000000).toFixed(1)}M engagements`
-                      : `${(influencer.engagement / 1000).toFixed(0)}K engagements`}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-1">
-                    {influencer.focus.map((topic, j) => (
-                      <Badge key={j} variant="neutral">
-                        {topic}
-                      </Badge>
-                    ))}
+              {influencers.map((influencer, i) => {
+                const sentimentLabel = influencer.sentiment === 'bullish'
+                  ? `Bullish ${influencer.focus[0] || ''}`
+                  : influencer.sentiment === 'bearish'
+                  ? `Bearish ${influencer.focus[0] || ''}`
+                  : 'Mixed'
+                return (
+                  <motion.div
+                    key={i}
+                    variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+                    whileHover={{ scale: 1.02 }}
+                    className={`bg-graphite-900 border rounded-xl p-4 transition-all ${
+                      influencer.sentiment === 'bullish' ? 'border-terminal-green/30 hover:border-terminal-green/50' :
+                      influencer.sentiment === 'bearish' ? 'border-terminal-red/30 hover:border-terminal-red/50' :
+                      'border-graphite-700 hover:border-terminal-cyan/30'
+                    }`}
+                  >
+                    {/* Header: Name + Followers */}
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`font-semibold ${
+                        influencer.sentiment === 'bullish' ? 'text-terminal-green' :
+                        influencer.sentiment === 'bearish' ? 'text-terminal-red' :
+                        'text-terminal-cyan'
+                      }`}>{influencer.name}</span>
+                      <span className="text-xs text-terminal-muted">
+                        {influencer.followers >= 1000000
+                          ? `${(influencer.followers / 1000000).toFixed(1)}M followers`
+                          : `${(influencer.followers / 1000).toFixed(0)}K followers`}
+                      </span>
+                    </div>
+
+                    {/* Engagement stats */}
+                    <div className="text-sm text-terminal-muted mb-2">
+                      {influencer.engagement >= 1000000
+                        ? `${(influencer.engagement / 1000000).toFixed(1)}M engagements`
+                        : `${(influencer.engagement / 1000).toFixed(0)}K engagements`}
+                    </div>
+
+                    {/* Focus areas as descriptive text */}
+                    {influencer.focus.length > 0 && (
+                      <div className="text-xs text-terminal-muted mb-3">
+                        Focus: {influencer.focus.join(', ')}
+                      </div>
+                    )}
+
+                    {/* Sentiment badge - descriptive like RU version */}
                     <Badge variant={influencer.sentiment === 'bullish' ? 'hot' : influencer.sentiment === 'bearish' ? 'cold' : 'neutral'}>
-                      {influencer.sentiment === 'bullish' ? 'Bullish' : influencer.sentiment === 'bearish' ? 'Bearish' : 'Neutral'}
+                      {sentimentLabel.trim()}
                     </Badge>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                )
+              })}
             </motion.div>
           </section>
         )}
@@ -752,25 +857,43 @@ export function DailyReport() {
             </h2>
 
             <div className="grid md:grid-cols-2 gap-4">
-              {risks.filter(r => r.level !== 'low').map((risk, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                    risk.level === 'high' ? 'bg-terminal-red/20' :
-                    risk.level === 'medium' ? 'bg-yellow-500/20' :
-                    'bg-terminal-green/20'
-                  }`}>
-                    <span className={`text-sm font-bold ${
-                      risk.level === 'high' ? 'text-terminal-red' :
-                      risk.level === 'medium' ? 'text-yellow-500' :
-                      'text-terminal-green'
-                    }`}>{i + 1}</span>
+              {risks.filter(r => r.level !== 'low').map((risk, i) => {
+                const { title, description } = parseRiskLabel(risk.label)
+                return (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      risk.level === 'high' ? 'bg-terminal-red/20' :
+                      risk.level === 'medium' ? 'bg-yellow-500/20' :
+                      'bg-terminal-green/20'
+                    }`}>
+                      <span className={`text-sm font-bold ${
+                        risk.level === 'high' ? 'text-terminal-red' :
+                        risk.level === 'medium' ? 'text-yellow-500' :
+                        'text-terminal-green'
+                      }`}>{i + 1}</span>
+                    </div>
+                    <div>
+                      {/* Risk title + level badge */}
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant={risk.level === 'high' ? 'cold' : risk.level === 'medium' ? 'warm' : 'hot'}>
+                          {risk.level.toUpperCase()}
+                        </Badge>
+                        {title && (
+                          <span className={`text-sm font-semibold ${
+                            risk.level === 'high' ? 'text-terminal-red' :
+                            risk.level === 'medium' ? 'text-yellow-500' :
+                            'text-terminal-green'
+                          }`}>{title}</span>
+                        )}
+                      </div>
+                      {/* Risk description */}
+                      <p className="text-sm text-terminal-muted">
+                        {description || risk.label}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <RiskIndicator level={risk.level} label={risk.level.toUpperCase()} />
-                    <p className="text-sm text-terminal-muted mt-1">{risk.label}</p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
 
               {/* Bullish Anchors - show LOW level risks as positive factors */}
               {risks.filter(r => r.level === 'low').length > 0 && (
