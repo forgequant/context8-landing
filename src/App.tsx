@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react'
 import { Landing } from './pages/Landing'
 import { Auth } from './pages/Auth'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { NewYearDecorations } from './components/NewYearDecorations'
 
 // Lazy-load heavy routes for better performance
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })))
@@ -30,6 +31,7 @@ function LoadingFallback() {
 export default function App() {
   return (
     <ErrorBoundary>
+      <NewYearDecorations />
       <BrowserRouter>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
