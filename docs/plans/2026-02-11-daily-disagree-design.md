@@ -36,23 +36,33 @@ AITrader Skills (Python, existing)
     ▼
 Generation Script (Python, ~150-180 lines, NEW)
     │  Runs skills via `uv run`, aggregates JSON output,
-    │  detects conflicts, formats into DailyReport schema
+    │  detects conflicts, formats into Event Envelope
     │
     ▼
-Supabase `daily_reports` table (existing, schema update needed)
+ctx8-api (Go, k3s) — POST /api/v1/reports
+    │  Stores in PostgreSQL (CloudNativePG)
+    │  Event → NATS JetStream (future: fan-out to TG/email)
     │
     ▼
-Context8 React UI (existing DailyReport.tsx, type + render updates)
+Context8 React UI — GET /api/v1/reports/{asset}/latest
+    │  Fetches from ctx8-api (replaces Supabase hooks)
     │
     ▼
 Distribution: Website + Telegram channel + Twitter (manual initially)
 ```
 
-### No new infrastructure needed
-- Supabase already running (tables, RLS, hooks)
-- React DailyReport page already built (~710 lines)
-- AITrader skills already produce JSON to stdout
-- All that's missing: ~400 lines of glue code
+### Infrastructure (all existing in k3s)
+- **ctx8-api**: Go API at api.context8.markets (Phase 0 done: healthz)
+- **PostgreSQL**: CloudNativePG, database `ctx8`, role `ctx8`
+- **NATS JetStream**: running in k3s (Phase 2 fan-out)
+- **Zitadel**: OIDC auth (Phase 2+ for protected endpoints)
+- **Flux GitOps**: auto-deploys from GHCR
+
+### What needs building
+- ctx8-api: reports table migration + REST endpoints (Go)
+- ctx8-api: generation script (Python, runs AITrader → POSTs to API)
+- Context8: update types + UI for v2 report format
+- Context8: switch DailyReport hooks from Supabase to ctx8-api
 
 ## Report Format
 
@@ -83,19 +93,94 @@ DIVERGENCE WATCH:
   LINK: Sentiment 34 but price +5% — no social confirmation
 ```
 
-## Schema Design
+## Data Model
 
-### New TypeScript types (`src/types/dailyReport.ts`)
+### PostgreSQL migration (ctx8-api)
 
-The current schema is social-metrics focused (LunarCrush: unique_creators, influencers,
-narratives). The new schema is derivatives-positioning focused.
+Uses the existing Event Envelope pattern from the ctx8-api design doc.
 
-**Approach**: Add new fields to the existing DailyReport interface. Keep backward
-compatibility — old social fields become optional, new fields are the primary content.
+```sql
+-- Migration: 000002_create_reports.up.sql
+CREATE TABLE IF NOT EXISTS reports (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    asset       TEXT NOT NULL,              -- 'BTC', 'MARKET'
+    report_date DATE NOT NULL,
+    headline    TEXT NOT NULL DEFAULT '',
+    payload     JSONB NOT NULL DEFAULT '{}', -- full report content
+    raw_data    JSONB NOT NULL DEFAULT '{}', -- raw skill outputs for debug
+    status      TEXT NOT NULL DEFAULT 'draft'
+                CHECK (status IN ('draft', 'published', 'archived')),
+    version     INTEGER NOT NULL DEFAULT 2,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    published_at TIMESTAMPTZ,
+    UNIQUE(asset, report_date)
+);
+
+CREATE INDEX idx_reports_asset_date ON reports (asset, report_date DESC);
+CREATE INDEX idx_reports_status ON reports (status) WHERE status = 'published';
+```
+
+### Report payload (JSONB)
+
+```json
+{
+  "headline": "78% of crypto Twitter is bullish BTC. 4 of 6 modules disagree.",
+  "conviction_scores": [
+    {
+      "symbol": "BTCUSDT",
+      "score": 3,
+      "bullish_modules": 2,
+      "bearish_modules": 3,
+      "neutral_modules": 0,
+      "modules": [
+        {"module": "ta_scanner", "bias": "bullish", "confidence": 70, "summary": "RSI 58, MACD+"},
+        {"module": "funding", "bias": "bearish", "confidence": 80, "summary": "Crowded longs, z: 1.4"}
+      ]
+    }
+  ],
+  "crowded_trades": [
+    {
+      "symbol": "DOGEUSDT",
+      "direction": "long",
+      "z_score": 3.2,
+      "funding_rate": 0.0012,
+      "annualized_pct": 52.6,
+      "historical_analog": {"date": "2026-01-18", "outcome_pct": -14.0, "outcome_days": 3}
+    }
+  ],
+  "divergences": [
+    {
+      "symbol": "AVAXUSDT",
+      "type": "social_price",
+      "description": "Sentiment 78 but price flat",
+      "signal": "pending_move",
+      "strength": 17.5
+    }
+  ],
+  "macro_regime": {
+    "bias": "risk_off",
+    "feargreed_value": 28,
+    "feargreed_label": "extreme_fear",
+    "dxy_trend": "up",
+    "summary": "DXY rising + US10Y up + VIX elevated = risk-off"
+  }
+}
+```
+
+### ctx8-api REST endpoints
+
+```
+GET  /api/v1/reports/{asset}/latest    → latest published report for asset
+GET  /api/v1/reports/{asset}/{date}    → report for specific date (YYYY-MM-DD)
+GET  /api/v1/reports                   → list published reports (paginated)
+POST /api/v1/reports                   → create report (auth: service key)
+```
+
+Aligns with Phase 1 endpoints from ctx8-api design doc.
+
+### Frontend TypeScript types
 
 ```typescript
-// New interfaces to ADD
-
 interface ModuleVerdict {
   module: string            // 'ta_scanner' | 'funding' | 'oi_divergence' | 'social' | 'macro' | 'feargreed'
   bias: 'bullish' | 'bearish' | 'neutral'
@@ -104,24 +189,20 @@ interface ModuleVerdict {
 }
 
 interface CrowdedTrade {
-  symbol: string            // "DOGEUSDT"
+  symbol: string
   direction: 'long' | 'short'
-  z_score: number           // e.g. 3.2
-  funding_rate: number      // raw rate
-  annualized_pct: number    // annualized %
-  historical_analog?: {
-    date: string            // "2026-01-18"
-    outcome_pct: number     // -14.0
-    outcome_days: number    // 3
-  }
+  z_score: number
+  funding_rate: number
+  annualized_pct: number
+  historical_analog?: { date: string; outcome_pct: number; outcome_days: number }
 }
 
 interface Divergence {
   symbol: string
   type: 'social_price' | 'oi_price' | 'funding_price'
-  description: string       // "Sentiment 78 but price flat"
-  signal: string            // "pending_move" | "buy_divergence" | "sell_divergence"
-  strength: number          // signal strength from skill output
+  description: string
+  signal: string
+  strength: number
 }
 
 interface ConvictionScore {
@@ -133,44 +214,39 @@ interface ConvictionScore {
   modules: ModuleVerdict[]
 }
 
-// Fields to ADD to DailyReport interface
-interface DailyReportV2 extends DailyReport {
-  headline?: string                    // Lead disagreement
-  conviction_scores?: ConvictionScore[]  // Top 10 assets
-  crowded_trades?: CrowdedTrade[]      // Top 3-5 extreme positions
-  divergences?: Divergence[]           // Active divergences
-  module_scorecard?: ConvictionScore   // Featured asset (BTC) full breakdown
-  macro_regime?: {
-    bias: 'risk_on' | 'risk_off' | 'mixed'
-    feargreed_value: number
-    feargreed_label: string
-    dxy_trend: 'up' | 'down' | 'sideways'
-    summary: string
+interface MacroRegime {
+  bias: 'risk_on' | 'risk_off' | 'mixed'
+  feargreed_value: number
+  feargreed_label: string
+  dxy_trend: 'up' | 'down' | 'sideways'
+  summary: string
+}
+
+// Report from ctx8-api
+interface DailyDisagreeReport {
+  id: string
+  asset: string
+  report_date: string
+  headline: string
+  payload: {
+    headline: string
+    conviction_scores: ConvictionScore[]
+    crowded_trades: CrowdedTrade[]
+    divergences: Divergence[]
+    macro_regime: MacroRegime
   }
-  report_version?: number              // 2 for new format
+  status: 'draft' | 'published' | 'archived'
+  version: number
+  created_at: string
+  published_at: string | null
 }
 ```
 
-### Supabase migration
-
-No schema change needed — `daily_reports` already uses JSONB columns.
-The new fields go into existing JSONB columns:
-- `metrics` → `macro_regime` + `conviction_scores`
-- `executive_summary` → `headline`
-- `top_movers` → `crowded_trades` + `divergences`
-- `raw_data` → full skill outputs for debugging
-
-Alternatively, store new fields in `raw_data` JSONB and read them in the frontend
-with fallback to old schema. This avoids migration entirely.
-
-**Decision**: Use `raw_data` JSONB for all new fields. The frontend checks
-`raw_data.report_version === 2` and renders accordingly. Zero migration needed.
-
 ## Generation Script
 
-**Location**: `scripts/generate_daily_disagree.py` (in context8 repo)
+**Location**: `scripts/generate_daily_disagree.py` (in ctx8-api repo)
 
-**Dependencies**: `requests` (for Supabase REST), `subprocess` (for `uv run`)
+**Dependencies**: `requests` (for ctx8-api REST), `subprocess` (for `uv run`)
 
 **Flow**:
 1. Run 6 AITrader skills via subprocess (`uv run ...py --live --top 20`)
@@ -181,17 +257,17 @@ with fallback to old schema. This avoids migration entirely.
 6. Compute conviction scores (0-10 from module agreement ratio)
 7. Find crowded trades (extreme z-scores from funding-screener)
 8. Find divergences (from oi-divergence + social-price-divergence)
-9. Format into DailyReport JSON matching Supabase schema
-10. POST to Supabase REST API (`daily_reports` table)
+9. Format into report JSON matching ctx8-api schema
+10. POST to ctx8-api (`POST /api/v1/reports` with service API key)
 
 **Skills invoked** (in aitrader repo):
 ```bash
-uv run .claude/skills/funding-screener/scripts/funding_screener.py --top 20 --live
-uv run .claude/skills/oi-divergence/scripts/oi_divergence.py --top 20 --live
-uv run .claude/skills/social-price-divergence/scripts/social_price_divergence.py --top 20 --live
-uv run .claude/skills/ta-scanner/scripts/ta_scanner.py --symbol BTCUSDT --live
-uv run .claude/skills/feargreed/scripts/feargreed.py
-uv run .claude/skills/macro-indicators/scripts/macro_indicators.py
+uv run ~/personal/aitrader/.claude/skills/funding-screener/scripts/funding_screener.py --top 20 --live
+uv run ~/personal/aitrader/.claude/skills/oi-divergence/scripts/oi_divergence.py --top 20 --live
+uv run ~/personal/aitrader/.claude/skills/social-price-divergence/scripts/social_price_divergence.py --top 20 --live
+uv run ~/personal/aitrader/.claude/skills/ta-scanner/scripts/ta_scanner.py --symbol BTCUSDT --live
+uv run ~/personal/aitrader/.claude/skills/feargreed/scripts/feargreed.py
+uv run ~/personal/aitrader/.claude/skills/macro-indicators/scripts/macro_indicators.py
 ```
 
 **Conflict detection logic**:
@@ -209,15 +285,16 @@ uv run .claude/skills/macro-indicators/scripts/macro_indicators.py
 
 **File**: `src/pages/DailyReport.tsx`
 
-Render new sections when `raw_data.report_version === 2`:
+Switch data fetching from Supabase to ctx8-api:
+- Replace `useDailyReport()` hook (Supabase) with fetch from `api.context8.markets/api/v1/reports/{asset}/latest`
+- New hook: `useDailyDisagreeReport(asset: string)`
 
+Render new sections:
 1. **Headline banner** — full-width, prominent text
 2. **Module Scorecard** — grid/table showing bull/bear per module for featured asset
 3. **Crowded Trade Alerts** — cards with symbol, direction, z-score, historical analog
 4. **Divergence Watch** — compact list of active divergences
 5. **Conviction Scores** — horizontal bar chart or number grid for top 10
-
-Keep existing sections (executive_summary, top_movers, etc.) as fallback for v1 reports.
 
 ## Distribution
 
@@ -227,9 +304,10 @@ Keep existing sections (executive_summary, top_movers, etc.) as fallback for v1 
 - **Twitter**: Manual posting of headline + screenshot for first 2 weeks
 - **OG meta tags**: Dynamic per report for shareable previews
 
-### Phase 2 (Week 2+): Email
-- Email signup form on report page (Supabase `email_subscribers` table)
-- Resend free tier for delivery
+### Phase 2 (Week 2+): Email + NATS fan-out
+- Email signup (PostgreSQL table via ctx8-api)
+- NATS JetStream: report.published → TG adapter, email adapter
+- Resend/SES for delivery
 
 ## Pricing
 
@@ -245,23 +323,35 @@ Keep existing sections (executive_summary, top_movers, etc.) as fallback for v1 
 | Daily view rate | 30%+ | 15-30% | <15% |
 | Day-2 return rate | 20%+ | 10-20% | <10% |
 
-Investment at risk: ~400 lines of code + 30 min/day distribution = negligible.
+Investment at risk: ~600 lines of code + 30 min/day distribution = negligible.
 
 ## Phases
 
 | Phase | Timeline | Scope |
 |-------|----------|-------|
-| Week 0 | 3-4 days | Generation script + schema + UI update + Telegram |
+| Week 0 | 3-4 days | ctx8-api endpoints + generation script + UI update + Telegram |
 | Week 1-2 | +1 week | OG tags, email signup, per-asset pages |
-| Month 1 | +2 weeks | Accuracy tracking, historical analogs |
-| Month 2 | +4 weeks | Trade Validator ($29/mo paywall) |
+| Month 1 | +2 weeks | Accuracy tracking, historical analogs, NATS fan-out |
+| Month 2 | +4 weeks | Trade Validator ($29/mo paywall), Zitadel auth |
 | Month 3+ | ongoing | B2B API, more modules, feedback loops |
+
+## Task Breakdown (Week 0)
+
+### ctx8-api repo:
+1. **Reports table + REST endpoints** — migration, handlers, CORS
+2. **Generation script** — Python, runs AITrader → POSTs to ctx8-api
+
+### context8 repo:
+1. **DailyReport types v2** — new TypeScript interfaces
+2. **DailyReport UI + fetch** — switch from Supabase to ctx8-api, render v2 content
+3. **Distribution** — OG tags, Telegram auto-post
 
 ## References
 
+- ctx8-api design doc: `~/personal/ctx8-api/docs/plans/2026-02-11-ctx8-api-design.md`
+- ctx8-api ADR: `~/personal/ctx8-api/docs/adr/0001-foundational-decisions.md`
 - AITrader skills: `~/personal/aitrader/.claude/skills/`
 - Context8 DailyReport types: `src/types/dailyReport.ts`
 - Context8 DailyReport page: `src/pages/DailyReport.tsx`
 - Context8 DailyReport hooks: `src/hooks/useDailyReport.ts`
-- Supabase migration: `supabase/migrations/006_daily_reports.sql`
 - Brainstorm transcript: this session (2026-02-11)
