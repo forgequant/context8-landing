@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useDailyDisagreeReport } from '@/hooks/useDailyDisagreeReport';
 import { ModuleScorecard } from '@/components/disagree/ModuleScorecard';
 import { CrowdedTradeCard } from '@/components/disagree/CrowdedTradeCard';
+import { PriceChart } from '@/components/disagree/PriceChart';
 import { DD_COLORS } from '@/lib/colors';
 
 // ── Section header ─────────────────────────────────────────────
@@ -114,21 +115,10 @@ export function AssetDetail() {
       <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6">
         {/* Main content */}
         <div className="space-y-6">
-          {/* Price Chart placeholder — will use PriceChart from DASH-8 */}
+          {/* Price Chart */}
           <div>
             <SectionHeader label="Price Chart" />
-            <div
-              className="rounded-lg flex items-center justify-center"
-              style={{
-                height: 400,
-                backgroundColor: '#12131A',
-                border: '1px solid #2A2D35',
-              }}
-            >
-              <span className="font-mono text-sm" style={{ color: '#7B8FA0' }}>
-                Candlestick chart (pending DASH-8)
-              </span>
-            </div>
+            <PriceChart data={report.priceData} />
           </div>
 
           {/* Module Scorecard (all modules, will be asset-filtered via API) */}

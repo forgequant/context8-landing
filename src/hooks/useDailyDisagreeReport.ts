@@ -9,6 +9,8 @@ import type { Conflict, ConflictSeverity } from '@/components/disagree/conflict-
 import type { CrowdedTradeCardProps } from '@/components/disagree/CrowdedTradeCard';
 import type { DivergenceItem } from '@/components/disagree/DivergenceWatch';
 import type { HeadlineBannerProps, MacroBadge } from '@/components/disagree/HeadlineBanner';
+import type { HeatmapRow } from '@/components/disagree/ConvictionHeatmap';
+import type { CandlestickData, Time } from 'lightweight-charts';
 
 // ── Report shape ──────────────────────────────────────────────
 
@@ -34,6 +36,8 @@ export interface DailyDisagreeReport {
   divergences: DivergenceItem[];
   macro: MacroBadge;
   assets: DisagreeAssetSummary[];
+  priceData: CandlestickData<Time>[];
+  heatmapRows: HeatmapRow[];
 }
 
 interface UseDailyDisagreeReportReturn {
@@ -140,6 +144,26 @@ function buildMockReport(): DailyDisagreeReport {
     { symbol: 'XRP', price: 2.41, change24h: 1.2, volume: '$5.6B', marketCap: '$138B', bullCount: 5, bearCount: 4, topConflictSeverity: null, conviction: 6 },
   ];
 
+  // Mock candlestick data (7 days of daily candles)
+  const priceData: CandlestickData<Time>[] = [
+    { time: '2026-02-06' as unknown as Time, open: 94200, high: 95800, low: 93100, close: 95400 },
+    { time: '2026-02-07' as unknown as Time, open: 95400, high: 96700, low: 94800, close: 95100 },
+    { time: '2026-02-08' as unknown as Time, open: 95100, high: 97200, low: 94900, close: 96800 },
+    { time: '2026-02-09' as unknown as Time, open: 96800, high: 97600, low: 95200, close: 96100 },
+    { time: '2026-02-10' as unknown as Time, open: 96100, high: 98400, low: 95800, close: 97900 },
+    { time: '2026-02-11' as unknown as Time, open: 97900, high: 98100, low: 96400, close: 96700 },
+    { time: '2026-02-12' as unknown as Time, open: 96700, high: 97800, low: 96200, close: 97432 },
+  ];
+
+  // Mock heatmap rows (7 days per module)
+  const heatmapRows: HeatmapRow[] = [
+    { moduleName: 'RSI', days: [{ conviction: 5, signal: 'bearish' }, { conviction: 6, signal: 'bearish' }, { conviction: 4, signal: 'neutral' }, { conviction: 7, signal: 'bearish' }, { conviction: 6, signal: 'bearish' }, { conviction: 8, signal: 'bearish' }, { conviction: 7, signal: 'bearish' }] },
+    { moduleName: 'Funding', days: [{ conviction: 6, signal: 'bearish' }, { conviction: 7, signal: 'bearish' }, { conviction: 7, signal: 'bearish' }, { conviction: 8, signal: 'bearish' }, { conviction: 9, signal: 'bearish' }, { conviction: 8, signal: 'bearish' }, { conviction: 8, signal: 'bearish' }] },
+    { moduleName: 'Social', days: [{ conviction: 4, signal: 'bullish' }, { conviction: 5, signal: 'bullish' }, { conviction: 6, signal: 'bullish' }, { conviction: 7, signal: 'bullish' }, { conviction: 6, signal: 'bullish' }, { conviction: 8, signal: 'bullish' }, { conviction: 7, signal: 'bullish' }] },
+    { moduleName: 'Whale', days: [{ conviction: 7, signal: 'bullish' }, { conviction: 6, signal: 'bullish' }, { conviction: 8, signal: 'bullish' }, { conviction: 7, signal: 'bullish' }, { conviction: 9, signal: 'bullish' }, { conviction: 8, signal: 'bullish' }, { conviction: 8, signal: 'bullish' }] },
+    { moduleName: 'DXY', days: [{ conviction: 3, signal: 'neutral' }, { conviction: 4, signal: 'bearish' }, { conviction: 5, signal: 'bearish' }, { conviction: 4, signal: 'bearish' }, { conviction: 5, signal: 'bearish' }, { conviction: 6, signal: 'bearish' }, { conviction: 5, signal: 'bearish' }] },
+  ];
+
   return {
     date: '2026-02-12',
     reportNumber: 42,
@@ -156,6 +180,8 @@ function buildMockReport(): DailyDisagreeReport {
     divergences,
     macro: { regime: 'mixed', fearGreed: 72, dxyTrend: 'up' },
     assets,
+    priceData,
+    heatmapRows,
   };
 }
 

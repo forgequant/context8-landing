@@ -9,6 +9,9 @@ import { ConflictList } from '@/components/disagree/ConflictList';
 import { CrowdedTradeCard } from '@/components/disagree/CrowdedTradeCard';
 import { DivergenceWatch } from '@/components/disagree/DivergenceWatch';
 import { PriceTicker } from '@/components/disagree/PriceTicker';
+import { PriceChart } from '@/components/disagree/PriceChart';
+import { ConvictionHeatmap } from '@/components/disagree/ConvictionHeatmap';
+import { WSStatusBanner } from '@/components/disagree/WSStatusBanner';
 
 // ── Section header helper ──────────────────────────────────────
 
@@ -137,7 +140,18 @@ export function DailyReportView() {
       </div>
 
       {/* Full-width sections below the 2-column layout */}
-      {/* PriceChart and ConvictionHeatmap will be added once DASH-8 lands */}
+      <div>
+        <SectionHeader label="Price Chart" />
+        <PriceChart data={report.priceData} />
+      </div>
+
+      <div>
+        <SectionHeader label="Conviction Heatmap" />
+        <ConvictionHeatmap rows={report.heatmapRows} />
+      </div>
+
+      {/* WS Status Banner (shows only when data stale) */}
+      <WSStatusBanner />
     </div>
   );
 }
