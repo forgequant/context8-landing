@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
+import { useAuth } from './useAuth'
 import { BlockchainNetwork, StablecoinType, PLAN_PRICES } from '../types/subscription'
 
 interface PaymentSubmitData {
@@ -20,23 +21,18 @@ interface UsePaymentSubmitReturn {
 export function usePaymentSubmit(): UsePaymentSubmitReturn {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth()
 
   const submitPayment = async (data: PaymentSubmitData) => {
     setIsSubmitting(true)
     setError(null)
 
     try {
-      // Get current user
-      const {
-        data: { user },
-        error: userError
-      } = await supabase.auth.getUser()
-
-      if (userError || !user) {
+      if (!user) {
         throw new Error('You must be logged in to submit a payment')
       }
 
-      // Insert payment submission
+      // legacy: migrate to ctx8-api
       const { error: insertError } = await supabase.from('payment_submissions').insert({
         user_id: user.id,
         plan: 'pro',
@@ -47,7 +43,6 @@ export function usePaymentSubmit(): UsePaymentSubmitReturn {
       })
 
       if (insertError) {
-        // Handle duplicate tx_hash error
         if (insertError.code === '23505') {
           throw new Error('This transaction hash has already been submitted')
         }

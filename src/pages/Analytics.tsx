@@ -1,37 +1,22 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
 import { AnalyticsChatKit } from '@/components/analytics/AnalyticsChatKit'
 import { PriceVolumeWidget } from '@/components/analytics/PriceVolumeWidget'
 import type { MarketData } from '@/types/analytics'
 
 export function Analytics() {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
+  const { isAuthenticated, isLoading } = useAuth()
   const [widgets, setWidgets] = useState<MarketData[]>([])
 
-  console.log('[Analytics] Component rendered', { loading })
-
   useEffect(() => {
-    console.log('[Analytics] useEffect - checking user')
-    checkUser()
-  }, [])
-
-  async function checkUser() {
-    console.log('[Analytics] checkUser called')
-    const { data: { user } } = await supabase.auth.getUser()
-
-    console.log('[Analytics] User check result:', { hasUser: !!user, email: user?.email })
-
-    if (!user) {
-      console.log('[Analytics] No user, redirecting to /auth')
+    if (!isLoading && !isAuthenticated) {
       navigate('/auth')
-      return
     }
+  }, [isLoading, isAuthenticated, navigate])
 
-    console.log('[Analytics] User authenticated, setting loading=false')
-    setLoading(false)
-  }
+  const loading = isLoading || !isAuthenticated
 
   const handleWidgetData = useCallback((data: MarketData) => {
     setWidgets(prev => [...prev, data])

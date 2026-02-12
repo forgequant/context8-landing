@@ -1,3 +1,4 @@
+// legacy: migrate to ctx8-api — kept for DB queries only (no auth usage)
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''

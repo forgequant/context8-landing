@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
+import { useAuth } from './useAuth'
 import { Subscription } from '../types/subscription'
 import { isInGracePeriod, getDaysRemaining } from '../lib/subscription'
 
@@ -22,24 +23,20 @@ export function useSubscription(): UseSubscriptionReturn {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth()
 
-  const fetchSubscription = async () => {
+  const fetchSubscription = useCallback(async () => {
+    if (!user) {
+      setSubscription(null)
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
 
     try {
-      // Get current user
-      const {
-        data: { user },
-        error: userError
-      } = await supabase.auth.getUser()
-
-      if (userError || !user) {
-        setSubscription(null)
-        return
-      }
-
-      // Fetch active subscription
+      // legacy: migrate to ctx8-api
       const { data, error: fetchError } = await supabase
         .from('subscriptions')
         .select('*')
@@ -59,12 +56,12 @@ export function useSubscription(): UseSubscriptionReturn {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     fetchSubscription()
 
-    // Subscribe to real-time updates for subscriptions table
+    // legacy: migrate to ctx8-api
     const subscription_channel = supabase
       .channel('subscriptions_changes')
       .on(
@@ -75,7 +72,6 @@ export function useSubscription(): UseSubscriptionReturn {
           table: 'subscriptions'
         },
         () => {
-          // Refetch on any change to subscriptions
           fetchSubscription()
         }
       )
@@ -84,7 +80,7 @@ export function useSubscription(): UseSubscriptionReturn {
     return () => {
       subscription_channel.unsubscribe()
     }
-  }, [])
+  }, [fetchSubscription])
 
   // Compute derived states
   const now = new Date()

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
 import { DailyReport, DailyReportWithMeta } from '../types/dailyReport'
 
 interface UseDailyReportOptions {

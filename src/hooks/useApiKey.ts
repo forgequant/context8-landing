@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
+import { useAuth } from './useAuth'
 
 interface ApiKey {
   id: string
@@ -21,13 +22,13 @@ export function useApiKey() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [newKey, setNewKey] = useState<string | null>(null)
+  const { user } = useAuth()
 
   const fetchApiKey = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+    if (!user) return
 
-      // Fetch active API key
+    try {
+      // legacy: migrate to ctx8-api
       const { data: keyData, error: keyError } = await supabase
         .from('api_keys')
         .select('id, key_prefix, name, is_active, created_at, last_used_at')
@@ -43,7 +44,7 @@ export function useApiKey() {
 
       setApiKey(keyData)
 
-      // Fetch usage stats
+      // legacy: migrate to ctx8-api
       const { data: usageData, error: usageError } = await supabase
         .rpc('get_daily_usage', { p_user_id: user.id })
 
@@ -65,7 +66,7 @@ export function useApiKey() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [user])
 
   useEffect(() => {
     fetchApiKey()
@@ -74,7 +75,6 @@ export function useApiKey() {
   const generateKey = useCallback(async () => {
     try {
       setError(null)
-      const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
       // Generate a new API key locally
@@ -92,13 +92,12 @@ export function useApiKey() {
         .map(b => b.toString(16).padStart(2, '0'))
         .join('')
 
-      // Deactivate existing keys
+      // legacy: migrate to ctx8-api
       await supabase
         .from('api_keys')
         .update({ is_active: false })
         .eq('user_id', user.id)
 
-      // Insert new key
       const { data: newKeyData, error: insertError } = await supabase
         .from('api_keys')
         .insert({
@@ -125,7 +124,7 @@ export function useApiKey() {
       setError('Failed to generate API key')
       return null
     }
-  }, [])
+  }, [user])
 
   const revokeKey = useCallback(async () => {
     try {

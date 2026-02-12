@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
+import { useAuth } from './useAuth'
 import { PaymentSubmission } from '../types/subscription'
 
 interface UsePaymentHistoryReturn {
@@ -17,24 +18,20 @@ export function usePaymentHistory(): UsePaymentHistoryReturn {
   const [payments, setPayments] = useState<PaymentSubmission[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth()
 
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
+    if (!user) {
+      setPayments([])
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
 
     try {
-      // Get current user
-      const {
-        data: { user },
-        error: userError
-      } = await supabase.auth.getUser()
-
-      if (userError || !user) {
-        setPayments([])
-        return
-      }
-
-      // Fetch user's payment submissions ordered by submitted_at DESC
+      // legacy: migrate to ctx8-api
       const { data, error: fetchError } = await supabase
         .from('payment_submissions')
         .select('*')
@@ -51,12 +48,12 @@ export function usePaymentHistory(): UsePaymentHistoryReturn {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     fetchPayments()
 
-    // Subscribe to real-time updates for payment_submissions table
+    // legacy: migrate to ctx8-api
     const subscription = supabase
       .channel('payment_submissions_history_changes')
       .on(
@@ -67,7 +64,6 @@ export function usePaymentHistory(): UsePaymentHistoryReturn {
           table: 'payment_submissions'
         },
         () => {
-          // Refetch on any change to payment_submissions
           fetchPayments()
         }
       )
@@ -76,7 +72,7 @@ export function usePaymentHistory(): UsePaymentHistoryReturn {
     return () => {
       subscription.unsubscribe()
     }
-  }, [])
+  }, [fetchPayments])
 
   return {
     payments,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
 import { PaymentSubmission } from '../types/subscription'
 
 interface PaymentSubmissionWithEmail extends PaymentSubmission {

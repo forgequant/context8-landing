@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
+import { useAuth } from '../hooks/useAuth'
 import { PaymentModal } from '../components/payment/PaymentModal'
 import { usePaymentSubmit } from '../hooks/usePaymentSubmit'
 import { useSubscription } from '../hooks/useSubscription'
@@ -363,7 +364,7 @@ function DataSourceCard({
 
 export function AccountDashboard() {
   const navigate = useNavigate()
-  const [user, setUser] = useState<any>(null)
+  const auth = useAuth()
   const [loading, setLoading] = useState(true)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pendingPayment, setPendingPayment] = useState<any>(null)
@@ -386,23 +387,23 @@ export function AccountDashboard() {
   // Pending payments count (for admin badge)
   const { count: pendingCount } = usePendingPaymentsCount()
 
+  // Redirect to auth if not authenticated
   useEffect(() => {
-    // Check if user is authenticated and fetch pending payment
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+    if (!auth.isLoading && !auth.isAuthenticated) {
+      navigate('/auth')
+    }
+  }, [auth.isLoading, auth.isAuthenticated, navigate])
 
-      if (!user) {
-        navigate('/auth')
-        return
-      }
+  useEffect(() => {
+    if (!auth.user) return
 
-      setUser(user)
-
-      // Check for pending payment
+    // Fetch pending payment and API key status
+    const fetchUserData = async () => {
+      // legacy: migrate to ctx8-api
       const { data: payment } = await supabase
         .from('payment_submissions')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', auth.user!.id)
         .eq('status', 'pending')
         .order('submitted_at', { ascending: false })
         .limit(1)
@@ -410,11 +411,11 @@ export function AccountDashboard() {
 
       setPendingPayment(payment)
 
-      // Check for API key
+      // legacy: migrate to ctx8-api
       const { data: apiKey } = await supabase
         .from('api_keys')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', auth.user!.id)
         .limit(1)
         .single()
 
@@ -422,19 +423,8 @@ export function AccountDashboard() {
       setLoading(false)
     }
 
-    checkUser()
-
-    // Listen to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate('/auth')
-      } else {
-        setUser(session.user)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [navigate])
+    fetchUserData()
+  }, [auth.user])
 
   // Check for expired subscription (outside grace period) and prompt upgrade
   useEffect(() => {
@@ -445,11 +435,12 @@ export function AccountDashboard() {
 
   const handlePaymentSubmit = async (data: any) => {
     await submitPayment(data)
-    // Refresh pending payment status
+    if (!auth.user) return
+    // Refresh pending payment status (legacy: migrate to ctx8-api)
     const { data: payment } = await supabase
       .from('payment_submissions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', auth.user.id)
       .eq('status', 'pending')
       .order('submitted_at', { ascending: false })
       .limit(1)
@@ -458,8 +449,7 @@ export function AccountDashboard() {
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate('/')
+    await auth.logout()
   }
 
   if (loading) {
@@ -504,14 +494,14 @@ export function AccountDashboard() {
                 Dashboard
               </span>
             </div>
-            {user && (
+            {auth.user && (
               <p className="text-sm text-terminal-muted">
-                Logged in as <span className="text-terminal-cyan">{user.email}</span>
+                Logged in as <span className="text-terminal-cyan">{auth.user.email}</span>
               </p>
             )}
           </div>
           <div className="flex items-center gap-3">
-            {user?.user_metadata?.is_admin && (
+            {auth.isAdmin && (
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

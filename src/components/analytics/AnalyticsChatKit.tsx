@@ -40,7 +40,7 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
         setIsInitializing(true)
       }
 
-      // Call Supabase Edge Function to create ChatKit session
+      // legacy: migrate to ctx8-api — Supabase Edge Function for ChatKit session
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
       const response = await fetch(`${supabaseUrl}/functions/v1/chatkit-session`, {
