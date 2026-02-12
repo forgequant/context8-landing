@@ -18,6 +18,7 @@ const DailyReportRu = lazy(() => import('./pages/DailyReportRu').then(m => ({ de
 
 // Dashboard nested pages
 const DailyReportView = lazy(() => import('./pages/DailyReportView').then(m => ({ default: m.DailyReportView })))
+const AssetDetail = lazy(() => import('./pages/AssetDetail').then(m => ({ default: m.AssetDetail })))
 const CrowdedTrades = lazy(() => import('./pages/CrowdedTrades').then(m => ({ default: m.CrowdedTrades })))
 const DivergenceWatchPage = lazy(() => import('./pages/DivergenceWatchPage').then(m => ({ default: m.DivergenceWatchPage })))
 const ReportHistory = lazy(() => import('./pages/ReportHistory').then(m => ({ default: m.ReportHistory })))
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />}>
               <Route index element={<Navigate to="report/latest" replace />} />
               <Route path="report/:date" element={<DailyReportView />} />
+              <Route path="report/:date/:asset" element={<AssetDetail />} />
               <Route path="crowded" element={<CrowdedTrades />} />
               <Route path="divergence" element={<DivergenceWatchPage />} />
               <Route path="history" element={<ReportHistory />} />
