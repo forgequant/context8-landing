@@ -23,9 +23,11 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.24",
     "lightweight-charts": "^5.0.9",
+    "oidc-client-ts": "^3.4.1",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-oidc-context": "^3.3.0",
     "react-router-dom": "^7.9.4",
     "recharts": "^3.3.0",
     "tailwind-merge": "^3.3.1"

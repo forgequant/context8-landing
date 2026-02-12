@@ -1,48 +1,70 @@
-import { useState, useEffect } from 'react'
-import { User } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
+import { useAuth as useOidcAuth } from 'react-oidc-context'
+import { type SubscriptionTier, tierAtLeast } from '../lib/auth'
 
-interface UseAuthReturn {
-  user: User | null
-  loading: boolean
-  isAdmin: boolean
-  signOut: () => Promise<void>
+interface AuthUser {
+  id: string
+  email: string
+  name: string
+  roles: string[]
 }
 
-/**
- * Authentication hook with admin role check
- *
- * Returns current user, loading state, admin status, and sign out function
- */
+interface UseAuthReturn {
+  user: AuthUser | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  isAdmin: boolean
+  accessToken: string | null
+  subscriptionTier: SubscriptionTier
+  login: () => Promise<void>
+  logout: () => Promise<void>
+  hasRole: (role: string) => boolean
+  hasTier: (minTier: SubscriptionTier) => boolean
+}
+
+function extractRoles(profile: Record<string, unknown> | undefined): string[] {
+  if (!profile) return []
+  const roleClaim = profile['urn:zitadel:iam:org:project:roles']
+  if (!roleClaim || typeof roleClaim !== 'object') return []
+  return Object.keys(roleClaim as Record<string, unknown>)
+}
+
+function extractTier(
+  profile: Record<string, unknown> | undefined,
+): SubscriptionTier {
+  if (!profile) return 'free'
+  const tier = profile['ctx8/tier']
+  if (tier === 'pro' || tier === 'enterprise') return tier
+  return 'free'
+}
+
 export function useAuth(): UseAuthReturn {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const oidc = useOidcAuth()
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+  const profile = oidc.user?.profile
+  const roles = extractRoles(profile)
+  const subscriptionTier = extractTier(profile)
 
-    // Listen for auth changes
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+  const user: AuthUser | null =
+    oidc.isAuthenticated && profile
+      ? {
+          id: profile.sub as string,
+          email: (profile.email as string) ?? '',
+          name: (profile.name as string) ?? '',
+          roles,
+        }
+      : null
 
-    return () => subscription.unsubscribe()
-  }, [])
-
-  // Check if user has admin role from user metadata
-  const isAdmin = user?.user_metadata?.is_admin === true
-
-  const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
+  return {
+    user,
+    isAuthenticated: oidc.isAuthenticated,
+    isLoading: oidc.isLoading,
+    isAdmin: roles.includes('admin'),
+    accessToken: oidc.user?.access_token ?? null,
+    subscriptionTier,
+    login: () => oidc.signinRedirect(),
+    logout: () =>
+      oidc.signoutRedirect({ post_logout_redirect_uri: window.location.origin }),
+    hasRole: (role: string) => roles.includes(role),
+    hasTier: (minTier: SubscriptionTier) => tierAtLeast(subscriptionTier, minTier),
   }
-
-  return { user, loading, isAdmin, signOut }
 }

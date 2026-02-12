@@ -1,12 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Analytics } from '@vercel/analytics/react'
+import { AuthProvider } from './components/auth/AuthProvider'
 import './styles/globals.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
-    <Analytics />
+    <AuthProvider>
+      <App />
+      <Analytics />
+    </AuthProvider>
   </StrictMode>,
 )

@@ -29,7 +29,7 @@ function SkeletonCard() {
 
 export function Admin() {
   const navigate = useNavigate()
-  const { user, isAdmin, signOut } = useAuth()
+  const { user, isAdmin, isLoading: authLoading, logout } = useAuth()
   const { payments, loading, error, refetch } = usePaymentSubmissions()
   const { verifyPayment } = useVerifyPayment()
 
@@ -43,7 +43,7 @@ export function Admin() {
   >(null)
 
   const handleLogout = async () => {
-    await signOut()
+    await logout()
     navigate('/')
   }
 
@@ -64,7 +64,7 @@ export function Admin() {
   }
 
   // Redirect non-admins
-  if (!loading && !isAdmin) {
+  if (!authLoading && !isAdmin) {
     navigate('/')
     return null
   }

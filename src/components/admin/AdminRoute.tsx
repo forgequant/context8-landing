@@ -6,15 +6,10 @@ interface AdminRouteProps {
   children: ReactNode
 }
 
-/**
- * Route guard component that restricts access to admin users only
- * Checks user.user_metadata.is_admin flag from Supabase Auth
- */
 export function AdminRoute({ children }: AdminRouteProps) {
-  const { user, loading, isAdmin } = useAuth()
+  const { user, isLoading, isAdmin } = useAuth()
 
-  // Show loading state while checking auth
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono flex items-center justify-center">
         <p className="text-terminal-cyan">Checking permissions...</p>
