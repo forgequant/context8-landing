@@ -27,7 +27,7 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-graphite-800 bg-graphite-900/60 backdrop-blur-sm sticky top-0 z-30">
+    <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-graphite-800 bg-graphite-900 sticky top-0 z-30">
       {/* Left: logo */}
       <div className="flex items-center gap-3">
         <span className="font-sans font-bold text-sm text-amber">DD</span>
