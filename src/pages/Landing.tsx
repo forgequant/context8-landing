@@ -1,559 +1,458 @@
-import { motion, useInView } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useRef } from 'react'
-import { useTypewriter } from '@/hooks/useTypewriter'
+import { motion, useInView } from 'framer-motion'
 
+/* ── Warm amber palette (matches hybrid-amber.html mockup) ── */
+const C = {
+  bg: '#0C0A08',
+  surface: '#161210',
+  border: '#2E2A24',
+  borderHover: '#443E36',
+  text: '#E8E0D4',
+  textSecondary: '#9A9080',
+  textMuted: '#6B6358',
+  accent: '#C49A3C',
+  accentDim: 'rgba(196,154,60,0.12)',
+  accentBright: '#D4A84B',
+  bull: '#4CAF78',
+  bear: '#C94D4D',
+  bullDim: 'rgba(76,175,120,0.14)',
+  bearDim: 'rgba(201,77,77,0.14)',
+  radius: '6px',
+} as const
+
+const font = {
+  sans: "'Inter', system-ui, sans-serif",
+  mono: "'JetBrains Mono', monospace",
+} as const
+
+/* ── Scorecard data ── */
+const modules = [
+  { name: 'TA Scanner', signal: 'BULL' as const, detail: 'RSI 58, MACD+', conf: 70 },
+  { name: 'Funding', signal: 'BEAR' as const, detail: 'Longs crowded, z:1.4', conf: 80 },
+  { name: 'OI Divergence', signal: 'BEAR' as const, detail: 'Shorts accumulating', conf: 65 },
+  { name: 'Social', signal: 'BULL' as const, detail: 'Greed index: 72', conf: 55 },
+  { name: 'Macro', signal: 'BEAR' as const, detail: 'DXY up, risk-off', conf: 75 },
+  { name: 'Fear & Greed', signal: 'BEAR' as const, detail: 'Extreme fear (28)', conf: 60 },
+]
+
+const features = [
+  {
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+        <circle cx="12" cy="12" r="10" />
+        <path d="m9 12 2 2 4-4" />
+        <path d="m15 9-6 6" />
+      </svg>
+    ),
+    title: 'Signal Board',
+    desc: 'Every module votes bull or bear with a confidence score. You see the full room, not just the loudest voice.',
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+      </svg>
+    ),
+    title: 'Crowded Trades',
+    desc: 'Z-score rankings of overleveraged positions across exchanges. See where liquidation cascades are building before they trigger.',
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+      </svg>
+    ),
+    title: 'Divergence Watch',
+    desc: 'When sentiment and price disagree, the resolution is often abrupt. We flag the gap and score the conviction.',
+  },
+]
+
+/* ── Tag component ── */
+function SignalTag({ signal }: { signal: 'BULL' | 'BEAR' }) {
+  const isBull = signal === 'BULL'
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '2px 8px',
+        borderRadius: 3,
+        fontFamily: font.mono,
+        fontSize: '0.625rem',
+        fontWeight: 600,
+        letterSpacing: '0.04em',
+        background: isBull ? C.bullDim : C.bearDim,
+        color: isBull ? C.bull : C.bear,
+        border: `1px solid ${isBull ? 'rgba(76,175,120,0.25)' : 'rgba(201,77,77,0.25)'}`,
+      }}
+    >
+      {signal}
+    </span>
+  )
+}
+
+/* ── Confidence bar ── */
+function ConfBar({ value, signal }: { value: number; signal: 'BULL' | 'BEAR' }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      <span style={{ width: 48, height: 4, background: 'rgba(46,42,36,0.8)', borderRadius: 2, overflow: 'hidden' }}>
+        <span style={{ display: 'block', height: '100%', width: `${value}%`, borderRadius: 2, background: signal === 'BULL' ? C.bull : C.bear }} />
+      </span>
+      <span style={{ fontFamily: font.mono, fontSize: '0.6875rem', color: C.textMuted, minWidth: 28, textAlign: 'right' as const }}>{value}%</span>
+    </span>
+  )
+}
+
+/* ── Main Landing Page ── */
 export function Landing() {
   const navigate = useNavigate()
-  const heroRef = useRef(null)
-  const featuresRef = useRef(null)
-  const usageRef = useRef(null)
-  const plansRef = useRef(null)
-  const faqRef = useRef(null)
-
-  const isHeroInView = useInView(heroRef, { once: true, margin: '-100px' })
-  const isFeaturesInView = useInView(featuresRef, { once: true, margin: '-100px' })
-  const isUsageInView = useInView(usageRef, { once: true, margin: '-100px' })
-  const isPlansInView = useInView(plansRef, { once: true, margin: '-100px' })
-  const isFaqInView = useInView(faqRef, { once: true, margin: '-100px' })
-
-  const { displayText: heroText, isComplete: heroComplete } = useTypewriter({
-    text: 'Crypto intelligence for your AI assistant',
-    speed: 40,
-    delay: 300
-  })
-
-  const handleAuth = () => {
-    navigate('/auth')
-  }
-
-  const features = [
-    {
-      icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-      title: 'Social Sentiment',
-      description: 'Galaxy Score, AltRank, social volume, influencer activity, trending coins, news sentiment.',
-      badge: 'active'
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M3 3v18h18" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M7 16l4-4 4 4 5-6" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-      title: 'Derivatives Data',
-      description: 'Funding rates, open interest, liquidations, long/short ratios across all major exchanges.',
-      badge: 'coming_soon'
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M12 2v4m0 12v4M2 12h4m12 0h4" strokeLinecap="round"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
-      ),
-      title: 'On-Chain & Whales',
-      description: 'Exchange reserves, netflow, whale positions and alerts. Track smart money movements.',
-      badge: 'coming_soon'
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-      title: 'Technical Analysis',
-      description: 'RSI, MACD, Bollinger Bands, EMA crossovers, Fear & Greed index — all calculated for you.',
-      badge: 'active'
-    }
-  ]
+  const featRef = useRef(null)
+  const apiRef = useRef(null)
+  const ctaRef = useRef(null)
+  const isFeatInView = useInView(featRef, { once: true, margin: '-80px' })
+  const isApiInView = useInView(apiRef, { once: true, margin: '-80px' })
+  const isCtaInView = useInView(ctaRef, { once: true, margin: '-80px' })
 
   return (
-    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-6 py-8 md:py-12 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="terminal-scanlines" />
-      <div className="terminal-grid" />
+    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: font.sans, WebkitFontSmoothing: 'antialiased' }}>
 
-      {/* Header */}
-      <header className="max-w-6xl mx-auto mb-16 md:mb-24 flex justify-between items-center relative z-10">
-        <h1 className="text-lg md:text-xl">
-          <span className="text-terminal-cyan font-semibold">context8</span>
-          <span className="text-terminal-muted">&gt;_</span>
-        </h1>
-        <nav className="flex items-center gap-6">
-          <a href="#features" className="hidden md:block text-sm text-terminal-muted hover:text-terminal-text transition-colors">
-            Features
-          </a>
-          <a href="#pricing" className="hidden md:block text-sm text-terminal-muted hover:text-terminal-text transition-colors">
-            Pricing
-          </a>
+      {/* ── NAV ── */}
+      <nav
+        style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 24px', height: 56,
+          borderBottom: `1px solid ${C.border}`,
+          background: 'rgba(12,10,8,0.88)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+        }}
+      >
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '0.95rem', color: C.text, textDecoration: 'none' }}>
+          <span style={{ color: C.accent, fontFamily: font.mono, fontWeight: 600, fontSize: '0.85rem' }}>&#9670;</span>
+          Context8
+        </a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+          <a href="#features" style={{ fontSize: '0.875rem', fontWeight: 600, color: C.textSecondary, textDecoration: 'none' }} className="hidden md:inline">Features</a>
+          <a href="#api" style={{ fontSize: '0.875rem', fontWeight: 600, color: C.textSecondary, textDecoration: 'none' }} className="hidden md:inline">API</a>
           <button
-            onClick={handleAuth}
-            className="text-sm text-terminal-cyan hover:text-terminal-text transition-colors"
+            onClick={() => navigate('/dashboard/report/latest')}
+            style={{
+              fontSize: '0.8125rem', fontWeight: 600, color: C.bg, background: C.accent,
+              padding: '7px 16px', borderRadius: C.radius, border: 'none', cursor: 'pointer',
+            }}
           >
-            Sign in →
+            View Report
           </button>
-        </nav>
-      </header>
+        </div>
+      </nav>
 
-      {/* Main content */}
-      <main className="max-w-6xl mx-auto relative z-10">
-        {/* Hero section */}
-        <motion.section
-          ref={heroRef}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: isHeroInView ? 1 : 0, y: isHeroInView ? 0 : 30 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="mb-24 md:mb-32 text-center"
-        >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-graphite-900 border border-graphite-800 text-xs text-terminal-muted mb-8"
-          >
-            <span className="w-2 h-2 rounded-full bg-terminal-green animate-pulse" />
-            Context8 MCP Server — 26 Tools for Crypto Intelligence
-          </motion.div>
+      {/* ── HERO ── */}
+      <section style={{ paddingTop: 120, paddingBottom: 80 }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            {/* Left copy */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+              {/* Badge */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '4px 12px 4px 8px', background: C.accentDim,
+                border: '1px solid rgba(196,154,60,0.2)', borderRadius: 100,
+                fontSize: '0.75rem', fontWeight: 600, color: C.accent, marginBottom: 20,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.accent, animation: 'pulse 2s ease-in-out infinite' }} />
+                Live signal analysis across 23 modules
+              </div>
 
-          {/* Main headline */}
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-semibold mb-6 text-terminal-text leading-tight">
-            {heroText}
-            {!heroComplete && <span className="animate-cursor text-terminal-cyan">_</span>}
+              <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08, marginBottom: 16 }}>
+                Your signals agree.<br />That's the problem.
+              </h1>
+
+              <p style={{ display: 'block', color: C.accent, fontSize: 'clamp(1.25rem, 2vw, 1.5rem)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 16 }}>
+                Agreement is noise. Conflict is signal.
+              </p>
+
+              <p style={{ fontSize: '1.0625rem', color: C.textSecondary, lineHeight: 1.6, marginBottom: 28, maxWidth: 440 }}>
+                23 independent AI modules score every crypto asset. When they conflict, you see what consensus traders miss. One API call. Full scorecard.
+              </p>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-3" style={{ marginBottom: 32 }}>
+                {[
+                  { num: '23', label: 'AI Modules' },
+                  { num: '<200ms', label: 'Response Time' },
+                  { num: '5 min', label: 'To First Signal' },
+                ].map(s => (
+                  <div key={s.label} style={{ border: `1px solid ${C.border}`, borderRadius: C.radius, padding: 16, background: C.surface }}>
+                    <div style={{ fontFamily: font.mono, fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)', fontWeight: 600, color: C.accent, lineHeight: 1, marginBottom: 4, whiteSpace: 'nowrap' }}>{s.num}</div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: C.textSecondary, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTAs */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => navigate('/dashboard/report/latest')}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '11px 22px', background: C.accent, color: C.bg,
+                    fontFamily: 'inherit', fontSize: '0.875rem', fontWeight: 600,
+                    border: 'none', borderRadius: C.radius, cursor: 'pointer',
+                  }}
+                >
+                  View Today's Report
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                </button>
+                <a
+                  href="#api"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '11px 22px', background: 'transparent', color: C.textSecondary,
+                    fontFamily: 'inherit', fontSize: '0.875rem', fontWeight: 600,
+                    border: `1px solid ${C.border}`, borderRadius: C.radius, textDecoration: 'none',
+                  }}
+                >
+                  View Docs
+                </a>
+              </div>
+            </motion.div>
+
+            {/* Right: Scorecard */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.radius, overflow: 'hidden' }}
+            >
+              {/* Header */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 16px', borderBottom: `1px solid ${C.border}`,
+              }}>
+                <span style={{ fontFamily: font.mono, fontSize: '0.6875rem', fontWeight: 600, color: C.textSecondary, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  Signal Scorecard
+                </span>
+                <span style={{ fontFamily: font.mono, fontSize: '0.6875rem', color: C.textMuted }}>BTC / USDT</span>
+              </div>
+
+              {/* Table */}
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    {['Module', 'Signal', 'Confidence', 'Weight'].map(h => (
+                      <th key={h} style={{
+                        fontFamily: font.mono, fontSize: '0.625rem', fontWeight: 600,
+                        color: C.textMuted, textAlign: h === 'Weight' ? 'right' : 'left',
+                        padding: '7px 16px', borderBottom: `1px solid ${C.border}`,
+                        textTransform: 'uppercase', letterSpacing: '0.06em',
+                      }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {modules.map((m, i) => (
+                    <tr key={m.name} style={{ background: i % 2 === 0 ? C.surface : 'rgba(22,18,16,0.5)' }}>
+                      <td style={{ fontFamily: font.mono, fontSize: '0.8125rem', padding: '7px 16px', color: C.text, fontWeight: 600, whiteSpace: 'nowrap', borderBottom: i < modules.length - 1 ? '1px solid rgba(46,42,36,0.5)' : 'none' }}>
+                        {m.name}
+                      </td>
+                      <td style={{ fontFamily: font.mono, fontSize: '0.8125rem', padding: '7px 16px', borderBottom: i < modules.length - 1 ? '1px solid rgba(46,42,36,0.5)' : 'none' }}>
+                        <SignalTag signal={m.signal} />
+                      </td>
+                      <td style={{ fontFamily: font.mono, fontSize: '0.75rem', padding: '7px 16px', color: C.textMuted, borderBottom: i < modules.length - 1 ? '1px solid rgba(46,42,36,0.5)' : 'none' }}>
+                        {m.detail}
+                      </td>
+                      <td style={{ fontFamily: font.mono, fontSize: '0.8125rem', padding: '7px 16px', textAlign: 'right', borderBottom: i < modules.length - 1 ? '1px solid rgba(46,42,36,0.5)' : 'none' }}>
+                        <ConfBar value={m.conf} signal={m.signal} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Verdict */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 16px', borderTop: `1px solid ${C.border}`,
+                background: 'rgba(196,154,60,0.04)',
+              }}>
+                <span style={{ fontFamily: font.mono, fontSize: '0.75rem', fontWeight: 600, color: C.accent }}>
+                  BEARISH 4-2 — 4 modules disagree
+                </span>
+                <span style={{ fontFamily: font.mono, fontSize: '0.6875rem', color: C.textMuted }}>
+                  Conviction: 3 / 10
+                </span>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES ── */}
+      <motion.section
+        id="features"
+        ref={featRef}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: isFeatInView ? 1 : 0, y: isFeatInView ? 0 : 20 }}
+        transition={{ duration: 0.6 }}
+        style={{ paddingBottom: 80 }}
+      >
+        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {features.map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: isFeatInView ? 1 : 0, y: isFeatInView ? 0 : 20 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                style={{
+                  background: C.surface, border: `1px solid ${C.border}`,
+                  borderRadius: C.radius, padding: 24,
+                  transition: 'border-color 200ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = C.borderHover)}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
+              >
+                <div style={{
+                  width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: C.accentDim, borderRadius: C.radius, marginBottom: 16, color: C.accent,
+                }}>
+                  {f.icon}
+                </div>
+                <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: 8, color: C.text }}>{f.title}</h3>
+                <p style={{ fontSize: '0.875rem', color: C.textSecondary, lineHeight: 1.55 }}>{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
+      {/* ── API PREVIEW ── */}
+      <motion.section
+        id="api"
+        ref={apiRef}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: isApiInView ? 1 : 0, y: isApiInView ? 0 : 20 }}
+        transition={{ duration: 0.6 }}
+        style={{ paddingBottom: 80 }}
+      >
+        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ fontFamily: font.mono, fontSize: '0.75rem', fontWeight: 600, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+            API
+          </div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 24, color: C.text }}>
+            One call. Full scorecard.
           </h2>
 
-          {/* Subheadline */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: heroComplete ? 1 : 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-lg md:text-xl text-terminal-muted mb-10 max-w-2xl mx-auto"
-          >
-            Social sentiment, derivatives, on-chain data, technical analysis, market alerts.
-            26 tools for Claude, Cursor, and any MCP client.
-          </motion.p>
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.radius, overflow: 'hidden' }}>
+            {/* Window chrome */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: `1px solid ${C.border}` }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#FF5F57' }} />
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#FEBC2E' }} />
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28C840' }} />
+              <span style={{ fontFamily: font.mono, fontSize: '0.75rem', color: C.textSecondary, marginLeft: 8 }}>terminal</span>
+            </div>
 
-          {/* CTA buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: heroComplete ? 1 : 0, y: heroComplete ? 0 : 20 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
-          >
-            <button
-              onClick={handleAuth}
-              className="w-full sm:w-auto bg-terminal-cyan text-graphite-950 px-8 py-3 rounded-lg text-base font-semibold hover:bg-terminal-cyan/90 hover:shadow-terminal-cyan transition-all"
-            >
-              Get Started Free
-            </button>
-            <a
-              href="#usage"
-              className="w-full sm:w-auto px-8 py-3 rounded-lg text-base font-medium text-terminal-muted border border-graphite-800 hover:border-terminal-cyan hover:text-terminal-text transition-all text-center"
-            >
-              See how it works
-            </a>
-          </motion.div>
-
-          {/* Social proof hint */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: heroComplete ? 1 : 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-sm text-terminal-muted"
-          >
-            Free tier available • No credit card required •{' '}
-            <a href="/reports/daily" className="text-terminal-cyan hover:underline">
-              Daily Report →
-            </a>
-          </motion.p>
-
-        </motion.section>
-
-        {/* Features section */}
-        <motion.section
-          id="features"
-          ref={featuresRef}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isFeaturesInView ? 1 : 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-24 md:mb-32"
-        >
-          <h3 className="text-sm text-terminal-cyan mb-8 text-center">WHY CONTEXT8</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: isFeaturesInView ? 1 : 0, y: isFeaturesInView ? 0 : 20 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`p-6 rounded-xl bg-graphite-900 border border-graphite-800 hover:border-terminal-cyan/30 transition-all group ${feature.badge === 'coming_soon' ? 'opacity-70' : ''}`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <span className="w-10 h-10 rounded-lg bg-graphite-800 flex items-center justify-center text-terminal-cyan">{feature.icon}</span>
-                  {feature.badge === 'coming_soon' && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                      Coming Soon
-                    </span>
-                  )}
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              {/* Request */}
+              <div style={{ borderRight: undefined }} className="md:border-r" >
+                <div style={{ fontFamily: font.mono, fontSize: '0.625rem', fontWeight: 600, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '8px 20px', borderBottom: `1px solid ${C.border}` }}>
+                  Request
                 </div>
-                <h4 className="text-lg font-semibold text-terminal-text mb-2 group-hover:text-terminal-cyan transition-colors">
-                  {feature.title}
-                </h4>
-                <p className="text-sm text-terminal-muted leading-relaxed">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Roadmap section */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isFeaturesInView ? 1 : 0, y: isFeaturesInView ? 0 : 20 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-24 md:mb-32"
-        >
-          <h3 className="text-sm text-terminal-cyan mb-8 text-center">ROADMAP</h3>
-          <div className="max-w-2xl mx-auto p-8 rounded-xl bg-graphite-900 border border-graphite-800">
-            <p className="text-terminal-muted mb-4 text-center">
-              This is a <span className="text-terminal-text">solo project</span>. Currently only{' '}
-              <span className="text-terminal-green">LunarCrush</span> (social sentiment) is available.
-            </p>
-            <p className="text-terminal-muted mb-6 text-center">
-              <span className="text-yellow-400">CoinGlass</span> (derivatives, on-chain, whale data) will be enabled after{' '}
-              <span className="text-terminal-text font-semibold">10 paid subscribers</span>.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-terminal-green/10 border border-terminal-green/30">
-                <span className="w-2 h-2 rounded-full bg-terminal-green" />
-                <span className="text-sm text-terminal-green">LunarCrush — Active</span>
+                <div style={{ padding: '16px 20px', fontFamily: font.mono, fontSize: '0.8125rem', lineHeight: 1.7, color: C.textSecondary, overflowX: 'auto' }}>
+                  <pre style={{ margin: 0, whiteSpace: 'pre' }}>
+                    <span style={{ color: C.text }}>curl</span>{' '}<span style={{ color: C.textSecondary }}>https://api.context8.markets/v1/signals</span>{' \\\n  '}<span style={{ color: C.textMuted }}>-H</span>{' '}<span style={{ color: C.accent }}>"Authorization: Bearer ctx8_sk_..."</span>{' \\\n  '}<span style={{ color: C.textMuted }}>-d</span>{' '}<span style={{ color: C.accent }}>'{`{"asset": "BTC", "modules": "all"}`}'</span>
+                  </pre>
+                </div>
               </div>
-              <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-                <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                <span className="text-sm text-yellow-400">CoinGlass — 0/10 subscribers</span>
+
+              {/* Response */}
+              <div className="border-t md:border-t-0" style={{ borderColor: C.border }}>
+                <div style={{ fontFamily: font.mono, fontSize: '0.625rem', fontWeight: 600, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '8px 20px', borderBottom: `1px solid ${C.border}` }}>
+                  Response
+                </div>
+                <div style={{ padding: '16px 20px', fontFamily: font.mono, fontSize: '0.8125rem', lineHeight: 1.7, color: C.textSecondary, overflowX: 'auto' }}>
+                  <pre style={{ margin: 0, whiteSpace: 'pre' }}>{`{`}
+{'\n  '}<span style={{ color: '#A08060' }}>"asset"</span>: <span style={{ color: C.accent }}>"BTC"</span>,
+{'\n  '}<span style={{ color: '#A08060' }}>"verdict"</span>: <span style={{ color: C.bear }}>"BEARISH"</span>,
+{'\n  '}<span style={{ color: '#A08060' }}>"score"</span>: <span style={{ color: C.accent }}>"4-2"</span>,
+{'\n  '}<span style={{ color: '#A08060' }}>"conviction"</span>: <span style={{ color: C.accentBright }}>3</span>,
+{'\n  '}<span style={{ color: '#A08060' }}>"conflicts"</span>: <span style={{ color: C.accentBright }}>4</span>,
+{'\n  '}<span style={{ color: '#A08060' }}>"modules"</span>: [
+{'\n    '}{`{ `}<span style={{ color: '#A08060' }}>"name"</span>: <span style={{ color: C.accent }}>"ta_scanner"</span>,  <span style={{ color: '#A08060' }}>"signal"</span>: <span style={{ color: C.bull }}>"BULL"</span>, <span style={{ color: '#A08060' }}>"conf"</span>: <span style={{ color: C.accentBright }}>0.70</span>{` }`},
+{'\n    '}{`{ `}<span style={{ color: '#A08060' }}>"name"</span>: <span style={{ color: C.accent }}>"funding"</span>,     <span style={{ color: '#A08060' }}>"signal"</span>: <span style={{ color: C.bear }}>"BEAR"</span>, <span style={{ color: '#A08060' }}>"conf"</span>: <span style={{ color: C.accentBright }}>0.80</span>{` }`},
+{'\n    '}{`{ `}<span style={{ color: '#A08060' }}>"name"</span>: <span style={{ color: C.accent }}>"oi_diverge"</span>,  <span style={{ color: '#A08060' }}>"signal"</span>: <span style={{ color: C.bear }}>"BEAR"</span>, <span style={{ color: '#A08060' }}>"conf"</span>: <span style={{ color: C.accentBright }}>0.65</span>{` }`},
+{'\n    '}{`{ `}<span style={{ color: '#A08060' }}>"name"</span>: <span style={{ color: C.accent }}>"social"</span>,      <span style={{ color: '#A08060' }}>"signal"</span>: <span style={{ color: C.bull }}>"BULL"</span>, <span style={{ color: '#A08060' }}>"conf"</span>: <span style={{ color: C.accentBright }}>0.55</span>{` }`},
+{'\n    '}{`{ `}<span style={{ color: '#A08060' }}>"name"</span>: <span style={{ color: C.accent }}>"macro"</span>,       <span style={{ color: '#A08060' }}>"signal"</span>: <span style={{ color: C.bear }}>"BEAR"</span>, <span style={{ color: '#A08060' }}>"conf"</span>: <span style={{ color: C.accentBright }}>0.75</span>{` }`},
+{'\n    '}{`{ `}<span style={{ color: '#A08060' }}>"name"</span>: <span style={{ color: C.accent }}>"fear_greed"</span>,  <span style={{ color: '#A08060' }}>"signal"</span>: <span style={{ color: C.bear }}>"BEAR"</span>, <span style={{ color: '#A08060' }}>"conf"</span>: <span style={{ color: C.accentBright }}>0.60</span>{` }`}
+{'\n  '}]
+{'\n'}{`}`}</pre>
+                </div>
               </div>
             </div>
           </div>
-        </motion.section>
-
-        {/* Usage section */}
-        <motion.section
-          id="usage"
-          ref={usageRef}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isUsageInView ? 1 : 0, y: isUsageInView ? 0 : 20 }}
-          transition={{ duration: 0.6 }}
-          className="mb-24 md:mb-32"
-        >
-          <h3 className="text-sm text-terminal-cyan mb-8 text-center">HOW IT WORKS</h3>
-
-          {/* Steps */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {[
-              { step: '01', title: 'Clone', desc: 'Get the repo from GitHub' },
-              { step: '02', title: 'Configure', desc: 'Add your Context8 API key' },
-              { step: '03', title: 'Query', desc: 'Ask about sentiment, funding, whales, technicals' }
-            ].map((item, index) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: isUsageInView ? 1 : 0, y: isUsageInView ? 0 : 20 }}
-                transition={{ duration: 0.5, delay: index * 0.15 }}
-                className="text-center"
-              >
-                <span className="text-4xl font-bold text-terminal-cyan/20 block mb-2">{item.step}</span>
-                <h4 className="text-lg font-semibold text-terminal-text mb-1">{item.title}</h4>
-                <p className="text-sm text-terminal-muted">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Code example */}
-          <div className="bg-graphite-900 rounded-xl border border-graphite-800 overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-graphite-800 bg-graphite-900/50">
-              <span className="w-3 h-3 rounded-full bg-terminal-red/60" />
-              <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
-              <span className="w-3 h-3 rounded-full bg-terminal-green/60" />
-              <span className="text-xs text-terminal-muted ml-2">claude_desktop_config.json</span>
-            </div>
-            <div className="p-6 overflow-x-auto">
-              <pre className="text-sm">
-                <code>
-                  <span className="text-terminal-muted">{`{`}</span>{'\n'}
-                  <span className="text-terminal-muted">  </span><span className="text-terminal-cyan">"mcpServers"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
-                  <span className="text-terminal-muted">    </span><span className="text-terminal-cyan">"context8"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
-                  <span className="text-terminal-muted">      </span><span className="text-terminal-cyan">"command"</span><span className="text-terminal-muted">: </span><span className="text-terminal-green">"context8-mcp"</span><span className="text-terminal-muted">,</span>{'\n'}
-                  <span className="text-terminal-muted">      </span><span className="text-terminal-cyan">"env"</span><span className="text-terminal-muted">: {`{`}</span>{'\n'}
-                  <span className="text-terminal-muted">        </span><span className="text-terminal-cyan">"CONTEXT8_API_KEY"</span><span className="text-terminal-muted">: </span><span className="text-terminal-green">"your-api-key"</span>{'\n'}
-                  <span className="text-terminal-muted">      {`}`}</span>{'\n'}
-                  <span className="text-terminal-muted">    {`}`}</span>{'\n'}
-                  <span className="text-terminal-muted">  {`}`}</span>{'\n'}
-                  <span className="text-terminal-muted">{`}`}</span>
-                </code>
-              </pre>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Pricing section */}
-        <motion.section
-          id="pricing"
-          ref={plansRef}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
-          transition={{ duration: 0.6 }}
-          className="mb-24 md:mb-32"
-        >
-          <h3 className="text-sm text-terminal-cyan mb-4 text-center">PRICING</h3>
-          <p className="text-center text-terminal-muted mb-12 max-w-lg mx-auto">
-            Start free, upgrade when you need more.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Free tier */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
-              transition={{ duration: 0.5 }}
-              className="p-6 rounded-xl bg-graphite-900 border border-graphite-800"
-            >
-              <h4 className="text-lg font-semibold text-terminal-text mb-2">Free</h4>
-              <p className="text-3xl font-bold text-terminal-text mb-4">
-                $0<span className="text-sm font-normal text-terminal-muted">/month</span>
-              </p>
-              <ul className="space-y-3 mb-6 text-sm">
-                <li className="flex items-start gap-2 text-terminal-muted">
-                  <span className="text-terminal-green mt-0.5">✓</span>
-                  2 requests/day or 5/week
-                </li>
-                <li className="flex items-start gap-2 text-terminal-muted">
-                  <span className="text-terminal-green mt-0.5">✓</span>
-                  All 26 MCP tools
-                </li>
-                <li className="flex items-start gap-2 text-terminal-muted">
-                  <span className="text-terminal-green mt-0.5">✓</span>
-                  All data sources included
-                </li>
-                <li className="flex items-start gap-2 text-terminal-muted">
-                  <span className="text-terminal-green mt-0.5">✓</span>
-                  Community support
-                </li>
-              </ul>
-              <a
-                href="/auth"
-                className="block w-full py-2.5 rounded-lg text-sm font-medium border border-graphite-800 text-terminal-muted hover:border-terminal-cyan hover:text-terminal-text transition-all text-center"
-              >
-                Get Started
-              </a>
-            </motion.div>
-
-            {/* Pro tier */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isPlansInView ? 1 : 0, y: isPlansInView ? 0 : 20 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="p-6 rounded-xl bg-graphite-900 border-2 border-terminal-cyan relative"
-            >
-              <span className="absolute -top-3 left-4 px-2 py-0.5 text-xs font-medium bg-terminal-cyan text-graphite-950 rounded">
-                RECOMMENDED
-              </span>
-              <h4 className="text-lg font-semibold text-terminal-text mb-2">Pro</h4>
-              <p className="text-3xl font-bold text-terminal-text mb-4">
-                $8<span className="text-sm font-normal text-terminal-muted">/month</span>
-              </p>
-              <ul className="space-y-3 mb-6 text-sm">
-                <li className="flex items-start gap-2 text-terminal-muted">
-                  <span className="text-terminal-cyan mt-0.5">↑</span>
-                  All Free features, plus:
-                </li>
-                <li className="flex items-start gap-2 text-terminal-text">
-                  <span className="text-terminal-cyan mt-0.5">✓</span>
-                  10 requests/day or 30/week
-                </li>
-                <li className="flex items-start gap-2 text-terminal-text">
-                  <span className="text-terminal-cyan mt-0.5">✓</span>
-                  Priority API access
-                </li>
-                <li className="flex items-start gap-2 text-terminal-text">
-                  <span className="text-terminal-cyan mt-0.5">✓</span>
-                  Email support
-                </li>
-              </ul>
-              <a
-                href="/auth"
-                className="block w-full py-2.5 rounded-lg text-sm font-semibold bg-terminal-cyan text-graphite-950 hover:bg-terminal-cyan/90 transition-all text-center"
-              >
-                Upgrade to Pro
-              </a>
-            </motion.div>
-          </div>
-        </motion.section>
-
-        {/* Tools section */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-24 md:mb-32"
-        >
-          <h3 className="text-sm text-terminal-cyan mb-4 text-center">26 MCP TOOLS</h3>
-          <p className="text-center text-terminal-muted mb-8 max-w-lg mx-auto">
-            All tools accessible via natural language queries.{' '}
-            <span className="text-yellow-400">Yellow = Coming Soon</span>
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto text-xs">
-            {[
-              { name: 'get_coin', active: true },
-              { name: 'get_galaxy_score', active: true },
-              { name: 'get_altrank', active: true },
-              { name: 'get_social_volume', active: true },
-              { name: 'get_influencer_activity', active: true },
-              { name: 'list_trending_coins', active: true },
-              { name: 'get_news', active: true },
-              { name: 'get_sentiment', active: true },
-              { name: 'get_funding_rates', active: false },
-              { name: 'get_open_interest', active: false },
-              { name: 'get_liquidations', active: false },
-              { name: 'list_top_liquidations', active: false },
-              { name: 'get_long_short_ratio', active: false },
-              { name: 'get_exchange_reserves', active: false },
-              { name: 'get_exchange_netflow', active: false },
-              { name: 'get_whale_positions', active: false },
-              { name: 'get_whale_alerts', active: false },
-              { name: 'get_rsi', active: true },
-              { name: 'get_macd', active: true },
-              { name: 'get_bollinger_bands', active: true },
-              { name: 'get_ema_crossover', active: true },
-              { name: 'get_technical_summary', active: true },
-              { name: 'get_fear_greed_index', active: true },
-              { name: 'get_fear_greed_history', active: true },
-              { name: 'get_market_alerts', active: false },
-              { name: 'get_usage', active: true }
-            ].map((tool) => (
-              <div
-                key={tool.name}
-                className={`px-3 py-2 rounded-lg bg-graphite-900 border font-mono truncate ${
-                  tool.active
-                    ? 'border-graphite-800 text-terminal-muted'
-                    : 'border-yellow-500/30 text-yellow-400/70'
-                }`}
-              >
-                {tool.name}
-              </div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* FAQ section */}
-        <motion.section
-          ref={faqRef}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isFaqInView ? 1 : 0, y: isFaqInView ? 0 : 20 }}
-          transition={{ duration: 0.6 }}
-          className="mb-24 md:mb-32"
-        >
-          <h3 className="text-sm text-terminal-cyan mb-4 text-center">FAQ</h3>
-          <p className="text-center text-terminal-muted mb-12 max-w-lg mx-auto">
-            Common questions answered
-          </p>
-
-          <div className="max-w-2xl mx-auto space-y-4">
-            {[
-              {
-                q: 'What is Context8?',
-                a: 'Context8 is an MCP server that gives your AI assistant access to 26 tools for crypto market analysis — social sentiment, derivatives, on-chain data, technical indicators, and market alerts.'
-              },
-              {
-                q: 'Which AI clients are supported?',
-                a: 'Any MCP-compatible client — Claude Desktop, Cursor, Cline, and custom implementations. The server runs locally via stdio transport.'
-              },
-              {
-                q: 'What data can I access?',
-                a: 'Social metrics (Galaxy Score, trending coins, influencers), derivatives (funding, OI, liquidations), on-chain (whale positions, exchange flows), and technical analysis (RSI, MACD, Bollinger Bands).'
-              },
-              {
-                q: 'How does pricing work?',
-                a: 'Free tier includes 2 requests/day. Pro ($8/mo) gives you 10 requests/day. All tools and data sources are available on both tiers.'
-              },
-              {
-                q: 'Why are some features "Coming Soon"?',
-                a: 'This is a solo project. CoinGlass data (derivatives, whale tracking, on-chain) requires a paid subscription I can\'t justify yet. After 10 paid subscribers, I\'ll enable full CoinGlass access for everyone.'
-              },
-              {
-                q: 'Is it open source?',
-                a: 'Yes. The Context8 MCP server is MIT licensed. Check the GitHub repo for source code and contributions.'
-              }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: isFaqInView ? 1 : 0, y: isFaqInView ? 0 : 10 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="p-5 rounded-xl bg-graphite-900 border border-graphite-800"
-              >
-                <h4 className="text-base font-medium text-terminal-text mb-2">{item.q}</h4>
-                <p className="text-sm text-terminal-muted leading-relaxed">{item.a}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Final CTA */}
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-16 text-center"
-        >
-          <div className="p-8 md:p-12 rounded-2xl bg-gradient-to-b from-graphite-900 to-graphite-950 border border-graphite-800">
-            <h3 className="text-2xl md:text-3xl font-semibold text-terminal-text mb-4">
-              Give your AI crypto superpowers
-            </h3>
-            <p className="text-terminal-muted mb-8 max-w-lg mx-auto">
-              Clone the repo, add your API key, start querying.
-            </p>
-            <a
-              href="https://github.com/forgequant/context8-mcp"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block bg-terminal-cyan text-graphite-950 px-8 py-3 rounded-lg text-base font-semibold hover:bg-terminal-cyan/90 hover:shadow-terminal-cyan transition-all"
-            >
-              View on GitHub
-            </a>
-          </div>
-        </motion.section>
-      </main>
-
-      {/* Footer */}
-      <footer className="max-w-6xl mx-auto py-8 border-t border-graphite-800 relative z-10">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <span className="text-lg">
-              <span className="text-terminal-cyan font-semibold">context8</span>
-              <span className="text-terminal-muted">&gt;_</span>
-            </span>
-            <span className="text-xs text-terminal-muted">Crypto Intelligence MCP Server</span>
-          </div>
-          <nav className="flex items-center gap-6 text-sm text-terminal-muted">
-            <a href="#" className="hover:text-terminal-text transition-colors">Privacy</a>
-            <a href="#" className="hover:text-terminal-text transition-colors">Terms</a>
-            <a href="#" className="hover:text-terminal-text transition-colors">Status</a>
-            <a href="https://github.com/forgequant/context8-mcp" target="_blank" rel="noopener noreferrer" className="hover:text-terminal-text transition-colors">GitHub</a>
-          </nav>
         </div>
-        <p className="text-center md:text-left text-xs text-terminal-muted mt-6">
-          © 2025 Context8. Not financial advice.
-        </p>
+      </motion.section>
+
+      {/* ── CTA ── */}
+      <motion.section
+        ref={ctaRef}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: isCtaInView ? 1 : 0, y: isCtaInView ? 0 : 20 }}
+        transition={{ duration: 0.6 }}
+        style={{ padding: '64px 0 80px', textAlign: 'center' }}
+      >
+        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8, color: C.text }}>
+            Stop trading on consensus.
+          </h2>
+          <p style={{ color: C.textSecondary, fontSize: '1rem', marginBottom: 32 }}>
+            Free tier. Bearer token auth. JSON response. Ship in five minutes.
+          </p>
+          <button
+            onClick={() => navigate('/dashboard/report/latest')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '14px 28px', background: C.accent, color: C.bg,
+              fontFamily: 'inherit', fontSize: '0.9375rem', fontWeight: 600,
+              border: 'none', borderRadius: C.radius, cursor: 'pointer',
+            }}
+          >
+            View Today's Report
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+          </button>
+        </div>
+      </motion.section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ borderTop: `1px solid ${C.border}`, padding: '24px 0' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+            <span style={{ fontSize: '0.8125rem', color: C.textMuted }}>
+              &copy; 2026 Context8. All rights reserved.
+            </span>
+            <div style={{ display: 'flex', gap: 24 }}>
+              {['Docs', 'Status', 'GitHub'].map(link => (
+                <a key={link} href="#" style={{ fontSize: '0.8125rem', color: C.textMuted, textDecoration: 'none' }}>{link}</a>
+              ))}
+            </div>
+          </div>
+        </div>
       </footer>
+
+      {/* pulse animation for badge dot */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        .md\\:border-r { border-right-color: ${C.border}; }
+        .border-t { border-top-color: ${C.border}; }
+      `}</style>
     </div>
   )
 }
