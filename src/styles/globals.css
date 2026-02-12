@@ -88,6 +88,25 @@
   box-shadow: 0 0 15px rgba(125, 211, 252, 0.3);
 }
 
+/* Price flash animations */
+@keyframes price-flash-up-kf {
+  0% { background-color: rgba(76, 175, 120, 0.3); }
+  100% { background-color: transparent; }
+}
+
+@keyframes price-flash-down-kf {
+  0% { background-color: rgba(201, 77, 77, 0.3); }
+  100% { background-color: transparent; }
+}
+
+.price-flash-up {
+  animation: price-flash-up-kf 300ms ease-out;
+}
+
+.price-flash-down {
+  animation: price-flash-down-kf 300ms ease-out;
+}
+
 /* Smooth transitions */
 button, a {
   transition: all 0.2s ease;
