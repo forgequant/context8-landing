@@ -180,6 +180,62 @@ Task tool:
 For non-obvious technical decisions, create `docs/adr/NNNN-title.md`.
 Use `/new-adr` command.
 
+## Design System — Visual Reference
+
+**Palette reference**: `mockups/hybrid-amber.html` (warm dark palette)
+**Layout reference**: `/Users/vi/personal/aitrader/reports/btc-analysis-2026-02-10.html` (card layout, font scale, readability)
+
+ALL dashboard pages MUST use: warm amber palette + AITrader card-based layout patterns.
+
+### Color Tokens (warm dark palette)
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `surface` | `#161210` | Card background |
+| `surface2` | `#1E1A16` | Nested surface, badges |
+| `border` | `#2E2A24` | Borders, dividers |
+| `text` | `#E8E0D4` | Primary text |
+| `textSecondary` | `#9A9080` | Secondary text |
+| `textMuted` | `#6B6358` | Labels, headers |
+| `accent` | `#C49A3C` | Amber accent |
+| `bull` | `#4CAF78` | Bullish signal |
+| `bear` | `#C94D4D` | Bearish signal |
+| `neutral` | `#7B8FA0` | Neutral signal |
+
+### Typography (font scale)
+
+- **Headings**: Inter, `font-weight: 700-800`
+- **Data/labels**: JetBrains Mono
+- **Section titles**: `1.1rem` Inter bold with numbered badge (01, 02...)
+- **Card titles**: `0.75rem` uppercase, `letter-spacing: 0.12em`
+- **Stat rows / table cells**: `0.875rem` mono
+- **Table headers**: `0.75rem` uppercase, `letter-spacing: 0.08em`
+- **Big numbers**: `2.5rem` Inter black (hero metrics)
+- **Verdict text**: `1.5rem` Inter bold
+- **Badges**: `0.7rem` mono, `0.2rem 0.6rem` padding, `border-radius: 4px`
+- **Minimum readable**: Never go below `0.7rem` for any text
+
+### Component Patterns (AITrader-style)
+
+- **Card**: `background: surface`, `border: 1px solid border`, `border-radius: 10px`, `padding: 1.25rem`
+- **Card header**: flex row with title + badge, `border-bottom`, `margin-bottom: 1rem`
+- **Stat row**: flex row `justify-content: space-between`, `padding: 0.4rem 0`, `font-size: 0.875rem`
+- **Table (tbl)**: inside card, `font-size: 0.875rem` cells, `0.75rem` uppercase headers
+- **Signal badges**: `0.7rem` mono, dim bg + 1px border matching signal color
+- **Conviction bars**: `width: 56px`, `height: 4px`, fill matches signal color
+- **Divider**: `1px solid border` with `120px accent gradient` overlay
+- **Section**: numbered badge + title at `1.1rem`, `margin-bottom: 2.5rem`
+- **Grid**: `repeat(auto-fill, minmax(340px, 1fr))` for responsive card layouts
+
+### What NOT to do
+
+- No `box-shadow` / `drop-shadow` / `filter: blur`
+- No glassmorphism / `backdrop-filter`
+- No animated gauges, arc charts, tug-of-war bars
+- No neon colors (#00e87b, #ff3b5c, etc.)
+- No fonts smaller than `0.7rem` — readability is paramount
+- Keep it clean, card-driven, terminal-like
+
 ## Design Docs
 
 - Stack: `docs/plans/2026-02-12-trader-ui-stack.md`

@@ -26,6 +26,11 @@ export interface DisagreeAssetSummary {
   conviction: number;
 }
 
+export interface ChangeItem {
+  direction: 'up' | 'down' | 'new' | 'unchanged';
+  text: string;
+}
+
 export interface DailyDisagreeReport {
   date: string;
   reportNumber: number;
@@ -38,6 +43,8 @@ export interface DailyDisagreeReport {
   assets: DisagreeAssetSummary[];
   priceData: CandlestickData<Time>[];
   heatmapRows: HeatmapRow[];
+  changes?: ChangeItem[];
+  riskCallout?: string;
 }
 
 interface UseDailyDisagreeReportReturn {
@@ -164,6 +171,14 @@ function buildMockReport(): DailyDisagreeReport {
     { moduleName: 'DXY', days: [{ conviction: 3, signal: 'neutral' }, { conviction: 4, signal: 'bearish' }, { conviction: 5, signal: 'bearish' }, { conviction: 4, signal: 'bearish' }, { conviction: 5, signal: 'bearish' }, { conviction: 6, signal: 'bearish' }, { conviction: 5, signal: 'bearish' }] },
   ];
 
+  const changes: ChangeItem[] = [
+    { direction: 'up', text: 'Funding Rate conviction rose from 6 → 8 (crowding intensified)' },
+    { direction: 'up', text: 'Fear & Greed jumped 65 → 72 — deeper into Greed zone' },
+    { direction: 'down', text: 'RSI moved deeper into overbought on 4H timeframe' },
+    { direction: 'unchanged', text: 'Whale accumulation continues for 5th consecutive day' },
+    { direction: 'new', text: 'DOGE crowded longs now at z=3.2 (was 2.1 yesterday)' },
+  ];
+
   return {
     date: '2026-02-12',
     reportNumber: 42,
@@ -182,6 +197,8 @@ function buildMockReport(): DailyDisagreeReport {
     assets,
     priceData,
     heatmapRows,
+    changes,
+    riskCallout: 'BTC funding is crowded at z=2.8 — last time this happened (Jan 18), price dropped 14% in 3 days.',
   };
 }
 
