@@ -1,83 +1,168 @@
-# context8-landing Development Guidelines
+# context8-landing — Development Conventions
 
-Auto-generated from all feature plans. Last updated: 2025-10-27
+## Project
+
+Crypto intelligence landing + dashboard (React/TypeScript). Daily Disagree product.
+Stack decision: `docs/plans/2026-02-12-trader-ui-stack.md`
+Landing design: `docs/plans/2026-02-12-landing-design-decisions.md`
 
 ## Active Technologies
 
-- TypeScript 5.x (via Vite 7), React 19.2 (003-crypto-subscription-payments)
+- TypeScript 5.x (via Vite 7), React 19.2
+- Tailwind CSS 3.4 (NOT 4.x — see stack doc for rationale)
+- shadcn/ui, TanStack Query v5, Zustand v5, lightweight-charts v5, recharts v3
+
+## Task Management: orx + beads
+
+Every task is a **strict scope contract** in beads:
+
+```markdown
+## Objective
+One sentence: what is the result.
+
+## Must-Haves (max 3)
+> Specify EXACT pattern/code, not concept names.
+> Config/style files: include canonical content inline or under Constraints.
+> Multi-repo: annotate each item with its working directory.
+- [ ] Item 1
+- [ ] Item 2
+- [ ] Item 3
+
+## Non-Goals
+> "What would an enthusiastic agent add that I'd reject in review?"
+> Consider: Extra components? Tests? Auth? Animations? Refactoring? Optimization?
+- 3+ items minimum
+
+## Constraints
+> Exact versions always (React 19.2, Tailwind 3.4 — never "latest").
+> Multi-file: list Files to Create and Files to Modify with full paths.
+> Cross-repo: **Working directory:** ~/path/to/repo
+- Relevant technical/process constraints
+
+## Verification
+> Inline comment on every command = expected output.
+```bash
+npm run typecheck              # no errors
+npm run lint                   # no errors
+npm test -- --run              # all pass
+```
+
+## Acceptance Criteria
+> Must map to a Verification command. No subjective words (working, correct, proper).
+> Measurable thresholds: bundle <150KB gzip, 0 lint errors, 200 status code.
+- [ ] `command or artifact` → expected: measurable outcome
+```
+
+Rules:
+- Max 3 must-haves per task. New work discovered → new beads issue.
+- Run Verification commands (LOCAL section) before declaring "done", report results.
+- Do NOT use `bd edit` (blocks agents). Use `bd update <id> --description="..."`.
+
+## Commit Messages
+
+Commits are AI-readable development history. Format:
+
+```
+<type>: <what changed> (imperative, lowercase)
+
+Goal: what we wanted to achieve
+Why: why this change matters / what problem it solves
+How: brief technical approach (optional, for non-obvious changes)
+
+Refs: beads-xxx (if applicable)
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+```
+
+Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `infra`
+
+**"Why" is mandatory for `feat`, `fix`, `refactor`.** Optional for `docs`, `test`, `chore`, `infra` (but encouraged).
+
+## Quality Gates (prek)
+
+Pre-commit checks:
+- `npm run typecheck` — TypeScript compiles
+- `npm run lint` — ESLint passes
+- `npm test -- --run` — Vitest passes
+- beads contract lint — task format valid
+- commit message format — has type + why
+
+## Dependency Gate
+
+Before adding ANY npm dependency, evaluate with `/dep-review`:
+1. Why built-in React/browser APIs are insufficient
+2. Bundle size, maintenance status, npm downloads
+3. AI code generation quality (does Claude/Copilot know this lib?)
+4. Check `docs/plans/2026-02-12-trader-ui-stack.md` approved/rejected lists
+
+## Task Runner
+
+All commands go through `task` (Taskfile.yml):
+
+```bash
+task check         # typecheck + lint + test (all quality gates)
+task dev           # run dev server
+task test          # vitest
+task lint          # eslint
+task done          # session completion: check + git status + bd sync
+task bd:ready      # find available work
+task hooks:install # install git hooks
+```
+
+## Session Protocol
+
+Before saying "done":
+```
+[ ] 1. task done              (quality gates + beads sync)
+[ ] 2. git add <files>        (stage changes)
+[ ] 3. git commit             (with proper message)
+[ ] 4. bd sync                (sync any new beads)
+[ ] 5. git push               (push to remote)
+```
+
+## Architecture Decision Records
+
+For non-obvious technical decisions, create `docs/adr/NNNN-title.md`.
+Use `/new-adr` command.
 
 ## Project Structure
 
 ```text
-src/
-tests/
+src/                    React application
+tests/                  Test files
+scripts/                Build & quality scripts
+  beads_contract_lint.py  Task contract validator
+  commit_msg_lint.py      Commit message validator
+  observer_record.py      Observer problem recorder
+  observer_close_hook.py  Binary artifact detector
+  hooks/                  Git hooks (versioned)
+docs/
+  plans/                Design documents
+  adr/                  Architecture decision records
+.beads/
+  observer/             Observer system (taxonomy + problems)
 ```
-
-## Commands
-
-npm test && npm run lint
-
-## Code Style
-
-TypeScript 5.x (via Vite 7), React 19.2: Follow standard conventions
-
-## Recent Changes
-
-- 003-crypto-subscription-payments: Added TypeScript 5.x (via Vite 7), React 19.2
 
 <!-- MANUAL ADDITIONS START -->
 
-## ⚠️ КРИТИЧЕСКИЕ ПРАВИЛА ДЕПЛОЯ
+## DEPLOYMENT RULES
 
 ### Vercel Deployment
-**НИКОГДА не создавать новый Vercel проект через CLI!**
+**NEVER create a new Vercel project via CLI!**
 
-Проблема: `npx vercel --prod` без линка к существующему проекту создаёт НОВЫЙ проект, теряя все настройки:
+`npx vercel --prod` without linking to existing project creates a NEW project, losing all settings:
 - Environment variables
 - Custom domains
 - Build settings
-- Team access
 
-### ✅ ПРАВИЛЬНЫЙ процесс деплоя:
+### Correct deploy process:
 
-1. **Всегда проверяй существующий проект**:
-   ```bash
-   # Проверь .vercel/project.json
-   cat .vercel/project.json
-   ```
+1. **Always check existing project**: `cat .vercel/project.json`
+2. **If project linked** (.vercel/ exists): `git push origin main` (Vercel auto-deploys)
+3. **Manual deploy**: `npx vercel --prod` (only if .vercel/project.json exists)
+4. **If .vercel/ missing**: `npx vercel link` first, then deploy
 
-2. **Если проект уже связан** (.vercel/ существует):
-   ```bash
-   # Просто push в GitHub - Vercel автодеплоит
-   git push origin main
-   ```
-
-3. **Если нужен ручной деплой**:
-   ```bash
-   # ТОЛЬКО если .vercel/project.json существует
-   npx vercel --prod
-   ```
-
-4. **Если .vercel/ папки НЕТ**:
-   ```bash
-   # STOP! НЕ создавай новый проект
-   # Вместо этого - линкуй существующий:
-   npx vercel link
-   # Выбери существующий проект из списка
-   # Затем деплой:
-   npx vercel --prod
-   ```
-
-### 🔴 ЧТО ДЕЛАТЬ если случайно создан новый проект:
-
-1. Удалить новый проект в Vercel Dashboard
-2. Удалить `.vercel/` в локальном проекте
-3. Линкануть к правильному проекту: `npx vercel link`
-4. Восстановить Environment Variables
-5. Обновить Supabase Redirect URLs
-
-### 📋 Текущий проект:
-- **Название**: `context8-landing`
+### Current project:
+- **Name**: `context8-landing`
 - **Custom domain**: `context8.markets`
 - **Env vars**: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 

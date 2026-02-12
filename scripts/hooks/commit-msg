@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+# context8-landing commit-msg hook: validate commit message format
+# Versioned in scripts/hooks/, installed via task hooks:install
+
+set -e
+
+COMMIT_MSG_FILE="$1"
+
+if [ -z "$COMMIT_MSG_FILE" ]; then
+    echo "Error: commit-msg hook called without message file" >&2
+    exit 1
+fi
+
+# Run commit message lint
+SCRIPT_DIR="$(cd "$(dirname "$0")/../../scripts" 2>/dev/null && pwd)"
+if [ -z "$SCRIPT_DIR" ] || [ ! -f "$SCRIPT_DIR/commit_msg_lint.py" ]; then
+    # Fallback: find from repo root
+    REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+    SCRIPT_DIR="$REPO_ROOT/scripts"
+fi
+
+if [ -f "$SCRIPT_DIR/commit_msg_lint.py" ]; then
+    python3 "$SCRIPT_DIR/commit_msg_lint.py" "$COMMIT_MSG_FILE"
+else
+    echo "Warning: commit_msg_lint.py not found, skipping" >&2
+fi

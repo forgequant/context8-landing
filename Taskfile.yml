@@ -1,0 +1,137 @@
+version: "3"
+
+vars:
+  APP_NAME: context8-landing
+
+tasks:
+  # ── Development ────────────────────────────────────────
+
+  dev:
+    desc: Run dev server
+    cmd: npm run dev
+
+  build:
+    desc: Build for production
+    cmd: npm run build
+
+  # ── Quality ────────────────────────────────────────────
+
+  check:
+    desc: Run all quality checks (typecheck + lint + test)
+    cmds:
+      - task: typecheck
+      - task: lint
+      - task: test
+
+  typecheck:
+    desc: TypeScript type checking
+    cmd: npm run typecheck
+
+  lint:
+    desc: Run ESLint
+    cmd: npm run lint
+
+  test:
+    desc: Run Vitest
+    cmd: npm test -- --run {{.CLI_ARGS}}
+
+  test:watch:
+    desc: Run Vitest in watch mode
+    cmd: npm run test:watch
+
+  test:e2e:
+    desc: Run Playwright e2e tests
+    cmd: npm run test:e2e
+
+  format:
+    desc: Format code with Prettier
+    cmd: npm run format
+
+  # ── Beads ──────────────────────────────────────────────
+
+  bd:ready:
+    desc: Show issues ready to work on
+    cmd: bd ready
+
+  bd:stats:
+    desc: Project statistics
+    cmd: bd stats
+
+  bd:sync:
+    desc: Sync beads with git
+    cmd: bd sync
+
+  # ── Observer ─────────────────────────────────────────
+
+  observer:record:
+    desc: Record an observer problem
+    cmd: python3 scripts/observer_record.py {{.CLI_ARGS}}
+
+  observer:check-artifacts:
+    desc: Check for stray build artifacts in repo
+    cmd: python3 scripts/observer_close_hook.py
+
+  # ── Workflow ───────────────────────────────────────────
+
+  done:
+    desc: Session completion checklist (run before saying "done")
+    cmds:
+      - task: check
+      - git status
+      - bd sync
+      - echo "✓ Ready to commit and push"
+
+  clean:
+    desc: Remove build artifacts
+    cmd: rm -rf dist/ coverage/
+
+  # ── Hooks ──────────────────────────────────────────────
+
+  hooks:install:
+    desc: Install git hooks (prek + beads chained)
+    cmds:
+      - |
+        for hook in pre-commit commit-msg pre-push post-merge post-checkout prepare-commit-msg; do
+          src="scripts/hooks/$hook"
+          dst=".git/hooks/$hook"
+          if [ -f "$src" ]; then
+            cp "$src" "$dst"
+            chmod +x "$dst"
+            echo "  ✓ $hook"
+          fi
+        done
+      - echo "✓ Git hooks installed (prek + beads chained)"
+
+  hooks:check:
+    desc: Verify git hooks are installed and up to date
+    cmds:
+      - |
+        all_ok=true
+        for hook in pre-commit commit-msg pre-push post-merge post-checkout prepare-commit-msg; do
+          src="scripts/hooks/$hook"
+          dst=".git/hooks/$hook"
+          if [ ! -f "$dst" ]; then
+            echo "  ✗ $hook — missing"
+            all_ok=false
+          elif ! diff -q "$src" "$dst" >/dev/null 2>&1; then
+            echo "  ⚠ $hook — outdated"
+            all_ok=false
+          else
+            echo "  ✓ $hook"
+          fi
+        done
+        if [ "$all_ok" = false ]; then
+          echo ""
+          echo "Run 'task hooks:install' to fix"
+          exit 1
+        fi
+        echo "✓ All hooks up to date"
+
+  # ── Setup ──────────────────────────────────────────────
+
+  setup:
+    desc: Initial project setup (one-time)
+    cmds:
+      - npm install
+      - task: hooks:install
+      - echo "✓ Project ready"

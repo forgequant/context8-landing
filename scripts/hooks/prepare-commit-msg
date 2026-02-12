@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# context8-landing prepare-commit-msg hook: beads agent identity trailers
+# Versioned in scripts/hooks/, installed via task hooks:install
+
+if command -v bd >/dev/null 2>&1; then
+    bd hooks run prepare-commit-msg "$@"
+else
+    echo "Warning: bd not found, skipping beads prepare-commit-msg" >&2
+fi

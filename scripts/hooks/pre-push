@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# context8-landing pre-push hook: full quality gate + beads sync
+# Versioned in scripts/hooks/, installed via task hooks:install
+# This is the last safety net before code leaves the machine.
+
+set -e
+
+# 1. Run full prek checks
+if command -v uvx >/dev/null 2>&1; then
+    echo "▶ prek: running pre-push checks..."
+    uvx prek run --all-files
+else
+    echo "Warning: uvx not found, skipping prek checks" >&2
+fi
+
+# 2. Run beads pre-push (prevent stale JSONL)
+if command -v bd >/dev/null 2>&1; then
+    bd hooks run pre-push "$@"
+else
+    echo "Warning: bd not found, skipping beads pre-push" >&2
+fi

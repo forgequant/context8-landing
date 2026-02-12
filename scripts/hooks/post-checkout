@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+# context8-landing post-checkout hook: beads import after branch switch
+# Versioned in scripts/hooks/, installed via task hooks:install
+
+set -e
+
+if command -v bd >/dev/null 2>&1; then
+    bd hooks run post-checkout "$@"
+else
+    echo "Warning: bd not found, skipping beads post-checkout" >&2
+fi
