@@ -4,6 +4,8 @@ import { Landing } from './pages/Landing'
 import { Auth } from './pages/Auth'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { NewYearDecorations } from './components/NewYearDecorations'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { AuthCallback } from './components/auth/AuthCallback'
 
 // Lazy-load heavy routes for better performance
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })))
@@ -37,8 +39,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/reports/daily" element={<DailyReport />} />
             <Route path="/reports/daily-ru" element={<DailyReportRu />} />
             <Route path="/blog" element={<BlogIndex />} />
