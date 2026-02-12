@@ -119,10 +119,73 @@ Before saying "done":
 [ ] 5. git push               (push to remote)
 ```
 
+## Team Workflow (parallel agents)
+
+### Agents (`.claude/agents/`)
+
+| Agent | Role | Skills | When |
+|-------|------|--------|------|
+| `dev` | Implement features from beads tasks | `/feature-dev`, `/superpowers:test-driven-development` | Task needs code |
+| `tester` | Verify implementations, write tests | `/superpowers:verification-before-completion` | After dev completes |
+| `reviewer` | Code review for quality + security | `/code-review`, `/superpowers:requesting-code-review` | After test passes |
+
+### Task Flow
+
+```
+bd ready → dev implements → dev verifies → tester validates → reviewer approves → bd close
+```
+
+### Launching Parallel Teams
+
+Use Task tool with `team_name` to spawn parallel agents. Each task in beads maps to one dev agent. Independent tasks (no `blocked_by`) run in parallel.
+
+```
+Wave 1 (no deps):     AUTH-1, DASH-1, INFRA-1        → 3 parallel devs
+Wave 2 (after wave 1): AUTH-2, DASH-2, DASH-7         → 3 parallel devs
+Wave 3 (after wave 2): AUTH-3, DASH-3..6               → 5 parallel devs
+Wave 4 (after wave 3): AUTH-4, DASH-8..10              → 4 parallel devs
+```
+
+### Spawning a Dev Agent
+
+```
+Task tool:
+  subagent_type: "general-purpose"
+  team_name: "impl"
+  prompt: "You are a dev agent. Read .claude/agents/dev.md for your role.
+           Your task: bd show <task-id>. Implement it following the scope contract."
+```
+
+### Spawning a Tester Agent
+
+```
+Task tool:
+  subagent_type: "general-purpose"
+  team_name: "impl"
+  prompt: "You are a tester agent. Read .claude/agents/tester.md for your role.
+           Verify task: bd show <task-id>. Run all verification commands."
+```
+
+### Rules
+
+- One beads task = one dev agent. Never split one task across agents.
+- Dev agent commits but does NOT push. Team lead pushes after review.
+- If dev discovers new work → `bd create` a new issue, do NOT expand scope.
+- Tester runs after dev sends completion message. Not before.
+- Reviewer runs after tester sends APPROVE. Not before.
+- Team lead coordinates via SendMessage, assigns tasks via beads.
+
 ## Architecture Decision Records
 
 For non-obvious technical decisions, create `docs/adr/NNNN-title.md`.
 Use `/new-adr` command.
+
+## Design Docs
+
+- Stack: `docs/plans/2026-02-12-trader-ui-stack.md`
+- Auth: `docs/plans/2026-02-12-zitadel-auth-design.md`
+- Dashboard: `docs/plans/2026-02-12-dashboard-design.md`
+- Daily Disagree: `docs/plans/2026-02-11-daily-disagree-design.md`
 
 ## Project Structure
 
