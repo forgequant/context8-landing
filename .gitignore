@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Environment overrides (safe defaults are in .env.development)
+.env.local
+.env.production
