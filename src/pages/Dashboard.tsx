@@ -1,9 +1,20 @@
+import { useCallback, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from '../components/dashboard/Sidebar'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
+import { CommandPalette } from '../components/dashboard/CommandPalette'
+import { useKeyboardNav } from '../hooks/useKeyboardNav'
 
 /** Layout shell: sidebar + header + nested route outlet. */
 export function Dashboard() {
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
+  const togglePalette = useCallback(() => {
+    setPaletteOpen(prev => !prev)
+  }, [])
+
+  useKeyboardNav({ onTogglePalette: togglePalette })
+
   return (
     <div className="min-h-screen bg-graphite-950 text-terminal-text">
       <Sidebar />
@@ -16,6 +27,8 @@ export function Dashboard() {
           <Outlet />
         </main>
       </div>
+
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
   )
 }
