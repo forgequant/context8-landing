@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTX8 — Radar Operations</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0B0E11;
+  --bg-alt: #0F1218;
+  --text: #B8BCC4;
+  --text-bright: #D4D8E0;
+  --gold: #C49A3C;
+  --gold-dim: #8A6D2B;
+  --teal: #5B7B8A;
+  --teal-dim: #3E5660;
+  --bull: #5C9A72;
+  --bear: #B54545;
+  --border: #1C2028;
+  --border-light: #252A34;
+  --dim: #5C6270;
+  --dimmer: #3A3F4A;
+}
+
+html {
+  font-size: 13px;
+}
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── COMMAND BAR (fixed top) ── */
+.command-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  height: 36px;
+}
+
+.cmd-logo {
+  color: var(--gold);
+  font-size: 0.77rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.cmd-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.cmd-tab {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 10px 14px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s;
+}
+
+.cmd-tab:hover {
+  color: var(--text);
+}
+
+.cmd-tab--active {
+  color: var(--text-bright);
+}
+
+.cmd-tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.cmd-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.62rem;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.cmd-online {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.online-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--bull);
+}
+
+/* ── MAIN LAYOUT ── */
+.main-wrap {
+  margin-top: 36px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 36px - 24px);
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 0;
+  flex: 1;
+}
+
+/* ── PANEL STYLING ── */
+.panel {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+
+.panel:nth-child(2),
+.panel:nth-child(4) {
+  border-right: none;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-alt) 0%, var(--bg) 100%);
+}
+
+.panel-header .ph-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-header .ph-accent {
+  width: 3px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.panel-header .ph-accent--gold { background: var(--gold); }
+.panel-header .ph-accent--bear { background: var(--bear); }
+.panel-header .ph-accent--teal { background: var(--teal); }
+
+.panel-header .ph-right {
+  font-size: 0.58rem;
+  font-weight: 400;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+}
+
+/* ── PANEL A: SIGNAL INTELLIGENCE (left, spans 2 rows) ── */
+.panel--signals {
+  grid-row: 1 / 3;
+}
+
+/* Signal table */
+.sig-table {
+  width: 100%;
+}
+
+.sig-row {
+  display: grid;
+  grid-template-columns: 54px 1fr 1fr 100px 80px;
+  align-items: center;
+  padding: 6px 12px;
+  font-size: 0.7rem;
+  gap: 6px;
+  border-bottom: 1px solid #13161B;
+}
+
+.sig-row:nth-child(odd) {
+  background: var(--bg);
+}
+
+.sig-row:nth-child(even) {
+  background: var(--bg-alt);
+}
+
+.sig-row:hover {
+  background: #141820;
+}
+
+.sig-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 0;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  width: 46px;
+  height: 18px;
+}
+
+.sig-tag--bull {
+  background: rgba(92, 154, 114, 0.2);
+  color: var(--bull);
+  border: 1px solid rgba(92, 154, 114, 0.3);
+}
+
+.sig-tag--bear {
+  background: rgba(181, 69, 69, 0.2);
+  color: var(--bear);
+  border: 1px solid rgba(181, 69, 69, 0.3);
+}
+
+.sig-module {
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  font-size: 0.68rem;
+}
+
+.sig-detail {
+  color: var(--dim);
+  font-size: 0.62rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* CSS confidence bar */
+.sig-conf {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.conf-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 1px;
+  overflow: hidden;
+  min-width: 40px;
+}
+
+.conf-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+
+.conf-fill--high {
+  background: var(--bull);
+}
+
+.conf-fill--mid {
+  background: var(--gold);
+}
+
+.conf-fill--low {
+  background: var(--dim);
+}
+
+.conf-pct {
+  font-size: 0.58rem;
+  color: var(--dimmer);
+  min-width: 28px;
+  text-align: right;
+}
+
+.sig-signal {
+  color: var(--dim);
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+
+/* Verdict row */
+.sig-verdict {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-alt);
+}
+
+.sig-verdict .v-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+}
+
+.sig-verdict .v-meta {
+  font-size: 0.58rem;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+}
+
+/* Module summary bar */
+.module-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.58rem;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+  background: var(--bg);
+}
+
+.mod-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mod-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.mod-dot--bull { background: var(--bull); }
+.mod-dot--bear { background: var(--bear); }
+.mod-dot--neutral { background: var(--dim); }
+
+/* ── PANEL B: THREAT ASSESSMENT (right-top) ── */
+.threat-row {
+  display: grid;
+  grid-template-columns: 22px 52px 1fr 70px 90px;
+  align-items: center;
+  padding: 7px 12px;
+  font-size: 0.68rem;
+  gap: 6px;
+  border-bottom: 1px solid #13161B;
+}
+
+.threat-row:nth-child(odd) {
+  background: var(--bg);
+}
+
+.threat-row:nth-child(even) {
+  background: var(--bg-alt);
+}
+
+.threat-rank {
+  color: var(--dimmer);
+  font-size: 0.6rem;
+}
+
+.threat-ticker {
+  font-weight: 700;
+  color: var(--text-bright);
+  font-size: 0.7rem;
+}
+
+.threat-type {
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.threat-type--long { color: var(--bear); }
+.threat-type--short { color: var(--bull); }
+
+.threat-zscore {
+  font-size: 0.6rem;
+  color: var(--dim);
+  text-align: right;
+}
+
+.threat-conf {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.threat-conf .conf-bar {
+  min-width: 36px;
+}
+
+.threat-conf .conf-pct {
+  font-size: 0.56rem;
+  min-width: 24px;
+}
+
+.threat-detail {
+  grid-column: 1 / -1;
+  font-size: 0.56rem;
+  color: var(--dimmer);
+  padding: 0 0 2px 28px;
+}
+
+.threat-entry {
+  border-bottom: 1px solid #13161B;
+}
+
+.threat-entry:nth-child(odd) {
+  background: var(--bg);
+}
+
+.threat-entry:nth-child(even) {
+  background: var(--bg-alt);
+}
+
+/* ── PANEL C: DIVERGENCE RADAR (right-bottom) ── */
+.div-row {
+  display: grid;
+  grid-template-columns: 52px 1fr 100px 80px;
+  align-items: center;
+  padding: 7px 12px;
+  font-size: 0.68rem;
+  gap: 6px;
+  border-bottom: 1px solid #13161B;
+}
+
+.div-row:nth-child(odd) {
+  background: var(--bg);
+}
+
+.div-row:nth-child(even) {
+  background: var(--bg-alt);
+}
+
+.div-ticker {
+  font-weight: 700;
+  color: var(--text-bright);
+  font-size: 0.7rem;
+}
+
+.div-desc {
+  color: var(--dim);
+  font-size: 0.62rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.div-status {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.div-status--pending { color: var(--gold); }
+.div-status--noconf { color: var(--dimmer); }
+.div-status--alert { color: var(--bear); }
+
+.div-conf {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.div-conf .conf-bar {
+  min-width: 30px;
+}
+
+.div-conf .conf-pct {
+  font-size: 0.56rem;
+  min-width: 24px;
+}
+
+/* ── ACCESS PANEL (full width, compact) ── */
+.access-panel {
+  border-bottom: 1px solid var(--border);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+}
+
+.access-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.access-form {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  max-width: 480px;
+  width: 100%;
+}
+
+.access-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-right: none;
+  padding: 0 12px;
+}
+
+.access-input-wrap .prompt-char {
+  color: var(--dim);
+  margin-right: 6px;
+  font-size: 0.78rem;
+}
+
+.access-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  padding: 9px 0;
+  caret-color: var(--gold);
+}
+
+.access-input::placeholder {
+  color: var(--dimmer);
+}
+
+.access-input-wrap .cursor-blink {
+  width: 7px;
+  height: 14px;
+  background: var(--gold);
+  opacity: 0;
+  animation: cursor-blink 1s step-end infinite;
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.7; }
+}
+
+.access-input:focus ~ .cursor-blink {
+  display: none;
+}
+
+.access-btn {
+  background: var(--bg);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 9px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.access-btn:hover {
+  background: var(--gold);
+  color: var(--bg);
+}
+
+.access-tagline {
+  font-size: 0.58rem;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+}
+
+/* ── STATUS BAR (fixed bottom) ── */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 16px;
+  height: 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 0.54rem;
+  color: var(--dimmer);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.status-bar .sb-sep {
+  color: #1C2028;
+}
+
+.status-bar .sb-green {
+  color: var(--bull);
+}
+
+/* ── MOBILE ── */
+@media (max-width: 900px) {
+  html {
+    font-size: 12px;
+  }
+
+  .cmd-tabs {
+    display: none;
+  }
+
+  .panels {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .panel--signals {
+    grid-row: auto;
+  }
+
+  .panel {
+    border-right: none;
+  }
+
+  .sig-row {
+    grid-template-columns: 46px 1fr 80px;
+  }
+
+  .sig-detail,
+  .sig-signal {
+    display: none;
+  }
+
+  .threat-row {
+    grid-template-columns: 18px 44px 1fr 60px;
+  }
+
+  .threat-conf {
+    display: none;
+  }
+
+  .div-row {
+    grid-template-columns: 44px 1fr 80px;
+  }
+
+  .div-conf {
+    display: none;
+  }
+
+  .access-form {
+    flex-direction: column;
+  }
+
+  .access-input-wrap {
+    border-right: 1px solid var(--border);
+    border-bottom: none;
+  }
+
+  .status-bar {
+    font-size: 0.5rem;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cmd-right {
+    display: none;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- COMMAND BAR -->
+<header class="command-bar">
+  <div class="cmd-logo">&#9670; CTX8</div>
+  <nav class="cmd-tabs">
+    <span class="cmd-tab cmd-tab--active">OVERVIEW</span>
+    <span class="cmd-tab">SIGNALS</span>
+    <span class="cmd-tab">THREATS</span>
+    <span class="cmd-tab">ACCESS</span>
+  </nav>
+  <div class="cmd-right">
+    <span class="cmd-online"><span class="online-dot"></span> SYS: ONLINE</span>
+    <span>UPD: 08:00 UTC</span>
+  </div>
+</header>
+
+<!-- MAIN LAYOUT -->
+<div class="main-wrap">
+  <div class="panels">
+
+    <!-- PANEL A: SIGNAL INTELLIGENCE (left, spans 2 rows) -->
+    <section class="panel panel--signals">
+      <div class="panel-header">
+        <span class="ph-left"><span class="ph-accent ph-accent--gold"></span> SIGNAL BOARD &mdash; BTC</span>
+        <span class="ph-right">6 MODULES ACTIVE</span>
+      </div>
+
+      <div class="sig-table">
+        <div class="sig-row">
+          <span class="sig-tag sig-tag--bull">BULL</span>
+          <span class="sig-module">TA SCANNER</span>
+          <span class="sig-detail">RSI 58, MACD crossover +</span>
+          <span class="sig-conf">
+            <span class="conf-bar"><span class="conf-fill conf-fill--mid" style="width:70%"></span></span>
+            <span class="conf-pct">70%</span>
+          </span>
+          <span class="sig-signal">+0.4 std</span>
+        </div>
+
+        <div class="sig-row">
+          <span class="sig-tag sig-tag--bear">BEAR</span>
+          <span class="sig-module">FUNDING RATE</span>
+          <span class="sig-detail">Crowded longs, z-score: 1.4</span>
+          <span class="sig-conf">
+            <span class="conf-bar"><span class="conf-fill conf-fill--high" style="width:80%"></span></span>
+            <span class="conf-pct">80%</span>
+          </span>
+          <span class="sig-signal">-0.8 std</span>
+        </div>
+
+        <div class="sig-row">
+          <span class="sig-tag sig-tag--bear">BEAR</span>
+          <span class="sig-module">OI DIVERGENCE</span>
+          <span class="sig-detail">Shorts accumulating, OI +12%</span>
+          <span class="sig-conf">
+            <span class="conf-bar"><span class="conf-fill conf-fill--mid" style="width:65%"></span></span>
+            <span class="conf-pct">65%</span>
+          </span>
+          <span class="sig-signal">-0.5 std</span>
+        </div>
+
+        <div class="sig-row">
+          <span class="sig-tag sig-tag--bull">BULL</span>
+          <span class="sig-module">SOCIAL INTEL</span>
+          <span class="sig-detail">Greed index: 72, mentions +18%</span>
+          <span class="sig-conf">
+            <span class="conf-bar"><span class="conf-fill conf-fill--low" style="width:55%"></span></span>
+            <span class="conf-pct">55%</span>
+          </span>
+          <span class="sig-signal">+0.2 std</span>
+        </div>
+
+        <div class="sig-row">
+          <span class="sig-tag sig-tag--bear">BEAR</span>
+          <span class="sig-module">MACRO REGIME</span>
+          <span class="sig-detail">DXY +0.4%, 10Y up, risk-off</span>
+          <span class="sig-conf">
+            <span class="conf-bar"><span class="conf-fill conf-fill--mid" style="width:75%"></span></span>
+            <span class="conf-pct">75%</span>
+          </span>
+          <span class="sig-signal">-0.6 std</span>
+        </div>
+
+        <div class="sig-row">
+          <span class="sig-tag sig-tag--bear">BEAR</span>
+          <span class="sig-module">FEAR &amp; GREED</span>
+          <span class="sig-detail">Extreme fear (28), vol spike</span>
+          <span class="sig-conf">
+            <span class="conf-bar"><span class="conf-fill conf-fill--mid" style="width:60%"></span></span>
+            <span class="conf-pct">60%</span>
+          </span>
+          <span class="sig-signal">-0.3 std</span>
+        </div>
+      </div>
+
+      <div class="sig-verdict">
+        <span class="v-label">VERDICT: BEARISH LEAN 4-2 &nbsp;&bull;&nbsp; CONVICTION: 3/10</span>
+        <span class="v-meta">CONFLICT RATIO: 0.67 &nbsp;&bull;&nbsp; UPDATED 08:00 UTC</span>
+      </div>
+
+      <div class="module-summary">
+        <span class="mod-stat"><span class="mod-dot mod-dot--bull"></span> 2 BULL</span>
+        <span class="mod-stat"><span class="mod-dot mod-dot--bear"></span> 4 BEAR</span>
+        <span class="mod-stat"><span class="mod-dot mod-dot--neutral"></span> 0 NEUTRAL</span>
+        <span style="margin-left:auto;">AVG CONF: 67.5%</span>
+      </div>
+    </section>
+
+    <!-- PANEL B: THREAT ASSESSMENT (right-top) -->
+    <section class="panel panel--threats">
+      <div class="panel-header">
+        <span class="ph-left"><span class="ph-accent ph-accent--bear"></span> CROWDED TRADES</span>
+        <span class="ph-right">3 ACTIVE</span>
+      </div>
+
+      <div class="threat-entry">
+        <div class="threat-row">
+          <span class="threat-rank">#1</span>
+          <span class="threat-ticker">DOGE</span>
+          <span class="threat-type threat-type--long">CROWDED LONGS</span>
+          <span class="threat-zscore">z: 3.2</span>
+          <span class="threat-conf">
+            <span class="conf-bar"><span class="conf-fill conf-fill--high" style="width:88%"></span></span>
+            <span class="conf-pct">88%</span>
+          </span>
+        </div>
+        <div class="threat-detail">Last unwind: Jan 18 &rarr; -14% in 3d &nbsp;&bull;&nbsp; Funding: 0.08% &nbsp;&bull;&nbsp; OI delta: +340M</div>
+      </div>
+
+      <div class="threat-entry">
+        <div class="threat-row">
+          <span class="threat-rank">#2</span>
+          <span class="threat-ticker">SOL</span>
+          <span class="threat-type threat-type--long">CROWDED LONGS</span>
+          <span class="threat-zscore">z: 2.1</span>
+          <span class="threat-conf">
+            <span class="conf-bar"><span class="conf-fill conf-fill--mid" style="width:72%"></span></span>
+            <span class="conf-pct">72%</span>
+          </span>
+        </div>
+        <div class="threat-detail">Last unwind: Jan 22 &rarr; -9% in 5d &nbsp;&bull;&nbsp; Funding: 0.05% &nbsp;&bull;&nbsp; OI delta: +180M</div>
+      </div>
+
+      <div class="threat-entry">
+        <div class="threat-row">
+          <span class="threat-rank">#3</span>
+          <span class="threat-ticker">AVAX</span>
+          <span class="threat-type threat-type--short">CROWDED SHORTS</span>
+          <span class="threat-zscore">z: -1.9</span>
+          <span class="threat-conf">
+            <span class="conf-bar"><span class="conf-fill conf-fill--mid" style="width:64%"></span></span>
+            <span class="conf-pct">64%</span>
+          </span>
+        </div>
+        <div class="threat-detail">Last squeeze: Dec 30 &rarr; +11% in 2d &nbsp;&bull;&nbsp; Funding: -0.03% &nbsp;&bull;&nbsp; OI delta: -95M</div>
+      </div>
+    </section>
+
+    <!-- PANEL C: DIVERGENCE RADAR (right-bottom) -->
+    <section class="panel panel--divergence">
+      <div class="panel-header">
+        <span class="ph-left"><span class="ph-accent ph-accent--teal"></span> DIVERGENCE WATCH</span>
+        <span class="ph-right">3 TRACKED</span>
+      </div>
+
+      <div class="div-row">
+        <span class="div-ticker">AVAX</span>
+        <span class="div-desc">Sentiment 78 / Price flat &mdash; gap widening 3d</span>
+        <span class="div-status div-status--pending">PENDING MOVE</span>
+        <span class="div-conf">
+          <span class="conf-bar"><span class="conf-fill conf-fill--mid" style="width:71%"></span></span>
+          <span class="conf-pct">71%</span>
+        </span>
+      </div>
+
+      <div class="div-row">
+        <span class="div-ticker">LINK</span>
+        <span class="div-desc">Sentiment 34 / Price +5% &mdash; no follow-through</span>
+        <span class="div-status div-status--noconf">NO CONFIRM</span>
+        <span class="div-conf">
+          <span class="conf-bar"><span class="conf-fill conf-fill--low" style="width:42%"></span></span>
+          <span class="conf-pct">42%</span>
+        </span>
+      </div>
+
+      <div class="div-row">
+        <span class="div-ticker">ARB</span>
+        <span class="div-desc">OI surging +28% / Price -2% &mdash; accumulation signal</span>
+        <span class="div-status div-status--alert">ALERT</span>
+        <span class="div-conf">
+          <span class="conf-bar"><span class="conf-fill conf-fill--high" style="width:83%"></span></span>
+          <span class="conf-pct">83%</span>
+        </span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ACCESS PANEL -->
+  <div class="access-panel">
+    <div class="access-label">REQUESTING CLEARANCE</div>
+    <form class="access-form" onsubmit="return false;">
+      <div class="access-input-wrap">
+        <span class="prompt-char">&gt;</span>
+        <input type="email" class="access-input" placeholder="ENTER EMAIL FOR ACCESS" autocomplete="email">
+        <span class="cursor-blink"></span>
+      </div>
+      <button type="submit" class="access-btn">AUTHORIZE</button>
+    </form>
+    <div class="access-tagline">One API key. 23 modules. Real-time conflict detection.</div>
+  </div>
+
+</div>
+
+<!-- STATUS BAR -->
+<footer class="status-bar">
+  <span>CTX8 v1.0</span>
+  <span class="sb-sep">|</span>
+  <span>MODULES: <span class="sb-green">6/6</span></span>
+  <span class="sb-sep">|</span>
+  <span>UPTIME: <span class="sb-green">99.9%</span></span>
+  <span class="sb-sep">|</span>
+  <span>LATENCY: 42ms</span>
+  <span class="sb-sep">|</span>
+  <span>CLASSIFICATION: PUBLIC</span>
+</footer>
+
+</body>
+</html>

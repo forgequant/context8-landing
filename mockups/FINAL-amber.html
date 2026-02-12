@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Context8 — Crypto Intelligence API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0C0A08;
+  --surface: #161210;
+  --border: #2E2A24;
+  --border-hover: #443E36;
+  --text: #E8E0D4;
+  --text-secondary: #9A9080;
+  --text-muted: #6B6358;
+  --accent: #C49A3C;
+  --accent-dim: rgba(196, 154, 60, 0.12);
+  --accent-bright: #D4A84B;
+  --bull: #4CAF78;
+  --bear: #C94D4D;
+  --bull-dim: rgba(76, 175, 120, 0.14);
+  --bear-dim: rgba(201, 77, 77, 0.14);
+  --radius: 6px;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* ── FOCUS STYLES ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── NAV ── */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(12, 10, 8, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-logo-mark {
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.nav-link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 200ms;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: var(--text);
+}
+
+.nav-cta {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--accent);
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: background 200ms;
+}
+
+.nav-cta:hover,
+.nav-cta:focus-visible {
+  background: var(--accent-bright);
+}
+
+.nav-mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ── CONTAINER ── */
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── HERO ── */
+.hero {
+  padding-top: 120px;
+  padding-bottom: 80px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+/* Hero Left */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 8px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(196, 154, 60, 0.2);
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+
+.hero-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.hero-accent {
+  display: block;
+  color: var(--accent);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.hero-subtitle {
+  font-size: 1.0625rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 28px;
+  max-width: 440px;
+}
+
+/* Value Grid */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.stat-box {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--surface);
+}
+
+.stat-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Hero Actions */
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 22px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 200ms;
+  text-decoration: none;
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background: var(--accent-bright);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 22px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 200ms, border-color 200ms;
+  text-decoration: none;
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  color: var(--text);
+  border-color: var(--border-hover);
+}
+
+/* ── SCORECARD (hero right) ── */
+.scorecard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.scorecard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.scorecard-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scorecard-asset {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.scorecard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scorecard-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 7px 16px;
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.scorecard-table th:last-child {
+  text-align: right;
+}
+
+.scorecard-table td {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  padding: 7px 16px;
+  border-bottom: 1px solid rgba(46, 42, 36, 0.5);
+}
+
+.scorecard-table tbody tr:nth-child(even) {
+  background: rgba(22, 18, 16, 0.5);
+}
+
+.scorecard-table tbody tr:nth-child(odd) {
+  background: var(--surface);
+}
+
+.scorecard-table tr:last-child td {
+  border-bottom: none;
+}
+
+.scorecard-table td:last-child {
+  text-align: right;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.tag--bull {
+  background: var(--bull-dim);
+  color: var(--bull);
+  border: 1px solid rgba(76, 175, 120, 0.25);
+}
+
+.tag--bear {
+  background: var(--bear-dim);
+  color: var(--bear);
+  border: 1px solid rgba(201, 77, 77, 0.25);
+}
+
+.sc-module {
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sc-detail {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* Confidence bar (inline) */
+.conf-bar-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.conf-bar-track {
+  width: 48px;
+  height: 4px;
+  background: rgba(46, 42, 36, 0.8);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.conf-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.conf-bar-fill--bull { background: var(--bull); }
+.conf-bar-fill--bear { background: var(--bear); }
+
+.conf-pct {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* Verdict */
+.scorecard-verdict {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  background: rgba(196, 154, 60, 0.04);
+}
+
+.scorecard-verdict-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.scorecard-verdict-conf {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+/* ── FEATURES ── */
+.features {
+  padding-bottom: 80px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: border-color 200ms;
+}
+
+.feature-card:hover {
+  border-color: var(--border-hover);
+}
+
+.feature-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dim);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  color: var(--accent);
+}
+
+.feature-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.feature-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.feature-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* ── API PREVIEW ── */
+.api-preview {
+  padding-bottom: 80px;
+}
+
+.api-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.api-section-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.api-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.api-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.api-card-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.api-card-dot--red { background: #FF5F57; }
+.api-card-dot--yellow { background: #FEBC2E; }
+.api-card-dot--green { background: #28C840; }
+
+.api-card-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.api-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.api-col + .api-col {
+  border-left: 1px solid var(--border);
+}
+
+.api-col-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.code-block {
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text-secondary);
+}
+
+.code-block pre {
+  margin: 0;
+  white-space: pre;
+}
+
+.code-comment { color: var(--text-muted); }
+.code-string { color: var(--accent); }
+.code-key { color: #A08060; }
+.code-number { color: var(--accent-bright); }
+.code-method { color: var(--text); }
+.code-url { color: var(--text-secondary); }
+.code-bull { color: var(--bull); }
+.code-bear { color: #D95A5A; }
+
+/* ── CTA SECTION ── */
+.cta-section {
+  padding: 64px 0 80px;
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.cta-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 32px;
+}
+
+.cta-form {
+  display: flex;
+  align-items: stretch;
+  max-width: 440px;
+  margin: 0 auto;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: border-color 200ms;
+}
+
+.cta-form:focus-within {
+  border-color: var(--accent);
+}
+
+.cta-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+.cta-input::placeholder {
+  color: var(--text-muted);
+}
+
+.cta-submit {
+  padding: 12px 22px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 200ms;
+}
+
+.cta-submit:hover,
+.cta-submit:focus-visible {
+  background: var(--accent-bright);
+}
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-left {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-link {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 200ms;
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+  color: var(--text-secondary);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 56px;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    gap: 16px;
+  }
+
+  .nav-mobile-toggle {
+    display: block;
+  }
+
+  .hero {
+    padding-top: 96px;
+    padding-bottom: 48px;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .hero-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stat-box {
+    padding: 12px;
+  }
+
+  .stat-number {
+    font-size: 1.375rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .api-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .api-col + .api-col {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .cta-form {
+    flex-direction: column;
+  }
+
+  .cta-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .scorecard-table td,
+  .scorecard-table th {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  .conf-bar-track {
+    width: 32px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <a class="nav-logo" href="#">
+    <span class="nav-logo-mark">&#9670;</span>
+    Context8
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#api">API</a>
+    <a class="nav-link" href="#pricing">Pricing</a>
+    <a class="nav-cta" href="#cta">Get API Key</a>
+  </div>
+  <button class="nav-mobile-toggle" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <!-- LEFT -->
+      <div class="hero-copy">
+        <div class="hero-badge">
+          <span class="hero-badge-dot" aria-hidden="true"></span>
+          Live signals across 23 modules
+        </div>
+        <h1>Crypto signals that<br>fight each other.</h1>
+        <p class="hero-accent">That's the alpha.</p>
+        <p class="hero-subtitle">23 independent AI modules. When they disagree, you profit.</p>
+
+        <div class="hero-stats">
+          <div class="stat-box">
+            <div class="stat-number">23</div>
+            <div class="stat-label">Modules</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">6</div>
+            <div class="stat-label">Conflicts Daily</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">1</div>
+            <div class="stat-label">API Key</div>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <a class="btn-primary" href="#cta">
+            Get API Key
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a class="btn-ghost" href="#api">View Docs</a>
+        </div>
+      </div>
+
+      <!-- RIGHT: SCORECARD -->
+      <div class="scorecard" role="region" aria-label="Module scorecard for BTC/USD">
+        <div class="scorecard-header">
+          <span class="scorecard-title">Signal Board</span>
+          <span class="scorecard-asset">BTC / USD</span>
+        </div>
+        <table class="scorecard-table">
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th>Bias</th>
+              <th>Key Metric</th>
+              <th>Conf</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="sc-module">TA Scanner</td>
+              <td><span class="tag tag--bull">BULL</span></td>
+              <td class="sc-detail">RSI 58, MACD+</td>
+              <td>
+                <span class="conf-bar-wrap">
+                  <span class="conf-bar-track"><span class="conf-bar-fill conf-bar-fill--bull" style="width:70%"></span></span>
+                  <span class="conf-pct">70%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="sc-module">Funding</td>
+              <td><span class="tag tag--bear">BEAR</span></td>
+              <td class="sc-detail">Longs crowded, z:1.4</td>
+              <td>
+                <span class="conf-bar-wrap">
+                  <span class="conf-bar-track"><span class="conf-bar-fill conf-bar-fill--bear" style="width:80%"></span></span>
+                  <span class="conf-pct">80%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="sc-module">OI Divergence</td>
+              <td><span class="tag tag--bear">BEAR</span></td>
+              <td class="sc-detail">Shorts accumulating</td>
+              <td>
+                <span class="conf-bar-wrap">
+                  <span class="conf-bar-track"><span class="conf-bar-fill conf-bar-fill--bear" style="width:65%"></span></span>
+                  <span class="conf-pct">65%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="sc-module">Social</td>
+              <td><span class="tag tag--bull">BULL</span></td>
+              <td class="sc-detail">Greed index: 72</td>
+              <td>
+                <span class="conf-bar-wrap">
+                  <span class="conf-bar-track"><span class="conf-bar-fill conf-bar-fill--bull" style="width:55%"></span></span>
+                  <span class="conf-pct">55%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="sc-module">Macro</td>
+              <td><span class="tag tag--bear">BEAR</span></td>
+              <td class="sc-detail">DXY up, risk-off</td>
+              <td>
+                <span class="conf-bar-wrap">
+                  <span class="conf-bar-track"><span class="conf-bar-fill conf-bar-fill--bear" style="width:75%"></span></span>
+                  <span class="conf-pct">75%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="sc-module">Fear &amp; Greed</td>
+              <td><span class="tag tag--bear">BEAR</span></td>
+              <td class="sc-detail">Extreme fear (28)</td>
+              <td>
+                <span class="conf-bar-wrap">
+                  <span class="conf-bar-track"><span class="conf-bar-fill conf-bar-fill--bear" style="width:60%"></span></span>
+                  <span class="conf-pct">60%</span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="scorecard-verdict">
+          <span class="scorecard-verdict-label">BEARISH LEAN 4-2</span>
+          <span class="scorecard-verdict-conf">Conviction: 3 / 10</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+            <path d="m15 9-6 6"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Conflict Detection</h3>
+        <p class="feature-desc">23 modules analyze every asset independently. When they disagree, you get the only signal that matters: uncertainty itself.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Crowded Trades</h3>
+        <p class="feature-desc">Spot overleveraged positions before they unwind. Z-score rankings show which assets are primed for liquidation cascades.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Divergence Watch</h3>
+        <p class="feature-desc">Sentiment says one thing, price says another. Divergence alerts catch moves before they happen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API PREVIEW -->
+<section class="api-preview" id="api">
+  <div class="container">
+    <div class="api-section-label">Developer Experience</div>
+    <h2 class="api-section-title">One call. Full scorecard.</h2>
+    <div class="api-card">
+      <div class="api-card-header">
+        <span class="api-card-dot api-card-dot--red"></span>
+        <span class="api-card-dot api-card-dot--yellow"></span>
+        <span class="api-card-dot api-card-dot--green"></span>
+        <span class="api-card-label">terminal</span>
+      </div>
+      <div class="api-columns">
+        <div class="api-col">
+          <div class="api-col-label">Request</div>
+          <div class="code-block"><pre><span class="code-method">curl</span> <span class="code-url">https://api.context8.markets/v1/signals</span> \
+  <span class="code-comment">-H</span> <span class="code-string">"Authorization: Bearer ctx8_sk_..."</span> \
+  <span class="code-comment">-d</span> <span class="code-string">'{"asset": "BTC", "modules": "all"}'</span></pre></div>
+        </div>
+        <div class="api-col">
+          <div class="api-col-label">Response</div>
+          <div class="code-block"><pre>{
+  <span class="code-key">"asset"</span>: <span class="code-string">"BTC"</span>,
+  <span class="code-key">"verdict"</span>: <span class="code-bear">"BEARISH"</span>,
+  <span class="code-key">"score"</span>: <span class="code-string">"4-2"</span>,
+  <span class="code-key">"conviction"</span>: <span class="code-number">3</span>,
+  <span class="code-key">"conflicts"</span>: <span class="code-number">4</span>,
+  <span class="code-key">"modules"</span>: [
+    { <span class="code-key">"name"</span>: <span class="code-string">"ta_scanner"</span>,  <span class="code-key">"signal"</span>: <span class="code-bull">"BULL"</span>, <span class="code-key">"conf"</span>: <span class="code-number">0.70</span> },
+    { <span class="code-key">"name"</span>: <span class="code-string">"funding"</span>,     <span class="code-key">"signal"</span>: <span class="code-bear">"BEAR"</span>, <span class="code-key">"conf"</span>: <span class="code-number">0.80</span> },
+    { <span class="code-key">"name"</span>: <span class="code-string">"oi_diverge"</span>,  <span class="code-key">"signal"</span>: <span class="code-bear">"BEAR"</span>, <span class="code-key">"conf"</span>: <span class="code-number">0.65</span> },
+    { <span class="code-key">"name"</span>: <span class="code-string">"social"</span>,      <span class="code-key">"signal"</span>: <span class="code-bull">"BULL"</span>, <span class="code-key">"conf"</span>: <span class="code-number">0.55</span> },
+    { <span class="code-key">"name"</span>: <span class="code-string">"macro"</span>,       <span class="code-key">"signal"</span>: <span class="code-bear">"BEAR"</span>, <span class="code-key">"conf"</span>: <span class="code-number">0.75</span> },
+    { <span class="code-key">"name"</span>: <span class="code-string">"fear_greed"</span>,  <span class="code-key">"signal"</span>: <span class="code-bear">"BEAR"</span>, <span class="code-key">"conf"</span>: <span class="code-number">0.60</span> }
+  ]
+}</pre></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="container">
+    <h2>Get your API key</h2>
+    <p class="cta-subtitle">Free tier. No credit card. Ship in minutes.</p>
+    <form class="cta-form" onsubmit="return false;">
+      <label for="cta-email" class="sr-only">Email address</label>
+      <input type="email" id="cta-email" class="cta-input" placeholder="you@company.com" autocomplete="email" required>
+      <button type="submit" class="cta-submit">Get API Key</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <span class="footer-left">&copy; 2026 Context8</span>
+      <div class="footer-links">
+        <a class="footer-link" href="#">Docs</a>
+        <a class="footer-link" href="#">Pricing</a>
+        <a class="footer-link" href="#">Status</a>
+        <a class="footer-link" href="#">GitHub</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Visually hidden label utility -->
+<style>
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+</style>
+
+<script>
+(function() {
+  var toggle = document.getElementById('navToggle');
+  var links = document.getElementById('navLinks');
+  toggle.addEventListener('click', function() {
+    var open = links.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+})();
+</script>
+
+</body>
+</html>

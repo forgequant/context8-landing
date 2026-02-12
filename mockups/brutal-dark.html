@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONTEXT8 — Crypto Signals That Fight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  color: #FFFFFF;
+  background: #111111;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  padding: 20px 40px;
+  border-bottom: 2px solid #FFFFFF;
+}
+
+nav .logo {
+  font-weight: 900;
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+  color: #FFFFFF;
+}
+
+/* HERO */
+.hero {
+  padding: 100px 40px 80px;
+}
+
+.hero h1 {
+  font-weight: 900;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 1.05;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.hero h1 .underlined {
+  display: inline;
+  border-bottom: 4px solid #FF6600;
+  padding-bottom: 4px;
+}
+
+.hero .tagline {
+  margin-top: 28px;
+  font-size: 1.125rem;
+  color: #999999;
+  max-width: 500px;
+}
+
+/* VALUE GRID */
+.value-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 0 40px 80px;
+  gap: 24px;
+}
+
+.value-box {
+  border: 2px solid #FFFFFF;
+  box-shadow: 4px 4px 0 #FF6600;
+  padding: 40px 28px;
+}
+
+.value-box .number {
+  font-weight: 900;
+  font-size: clamp(3rem, 6vw, 5rem);
+  color: #FF6600;
+  line-height: 1;
+}
+
+.value-box .label {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* SCORECARD */
+.scorecard {
+  padding: 0 40px 80px;
+}
+
+.scorecard h2 {
+  font-weight: 900;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  letter-spacing: 0.02em;
+}
+
+.scorecard table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #FFFFFF;
+}
+
+.scorecard th {
+  background: #FF6600;
+  color: #000000;
+  font-weight: 900;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: left;
+  padding: 12px 16px;
+  border: 2px solid #FFFFFF;
+}
+
+.scorecard td {
+  padding: 12px 16px;
+  border: 2px solid #FFFFFF;
+  font-size: 0.875rem;
+}
+
+.scorecard td.module {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.scorecard td.bullish {
+  color: #22C55E;
+  font-weight: 900;
+}
+
+.scorecard td.bearish {
+  color: #EF4444;
+  font-weight: 900;
+}
+
+.scorecard td.why {
+  color: #999999;
+}
+
+/* API SNIPPET */
+.api-snippet {
+  padding: 0 40px 80px;
+}
+
+.api-snippet h2 {
+  font-weight: 900;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  letter-spacing: 0.02em;
+}
+
+.code-block {
+  background: #1A1A1A;
+  border: 2px solid #FFFFFF;
+  box-shadow: 4px 4px 0 #FFFFFF;
+  padding: 28px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+  color: #FFFFFF;
+}
+
+.code-block .comment {
+  color: #666666;
+}
+
+.code-block .string {
+  color: #FF6600;
+}
+
+.code-block .key {
+  color: #999999;
+}
+
+/* CTA */
+.cta {
+  padding: 0 40px 80px;
+}
+
+.cta-button {
+  display: block;
+  width: 100%;
+  background: #FF6600;
+  color: #000000;
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 24px;
+  border: 2px solid #FFFFFF;
+  box-shadow: 4px 4px 0 #FFFFFF;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* FOOTER */
+footer {
+  padding: 28px 40px;
+  border-top: 2px solid #333333;
+}
+
+footer p {
+  font-size: 0.75rem;
+  color: #666666;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  nav {
+    padding: 16px 20px;
+  }
+
+  .hero {
+    padding: 60px 20px 50px;
+  }
+
+  .hero .tagline {
+    font-size: 1rem;
+  }
+
+  .value-grid {
+    grid-template-columns: 1fr;
+    padding: 0 20px 50px;
+    gap: 16px;
+  }
+
+  .scorecard {
+    padding: 0 20px 50px;
+    overflow-x: auto;
+  }
+
+  .scorecard table {
+    min-width: 500px;
+  }
+
+  .api-snippet {
+    padding: 0 20px 50px;
+  }
+
+  .code-block {
+    font-size: 0.75rem;
+    padding: 20px;
+  }
+
+  .cta {
+    padding: 0 20px 50px;
+  }
+
+  footer {
+    padding: 20px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">CONTEXT8</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>
+    CRYPTO SIGNALS DISAGREE.<br>
+    <span class="underlined">THAT'S THE POINT.</span>
+  </h1>
+  <p class="tagline">23 independent modules. When they fight, you profit.</p>
+</section>
+
+<!-- VALUE GRID -->
+<section class="value-grid">
+  <div class="value-box">
+    <div class="number">23</div>
+    <div class="label">Analysis Modules</div>
+  </div>
+  <div class="value-box">
+    <div class="number">6</div>
+    <div class="label">Conflict Signals Daily</div>
+  </div>
+  <div class="value-box">
+    <div class="number">1</div>
+    <div class="label">API Key</div>
+  </div>
+</section>
+
+<!-- SCORECARD -->
+<section class="scorecard">
+  <h2>Live Scorecard</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Module</th>
+        <th>Bias</th>
+        <th>Why</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="module">TA Scanner</td>
+        <td class="bullish">BULLISH</td>
+        <td class="why">RSI 58, MACD+</td>
+      </tr>
+      <tr>
+        <td class="module">Funding</td>
+        <td class="bearish">BEARISH</td>
+        <td class="why">Crowded longs, z: 1.4</td>
+      </tr>
+      <tr>
+        <td class="module">OI Divergence</td>
+        <td class="bearish">BEARISH</td>
+        <td class="why">Shorts accumulating</td>
+      </tr>
+      <tr>
+        <td class="module">Social</td>
+        <td class="bullish">BULLISH</td>
+        <td class="why">Greed 72</td>
+      </tr>
+      <tr>
+        <td class="module">Macro</td>
+        <td class="bearish">BEARISH</td>
+        <td class="why">DXY up, risk-off</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- API SNIPPET -->
+<section class="api-snippet">
+  <h2>One Call</h2>
+  <div class="code-block"><span class="comment"># Fetch today's scorecard</span>
+curl <span class="string">https://api.context8.markets/v1/scorecard</span> \
+  -H <span class="string">"Authorization: Bearer YOUR_API_KEY"</span>
+
+<span class="comment"># Response</span>
+{
+  <span class="key">"consensus"</span>: <span class="string">"CONFLICTED"</span>,
+  <span class="key">"bullish"</span>: 2,
+  <span class="key">"bearish"</span>: 3,
+  <span class="key">"signal"</span>: <span class="string">"WAIT"</span>,
+  <span class="key">"confidence"</span>: 0.41
+}</div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <a href="#" class="cta-button">GET KEY &rarr;</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Context8 &copy; 2026</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Context8 — Crypto Signals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #FFFFFF;
+      color: #000000;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      padding: 24px 32px;
+      border-bottom: 2px solid #000000;
+    }
+
+    nav .logo {
+      font-weight: 900;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    /* HERO */
+    .hero {
+      padding: 80px 32px 64px;
+      border-bottom: 2px solid #000000;
+    }
+
+    .hero h1 {
+      font-weight: 900;
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .hero h1 .underlined {
+      display: inline;
+      border-bottom: 4px solid #FF6600;
+      padding-bottom: 2px;
+    }
+
+    .hero p {
+      margin-top: 24px;
+      font-size: 1.125rem;
+      max-width: 520px;
+    }
+
+    /* VALUE GRID */
+    .value-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 2px solid #000000;
+    }
+
+    .value-box {
+      padding: 48px 32px;
+      border: 2px solid #000000;
+      box-shadow: 4px 4px 0 #000000;
+      margin: 32px;
+      text-align: center;
+    }
+
+    .value-box .number {
+      font-weight: 900;
+      font-size: clamp(3rem, 6vw, 5rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .value-box .label {
+      margin-top: 8px;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* SCORECARD */
+    .scorecard {
+      padding: 64px 32px;
+      border-bottom: 2px solid #000000;
+    }
+
+    .scorecard h2 {
+      font-weight: 900;
+      font-size: 1.5rem;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .scorecard table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #000000;
+    }
+
+    .scorecard thead tr {
+      background: #FF6600;
+    }
+
+    .scorecard th,
+    .scorecard td {
+      padding: 12px 16px;
+      border: 2px solid #000000;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .scorecard th {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.8rem;
+    }
+
+    .scorecard td.module {
+      font-weight: 900;
+    }
+
+    .scorecard .bullish {
+      color: #00AA00;
+      font-weight: 900;
+    }
+
+    .scorecard .bearish {
+      color: #DD0000;
+      font-weight: 900;
+    }
+
+    /* CTA */
+    .cta {
+      padding: 32px;
+      border-bottom: 2px solid #000000;
+    }
+
+    .cta-button {
+      display: block;
+      width: 100%;
+      padding: 24px;
+      background: #FF6600;
+      color: #000000;
+      font-family: 'Inter', sans-serif;
+      font-weight: 900;
+      font-size: 1.25rem;
+      text-align: center;
+      border: 2px solid #000000;
+      box-shadow: 4px 4px 0 #000000;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 24px 32px;
+      font-size: 0.8rem;
+    }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      .value-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .value-box {
+        margin: 16px 32px;
+      }
+
+      .value-grid .value-box:last-child {
+        margin-bottom: 32px;
+      }
+
+      .scorecard {
+        padding: 48px 16px;
+        overflow-x: auto;
+      }
+
+      .hero {
+        padding: 48px 24px 40px;
+      }
+
+      nav {
+        padding: 20px 24px;
+      }
+
+      .cta {
+        padding: 24px;
+      }
+
+      footer {
+        padding: 20px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">CONTEXT8</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>
+      CRYPTO SIGNALS DISAGREE.<br>
+      THAT'S <span class="underlined">THE POINT</span>.
+    </h1>
+    <p>23 independent modules. When they fight, you profit.</p>
+  </section>
+
+  <!-- VALUE GRID -->
+  <section class="value-grid">
+    <div class="value-box">
+      <div class="number">23</div>
+      <div class="label">Analysis Modules</div>
+    </div>
+    <div class="value-box">
+      <div class="number">6</div>
+      <div class="label">Conflict Signals Daily</div>
+    </div>
+    <div class="value-box">
+      <div class="number">1</div>
+      <div class="label">API Key</div>
+    </div>
+  </section>
+
+  <!-- SCORECARD -->
+  <section class="scorecard">
+    <h2>LIVE SCORECARD</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Bias</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="module">TA Scanner</td>
+          <td class="bullish">BULLISH</td>
+          <td>RSI 58, MACD+</td>
+        </tr>
+        <tr>
+          <td class="module">Funding</td>
+          <td class="bearish">BEARISH</td>
+          <td>Crowded longs, z: 1.4</td>
+        </tr>
+        <tr>
+          <td class="module">OI Divergence</td>
+          <td class="bearish">BEARISH</td>
+          <td>Shorts accumulating</td>
+        </tr>
+        <tr>
+          <td class="module">Social</td>
+          <td class="bullish">BULLISH</td>
+          <td>Greed 72</td>
+        </tr>
+        <tr>
+          <td class="module">Macro</td>
+          <td class="bearish">BEARISH</td>
+          <td>DXY up, risk-off</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <a href="#" class="cta-button">GET KEY &rarr;</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    Context8 &copy; 2026
+  </footer>
+
+</body>
+</html>

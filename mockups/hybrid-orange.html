@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Context8 — Crypto Intelligence API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0D1117;
+  --surface: #161B22;
+  --border: #30363D;
+  --text: #F0F6FC;
+  --text-secondary: #8B949E;
+  --text-muted: #6E7681;
+  --accent: #FF8C00;
+  --accent-hover: #FFA333;
+  --accent-dim: rgba(255, 140, 0, 0.10);
+  --bull: #00E676;
+  --bear: #FF1744;
+  --bull-dim: rgba(0, 230, 118, 0.12);
+  --bear-dim: rgba(255, 23, 68, 0.12);
+  --code-bg: #1C2128;
+  --radius: 6px;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* ── FOCUS STYLES ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── CONTAINER ── */
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── NAV ── */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(13, 17, 23, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-logo-mark {
+  width: 22px;
+  height: 22px;
+  background: var(--accent);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #000;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.nav-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 200ms;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: var(--text);
+}
+
+.nav-cta {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #000;
+  background: var(--accent);
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: background 200ms;
+}
+
+.nav-cta:hover,
+.nav-cta:focus-visible {
+  background: var(--accent-hover);
+}
+
+.nav-mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ── HERO ── */
+.hero {
+  padding-top: 120px;
+  padding-bottom: 80px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+/* LEFT: brutal-dark hero typography */
+.hero-copy {
+  padding-top: 16px;
+}
+
+.hero h1 {
+  font-weight: 800;
+  font-size: clamp(2.5rem, 4vw, 3.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.hero-accent {
+  display: block;
+  color: var(--accent);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 8px;
+}
+
+/* VALUE GRID: 23 / 6 / 1 */
+.hero-values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 36px 0 40px;
+}
+
+.hero-value {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.hero-value-num {
+  font-weight: 800;
+  font-size: clamp(2.25rem, 3.5vw, 3rem);
+  line-height: 1;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+}
+
+.hero-value-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 6px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  background: var(--accent);
+  color: #000;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 200ms;
+  text-decoration: none;
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background: var(--accent-hover);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 200ms, border-color 200ms;
+  text-decoration: none;
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+/* ── RIGHT: Bloomberg scorecard ── */
+.scorecard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.scorecard-header {
+  background: var(--accent);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+}
+
+.scorecard-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scorecard-asset {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.scorecard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scorecard-table thead th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--surface);
+}
+
+.scorecard-table thead th:last-child {
+  text-align: right;
+}
+
+.scorecard-table tbody tr {
+  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.scorecard-table tbody tr:nth-child(even) {
+  background: rgba(28, 33, 40, 0.6);
+}
+
+.scorecard-table tbody td {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8125rem;
+  padding: 7px 12px;
+  vertical-align: middle;
+}
+
+.scorecard-table tbody td:last-child {
+  text-align: right;
+}
+
+.scorecard-module {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.scorecard-detail {
+  color: var(--text-secondary);
+  font-size: 0.6875rem;
+}
+
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-align: center;
+  min-width: 40px;
+}
+
+.tag--bull {
+  background: var(--bull);
+  color: #000;
+}
+
+.tag--bear {
+  background: var(--bear);
+  color: #fff;
+}
+
+/* Confidence bars */
+.conf-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.conf-track {
+  width: 48px;
+  height: 4px;
+  background: rgba(48, 54, 61, 0.8);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.conf-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.conf-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* Verdict row */
+.scorecard-verdict {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-top: 2px solid var(--accent);
+  background: rgba(255, 140, 0, 0.06);
+}
+
+.scorecard-verdict-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--bear);
+}
+
+.scorecard-verdict-conf {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+}
+
+/* Status indicator dot */
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: blink 2s ease-in-out infinite;
+}
+
+.status-dot--live { background: var(--bull); }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ── FEATURES STRIP ── */
+.features {
+  padding: 0 0 80px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  transition: border-color 200ms;
+}
+
+.feature-card:hover {
+  border-color: #3D444D;
+  border-top-color: var(--accent);
+}
+
+.feature-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dim);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  color: var(--accent);
+}
+
+.feature-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.feature-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.feature-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* ── API PREVIEW ── */
+.api-preview {
+  padding-bottom: 80px;
+}
+
+.api-section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.api-section-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+
+.api-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.api-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.api-card-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.api-card-dot--red { background: #FF5F57; }
+.api-card-dot--yellow { background: #FEBC2E; }
+.api-card-dot--green { background: #28C840; }
+
+.api-card-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.api-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.api-col + .api-col {
+  border-left: 1px solid var(--border);
+}
+
+.api-col-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.code-block {
+  padding: 16px 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text-secondary);
+  background: var(--code-bg);
+}
+
+.code-block pre {
+  margin: 0;
+  white-space: pre;
+}
+
+.c-comment { color: var(--text-muted); }
+.c-key { color: var(--accent); }
+.c-string { color: var(--bull); }
+.c-number { color: var(--text); }
+.c-method { color: #79C0FF; }
+.c-url { color: var(--text-secondary); }
+.c-bull { color: var(--bull); }
+.c-bear { color: var(--bear); }
+
+/* ── CTA ── */
+.cta-section {
+  padding: 80px 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.cta-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  margin-bottom: 36px;
+}
+
+.cta-form {
+  display: flex;
+  align-items: stretch;
+  max-width: 440px;
+  margin: 0 auto;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: border-color 200ms;
+}
+
+.cta-form:focus-within {
+  border-color: var(--accent);
+}
+
+.cta-input {
+  flex: 1;
+  padding: 14px 18px;
+  background: var(--bg);
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9375rem;
+}
+
+.cta-input::placeholder {
+  color: var(--text-muted);
+}
+
+.cta-submit {
+  padding: 14px 24px;
+  background: var(--accent);
+  color: #000;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 200ms;
+}
+
+.cta-submit:hover,
+.cta-submit:focus-visible {
+  background: var(--accent-hover);
+}
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-left {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-link {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 200ms;
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+  color: var(--accent);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .hero {
+    padding-top: 96px;
+    padding-bottom: 56px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+  }
+
+  .hero-values {
+    max-width: 400px;
+  }
+
+  .scorecard {
+    max-width: 520px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 56px;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    gap: 16px;
+  }
+
+  .nav-mobile-toggle {
+    display: block;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .api-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .api-col + .api-col {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .cta-form {
+    flex-direction: column;
+  }
+
+  .cta-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .hero h1 {
+    font-size: 1.75rem;
+  }
+
+  .hero-values {
+    gap: 10px;
+  }
+
+  .hero-value {
+    padding: 14px 10px;
+  }
+
+  .hero-value-num {
+    font-size: 2rem;
+  }
+
+  .scorecard-table thead th,
+  .scorecard-table tbody td {
+    padding: 6px 8px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary, .btn-ghost {
+    justify-content: center;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <a class="nav-logo" href="#">
+    <span class="nav-logo-mark">C8</span>
+    Context8
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#api">API</a>
+    <a class="nav-link" href="#pricing">Pricing</a>
+    <a class="nav-cta" href="#cta">Get API Key</a>
+  </div>
+  <button class="nav-mobile-toggle" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+
+      <!-- LEFT: massive headline + value grid -->
+      <div class="hero-copy">
+        <h1>Crypto signals that fight each other.</h1>
+        <span class="hero-accent">That's the alpha.</span>
+
+        <div class="hero-values">
+          <div class="hero-value">
+            <div class="hero-value-num">23</div>
+            <div class="hero-value-label">Analysis Modules</div>
+          </div>
+          <div class="hero-value">
+            <div class="hero-value-num">6</div>
+            <div class="hero-value-label">Conflict Signals</div>
+          </div>
+          <div class="hero-value">
+            <div class="hero-value-num">1</div>
+            <div class="hero-value-label">API Key</div>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <a class="btn-primary" href="#cta">Get API Key
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a class="btn-ghost" href="#api">Documentation</a>
+        </div>
+      </div>
+
+      <!-- RIGHT: Bloomberg scorecard -->
+      <div class="scorecard">
+        <div class="scorecard-header">
+          <span class="scorecard-title"><span class="status-dot status-dot--live"></span> Module Scorecard</span>
+          <span class="scorecard-asset">BTC / USD</span>
+        </div>
+        <table class="scorecard-table" aria-label="Signal scorecard for BTC/USD">
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th>Bias</th>
+              <th>Detail</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="scorecard-module">TA Scanner</td>
+              <td><span class="tag tag--bull">BULL</span></td>
+              <td class="scorecard-detail">RSI 58, MACD+, EMA200 hold</td>
+              <td>
+                <span class="conf-bar">
+                  <span class="conf-track"><span class="conf-fill" style="width:70%;background:var(--bull)"></span></span>
+                  <span class="conf-val">70%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="scorecard-module">Funding Rate</td>
+              <td><span class="tag tag--bear">BEAR</span></td>
+              <td class="scorecard-detail">Longs crowded, z-score: 1.4</td>
+              <td>
+                <span class="conf-bar">
+                  <span class="conf-track"><span class="conf-fill" style="width:80%;background:var(--bear)"></span></span>
+                  <span class="conf-val">80%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="scorecard-module">OI Divergence</td>
+              <td><span class="tag tag--bear">BEAR</span></td>
+              <td class="scorecard-detail">OI +8%, shorts accumulating</td>
+              <td>
+                <span class="conf-bar">
+                  <span class="conf-track"><span class="conf-fill" style="width:65%;background:var(--bear)"></span></span>
+                  <span class="conf-val">65%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="scorecard-module">Social Intel</td>
+              <td><span class="tag tag--bull">BULL</span></td>
+              <td class="scorecard-detail">Greed index: 72, CT bullish</td>
+              <td>
+                <span class="conf-bar">
+                  <span class="conf-track"><span class="conf-fill" style="width:55%;background:var(--bull)"></span></span>
+                  <span class="conf-val">55%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="scorecard-module">Macro Regime</td>
+              <td><span class="tag tag--bear">BEAR</span></td>
+              <td class="scorecard-detail">DXY up +0.3%, risk-off</td>
+              <td>
+                <span class="conf-bar">
+                  <span class="conf-track"><span class="conf-fill" style="width:75%;background:var(--bear)"></span></span>
+                  <span class="conf-val">75%</span>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="scorecard-module">Fear &amp; Greed</td>
+              <td><span class="tag tag--bear">BEAR</span></td>
+              <td class="scorecard-detail">Index: 28, extreme fear</td>
+              <td>
+                <span class="conf-bar">
+                  <span class="conf-track"><span class="conf-fill" style="width:60%;background:var(--bear)"></span></span>
+                  <span class="conf-val">60%</span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="scorecard-verdict">
+          <span class="scorecard-verdict-label">BEARISH 4-2</span>
+          <span class="scorecard-verdict-conf">Conviction: 3 / 10</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+            <path d="m15 9-6 6"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Conflict Detection</h3>
+        <p class="feature-desc">Six modules analyze every asset independently. When they disagree, you see the only signal that matters: uncertainty itself.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Crowded Trades</h3>
+        <p class="feature-desc">Spot overleveraged positions before they unwind. Z-score rankings reveal assets primed for liquidation cascades.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Divergence Watch</h3>
+        <p class="feature-desc">Sentiment says one thing, price says another. Divergence alerts catch moves before they happen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API PREVIEW -->
+<section class="api-preview" id="api">
+  <div class="container">
+    <div class="api-section-label">Developer Experience</div>
+    <h2 class="api-section-title">One call. Full scorecard.</h2>
+    <div class="api-card">
+      <div class="api-card-header">
+        <span class="api-card-dot api-card-dot--red"></span>
+        <span class="api-card-dot api-card-dot--yellow"></span>
+        <span class="api-card-dot api-card-dot--green"></span>
+        <span class="api-card-label">terminal</span>
+      </div>
+      <div class="api-columns">
+        <div class="api-col">
+          <div class="api-col-label">Request</div>
+          <div class="code-block"><pre><span class="c-method">curl</span> <span class="c-url">https://api.context8.markets/v1/signals</span> \
+  <span class="c-comment">-H</span> <span class="c-string">"Authorization: Bearer ctx8_sk_..."</span> \
+  <span class="c-comment">-d</span> <span class="c-string">'{"asset": "BTC", "modules": "all"}'</span></pre></div>
+        </div>
+        <div class="api-col">
+          <div class="api-col-label">Response</div>
+          <div class="code-block"><pre>{
+  <span class="c-key">"asset"</span>: <span class="c-string">"BTC"</span>,
+  <span class="c-key">"verdict"</span>: <span class="c-bear">"BEARISH"</span>,
+  <span class="c-key">"score"</span>: <span class="c-string">"4-2"</span>,
+  <span class="c-key">"conviction"</span>: <span class="c-number">3</span>,
+  <span class="c-key">"conflicts"</span>: <span class="c-number">4</span>,
+  <span class="c-key">"modules"</span>: [
+    { <span class="c-key">"name"</span>: <span class="c-string">"ta_scanner"</span>,  <span class="c-key">"signal"</span>: <span class="c-bull">"BULL"</span>, <span class="c-key">"conf"</span>: <span class="c-number">0.70</span> },
+    { <span class="c-key">"name"</span>: <span class="c-string">"funding"</span>,     <span class="c-key">"signal"</span>: <span class="c-bear">"BEAR"</span>, <span class="c-key">"conf"</span>: <span class="c-number">0.80</span> },
+    { <span class="c-key">"name"</span>: <span class="c-string">"oi_diverge"</span>,  <span class="c-key">"signal"</span>: <span class="c-bear">"BEAR"</span>, <span class="c-key">"conf"</span>: <span class="c-number">0.65</span> },
+    { <span class="c-key">"name"</span>: <span class="c-string">"social"</span>,      <span class="c-key">"signal"</span>: <span class="c-bull">"BULL"</span>, <span class="c-key">"conf"</span>: <span class="c-number">0.55</span> },
+    { <span class="c-key">"name"</span>: <span class="c-string">"macro"</span>,       <span class="c-key">"signal"</span>: <span class="c-bear">"BEAR"</span>, <span class="c-key">"conf"</span>: <span class="c-number">0.75</span> },
+    { <span class="c-key">"name"</span>: <span class="c-string">"fear_greed"</span>,  <span class="c-key">"signal"</span>: <span class="c-bear">"BEAR"</span>, <span class="c-key">"conf"</span>: <span class="c-number">0.60</span> }
+  ]
+}</pre></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="container">
+    <h2>Start trading smarter</h2>
+    <p class="cta-subtitle">Free tier. No credit card. Ship in minutes.</p>
+    <form class="cta-form" onsubmit="return false;">
+      <label for="cta-email" class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0;">Email address</label>
+      <input type="email" id="cta-email" class="cta-input" placeholder="you@company.com" autocomplete="email">
+      <button type="submit" class="cta-submit">Get Key
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:4px"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <span class="footer-left">&copy; 2026 Context8</span>
+      <div class="footer-links">
+        <a class="footer-link" href="#">Docs</a>
+        <a class="footer-link" href="#">Pricing</a>
+        <a class="footer-link" href="#">Status</a>
+        <a class="footer-link" href="#">GitHub</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function() {
+  var toggle = document.getElementById('navToggle');
+  var links = document.getElementById('navLinks');
+  if (toggle && links) {
+    toggle.addEventListener('click', function() {
+      var isOpen = links.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

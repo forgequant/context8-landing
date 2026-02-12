@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONTEXT8 TERMINAL</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0D1117;
+  --bg-panel: #0F1620;
+  --bg-row-alt: #111B27;
+  --orange: #FF8C00;
+  --orange-dim: #CC7000;
+  --green: #00E676;
+  --red: #FF1744;
+  --blue: #448AFF;
+  --white: #FFFFFF;
+  --text: #D0D7DE;
+  --dim: #6E7681;
+  --dimmer: #484F58;
+  --border: #21262D;
+  --border-light: #30363D;
+  --yellow: #FFC107;
+}
+
+html {
+  font-size: 13px;
+}
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP BAR (Bloomberg orange header) ── */
+.top-bar {
+  background: var(--orange);
+  color: #000;
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 0.77rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.top-bar-title {
+  margin-right: 24px;
+  white-space: nowrap;
+}
+
+.top-bar-nav {
+  display: flex;
+  gap: 2px;
+}
+
+.nav-key {
+  background: #000;
+  color: var(--orange);
+  padding: 2px 6px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.nav-key:hover {
+  background: #1A1A1A;
+  color: #FFA533;
+}
+
+.nav-key.active {
+  background: var(--orange-dim);
+  color: #000;
+}
+
+.top-bar-right {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #000;
+  opacity: 0.7;
+}
+
+/* ── SUB-HEADER ── */
+.sub-header {
+  background: #161B22;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 0.69rem;
+  color: var(--dim);
+  height: 24px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.sub-header .asset {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.sub-header .price {
+  color: var(--white);
+  font-weight: 600;
+}
+
+.sub-header .change-pos {
+  color: var(--green);
+  font-weight: 500;
+}
+
+.sub-header .change-neg {
+  color: var(--red);
+  font-weight: 500;
+}
+
+.sub-header .sep {
+  color: var(--dimmer);
+}
+
+/* ── MAIN CONTENT ── */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panels {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 65% 35%;
+  overflow: hidden;
+}
+
+/* ── PANEL STRUCTURE ── */
+.panel {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel:last-child {
+  border-right: none;
+}
+
+.panel-header {
+  background: #161B22;
+  border-bottom: 1px solid var(--border);
+  padding: 3px 8px;
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--orange);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.panel-header .count {
+  color: var(--dim);
+  font-weight: 400;
+  font-size: 0.62rem;
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ── DATA TABLE ── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.73rem;
+}
+
+.data-table thead th {
+  background: #161B22;
+  color: var(--dim);
+  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 3px 8px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+}
+
+.data-table thead th.right {
+  text-align: right;
+}
+
+.data-table thead th.center {
+  text-align: center;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid #151C25;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: var(--bg-row-alt);
+}
+
+.data-table tbody tr:hover {
+  background: #1A2332;
+}
+
+.data-table tbody td {
+  padding: 4px 8px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.data-table tbody td.right {
+  text-align: right;
+}
+
+.data-table tbody td.center {
+  text-align: center;
+}
+
+/* ── TAGS ── */
+.tag {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  min-width: 38px;
+}
+
+.tag-bull {
+  background: var(--green);
+  color: #000;
+}
+
+.tag-bear {
+  background: var(--red);
+  color: #fff;
+}
+
+.tag-neutral {
+  background: var(--dimmer);
+  color: var(--text);
+}
+
+/* ── CONFIDENCE BAR ── */
+.conf-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.conf-bar-track {
+  width: 40px;
+  height: 4px;
+  background: #21262D;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.conf-bar-fill {
+  height: 100%;
+  border-radius: 1px;
+}
+
+.conf-val {
+  font-size: 0.65rem;
+  color: var(--dim);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ── VERDICT ROW ── */
+.verdict-row {
+  background: #161B22;
+  border-top: 2px solid var(--orange);
+}
+
+.verdict-row td {
+  padding: 5px 8px;
+  font-weight: 700;
+  font-size: 0.73rem;
+}
+
+.verdict-label {
+  color: var(--orange);
+  letter-spacing: 0.06em;
+}
+
+/* ── RIGHT PANEL SECTIONS ── */
+.right-section {
+  border-bottom: 1px solid var(--border);
+}
+
+.right-section:last-child {
+  border-bottom: none;
+}
+
+/* ── CROWDED LIST ── */
+.crowd-entry {
+  padding: 4px 8px;
+  font-size: 0.73rem;
+  border-bottom: 1px solid #151C25;
+  display: grid;
+  grid-template-columns: 20px 44px 1fr auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.crowd-entry:nth-child(even) {
+  background: var(--bg-row-alt);
+}
+
+.crowd-entry:hover {
+  background: #1A2332;
+}
+
+.crowd-rank {
+  color: var(--dimmer);
+  font-size: 0.65rem;
+  text-align: right;
+}
+
+.crowd-ticker {
+  font-weight: 700;
+  color: var(--white);
+}
+
+.crowd-type {
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.crowd-type.long {
+  color: var(--red);
+}
+
+.crowd-type.short {
+  color: var(--green);
+}
+
+.crowd-z {
+  font-size: 0.65rem;
+  color: var(--dim);
+  text-align: right;
+}
+
+.crowd-history {
+  grid-column: 3 / 5;
+  font-size: 0.6rem;
+  color: var(--dimmer);
+  padding-left: 0;
+}
+
+/* ── DIVERGENCE SECTION ── */
+.div-entry {
+  padding: 4px 8px;
+  font-size: 0.73rem;
+  border-bottom: 1px solid #151C25;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.div-entry:nth-child(even) {
+  background: var(--bg-row-alt);
+}
+
+.div-entry:hover {
+  background: #1A2332;
+}
+
+.div-ticker {
+  font-weight: 700;
+  color: var(--white);
+}
+
+.div-desc {
+  font-size: 0.65rem;
+  color: var(--dim);
+}
+
+.div-status {
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.div-status.pending {
+  color: var(--yellow);
+}
+
+.div-status.noconf {
+  color: var(--dimmer);
+}
+
+/* ── API STRIP ── */
+.api-strip {
+  background: #161B22;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 30px;
+  gap: 8px;
+  font-size: 0.69rem;
+  flex-shrink: 0;
+}
+
+.api-strip-label {
+  color: var(--orange);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.api-strip-input {
+  background: #0D1117;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.69rem;
+  padding: 3px 6px;
+  width: 220px;
+  outline: none;
+  caret-color: var(--orange);
+}
+
+.api-strip-input:focus {
+  border-color: var(--orange);
+}
+
+.api-strip-input::placeholder {
+  color: var(--dimmer);
+}
+
+.api-strip-btn {
+  background: var(--orange);
+  color: #000;
+  border: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.api-strip-btn:hover {
+  background: #FFA533;
+}
+
+.api-strip-sep {
+  color: var(--dimmer);
+}
+
+.api-strip-info {
+  color: var(--dim);
+  font-size: 0.62rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.api-strip-info a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.api-strip-info a:hover {
+  text-decoration: underline;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: #0B0F14;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 22px;
+  font-size: 0.6rem;
+  color: var(--dimmer);
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.status-bar .live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  display: inline-block;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.status-bar .status-live {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.status-bar .status-right {
+  margin-left: auto;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  html {
+    font-size: 11px;
+  }
+
+  .panels {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  .panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow: visible;
+  }
+
+  .top-bar-right {
+    display: none;
+  }
+
+  .sub-header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 4px 8px;
+    gap: 6px;
+  }
+
+  .api-strip {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .api-strip-input {
+    width: 100%;
+    order: 2;
+  }
+
+  .api-strip-btn {
+    order: 3;
+  }
+
+  .api-strip-info {
+    order: 4;
+    margin-left: 0;
+  }
+
+  .status-bar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 4px 8px;
+    gap: 6px;
+  }
+
+  .crowd-entry {
+    grid-template-columns: 16px 40px 1fr auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-key {
+    font-size: 0.58rem;
+    padding: 2px 4px;
+  }
+
+  .top-bar-title {
+    font-size: 0.65rem;
+    margin-right: 8px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+  <span class="top-bar-title">CONTEXT8 TERMINAL</span>
+  <nav class="top-bar-nav">
+    <span class="nav-key active">F1 SIGNALS</span>
+    <span class="nav-key">F2 CONFLICTS</span>
+    <span class="nav-key">F3 CROWDED</span>
+    <span class="nav-key">F5 API</span>
+    <span class="nav-key">F7 DOCS</span>
+    <span class="nav-key">F10 SETTINGS</span>
+  </nav>
+  <span class="top-bar-right">12 FEB 2026 08:00 UTC</span>
+</header>
+
+<!-- SUB-HEADER -->
+<div class="sub-header">
+  <span class="asset">BTC/USD</span>
+  <span class="price">97,284.50</span>
+  <span class="change-pos">+2.41%</span>
+  <span class="sep">|</span>
+  <span>24h Vol: $48.2B</span>
+  <span class="sep">|</span>
+  <span>MCap: $1.93T</span>
+  <span class="sep">|</span>
+  <span>Dom: 56.8%</span>
+  <span class="sep">|</span>
+  <span>Funding: <span class="change-pos">+0.012%</span></span>
+  <span class="sep">|</span>
+  <span>OI: $18.4B</span>
+</div>
+
+<!-- MAIN PANELS -->
+<section class="main-content">
+  <div class="panels">
+
+    <!-- LEFT PANEL: Module Scorecard -->
+    <div class="panel">
+      <div class="panel-header">
+        Module Scorecard
+        <span class="count">BTC &mdash; 6 modules active</span>
+      </div>
+      <div class="panel-body">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:24px">#</th>
+              <th>Module</th>
+              <th class="center">Bias</th>
+              <th>Key Metric</th>
+              <th class="right">Conf</th>
+              <th class="right">Weight</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--dimmer)">1</td>
+              <td style="color:var(--white);font-weight:500">TA SCANNER</td>
+              <td class="center"><span class="tag tag-bull">BULL</span></td>
+              <td>RSI 58 | MACD bullish cross | EMA200 support hold</td>
+              <td class="right">
+                <span class="conf-bar">
+                  <span class="conf-bar-track"><span class="conf-bar-fill" style="width:70%;background:var(--green)"></span></span>
+                  <span class="conf-val">70%</span>
+                </span>
+              </td>
+              <td class="right" style="color:var(--dim)">1.0x</td>
+            </tr>
+            <tr>
+              <td style="color:var(--dimmer)">2</td>
+              <td style="color:var(--white);font-weight:500">FUNDING RATE</td>
+              <td class="center"><span class="tag tag-bear">BEAR</span></td>
+              <td>Rate +0.012% | Crowded longs detected | z-score: 1.4</td>
+              <td class="right">
+                <span class="conf-bar">
+                  <span class="conf-bar-track"><span class="conf-bar-fill" style="width:80%;background:var(--red)"></span></span>
+                  <span class="conf-val">80%</span>
+                </span>
+              </td>
+              <td class="right" style="color:var(--dim)">1.2x</td>
+            </tr>
+            <tr>
+              <td style="color:var(--dimmer)">3</td>
+              <td style="color:var(--white);font-weight:500">OI DIVERGENCE</td>
+              <td class="center"><span class="tag tag-bear">BEAR</span></td>
+              <td>OI +8% while price flat | Short accumulation detected</td>
+              <td class="right">
+                <span class="conf-bar">
+                  <span class="conf-bar-track"><span class="conf-bar-fill" style="width:65%;background:var(--red)"></span></span>
+                  <span class="conf-val">65%</span>
+                </span>
+              </td>
+              <td class="right" style="color:var(--dim)">1.1x</td>
+            </tr>
+            <tr>
+              <td style="color:var(--dimmer)">4</td>
+              <td style="color:var(--white);font-weight:500">SOCIAL INTEL</td>
+              <td class="center"><span class="tag tag-bull">BULL</span></td>
+              <td>Greed index 72 | CT sentiment bullish | Volume spike</td>
+              <td class="right">
+                <span class="conf-bar">
+                  <span class="conf-bar-track"><span class="conf-bar-fill" style="width:55%;background:var(--green)"></span></span>
+                  <span class="conf-val">55%</span>
+                </span>
+              </td>
+              <td class="right" style="color:var(--dim)">0.8x</td>
+            </tr>
+            <tr>
+              <td style="color:var(--dimmer)">5</td>
+              <td style="color:var(--white);font-weight:500">MACRO REGIME</td>
+              <td class="center"><span class="tag tag-bear">BEAR</span></td>
+              <td>DXY up +0.3% | 10Y yield rising | Risk-off regime</td>
+              <td class="right">
+                <span class="conf-bar">
+                  <span class="conf-bar-track"><span class="conf-bar-fill" style="width:75%;background:var(--red)"></span></span>
+                  <span class="conf-val">75%</span>
+                </span>
+              </td>
+              <td class="right" style="color:var(--dim)">1.3x</td>
+            </tr>
+            <tr>
+              <td style="color:var(--dimmer)">6</td>
+              <td style="color:var(--white);font-weight:500">FEAR &amp; GREED</td>
+              <td class="center"><span class="tag tag-bear">BEAR</span></td>
+              <td>Index: 28 (Extreme Fear) | 7d avg: 35 | Declining</td>
+              <td class="right">
+                <span class="conf-bar">
+                  <span class="conf-bar-track"><span class="conf-bar-fill" style="width:60%;background:var(--red)"></span></span>
+                  <span class="conf-val">60%</span>
+                </span>
+              </td>
+              <td class="right" style="color:var(--dim)">0.9x</td>
+            </tr>
+          </tbody>
+          <!-- VERDICT -->
+          <tfoot>
+            <tr class="verdict-row">
+              <td></td>
+              <td><span class="verdict-label">VERDICT</span></td>
+              <td class="center"><span class="tag tag-bear">BEAR</span></td>
+              <td style="color:var(--white)">BEARISH LEAN 4-2 | Weighted Score: -0.34</td>
+              <td class="right" style="color:var(--orange);font-weight:700">3/10</td>
+              <td class="right" style="color:var(--dim);font-size:0.62rem">CONVICTION</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Crowded Trades + Divergence -->
+    <div class="panel">
+      <!-- Crowded Trades -->
+      <div class="right-section">
+        <div class="panel-header">
+          Crowded Trades
+          <span class="count">Top positions by z-score</span>
+        </div>
+        <div class="panel-body">
+          <div class="crowd-entry">
+            <span class="crowd-rank">1</span>
+            <span class="crowd-ticker">DOGE</span>
+            <span class="crowd-type long">CROWDED LONGS</span>
+            <span class="crowd-z">z: 3.2</span>
+            <span class="crowd-history">Last unwind: Jan 18 &rarr; -14% in 3d</span>
+          </div>
+          <div class="crowd-entry">
+            <span class="crowd-rank">2</span>
+            <span class="crowd-ticker">SOL</span>
+            <span class="crowd-type long">CROWDED LONGS</span>
+            <span class="crowd-z">z: 2.1</span>
+            <span class="crowd-history">Last unwind: Jan 22 &rarr; -9% in 5d</span>
+          </div>
+          <div class="crowd-entry">
+            <span class="crowd-rank">3</span>
+            <span class="crowd-ticker">AVAX</span>
+            <span class="crowd-type short">CROWDED SHORTS</span>
+            <span class="crowd-z">z: -1.9</span>
+            <span class="crowd-history">Last squeeze: Dec 30 &rarr; +11% in 2d</span>
+          </div>
+          <div class="crowd-entry">
+            <span class="crowd-rank">4</span>
+            <span class="crowd-ticker">BTC</span>
+            <span class="crowd-type long">CROWDED LONGS</span>
+            <span class="crowd-z">z: 1.4</span>
+            <span class="crowd-history">Last unwind: Feb 03 &rarr; -6% in 2d</span>
+          </div>
+          <div class="crowd-entry">
+            <span class="crowd-rank">5</span>
+            <span class="crowd-ticker">PEPE</span>
+            <span class="crowd-type long">CROWDED LONGS</span>
+            <span class="crowd-z">z: 1.8</span>
+            <span class="crowd-history">Last unwind: Jan 25 &rarr; -22% in 4d</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divergence Watch -->
+      <div class="right-section">
+        <div class="panel-header">
+          Divergence Watch
+          <span class="count">Sentiment vs Price gaps</span>
+        </div>
+        <div class="panel-body">
+          <div class="div-entry">
+            <span class="div-ticker">AVAX</span>
+            <span class="div-desc">Sentiment 78 / Price flat (-0.2%)</span>
+            <span class="div-status pending">PENDING MOVE</span>
+          </div>
+          <div class="div-entry">
+            <span class="div-ticker">LINK</span>
+            <span class="div-desc">Sentiment 34 / Price +5.1%</span>
+            <span class="div-status noconf">NO CONFIRM</span>
+          </div>
+          <div class="div-entry">
+            <span class="div-ticker">MATIC</span>
+            <span class="div-desc">Sentiment 81 / Price -3.4%</span>
+            <span class="div-status pending">PENDING MOVE</span>
+          </div>
+          <div class="div-entry">
+            <span class="div-ticker">ARB</span>
+            <span class="div-desc">Sentiment 22 / Price +8.7%</span>
+            <span class="div-status noconf">NO CONFIRM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- API STRIP -->
+<div class="api-strip">
+  <span class="api-strip-label">API ACCESS:</span>
+  <input type="email" class="api-strip-input" placeholder="enter email for API key">
+  <button class="api-strip-btn" onclick="return false">GET ACCESS</button>
+  <span class="api-strip-sep">|</span>
+  <span class="api-strip-info">REST + WebSocket &mdash; 1000 req/min &mdash; <a href="#">docs</a></span>
+</div>
+
+<!-- STATUS BAR -->
+<footer class="status-bar">
+  <span class="live-dot"></span>
+  <span class="status-live">LIVE</span>
+  <span>CONTEXT8 v1.0</span>
+  <span>|</span>
+  <span>LAST UPDATE: 2026-02-12 08:00:00 UTC</span>
+  <span>|</span>
+  <span>MODULES: 6/6 ONLINE</span>
+  <span>|</span>
+  <span>LATENCY: 42ms</span>
+  <span>|</span>
+  <span>FEED: BINANCE, BYBIT, OKX</span>
+  <span class="status-right">SESSION: GUEST | F10 FOR SETTINGS</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONTEXT8 — Signal Operations Center</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #060A06;
+  --text: #A0B0A0;
+  --red: #B06040;
+  --green: #6BAB7C;
+  --yellow: #5A9B6B;
+  --border: #1E2A20;
+  --dim: #607860;
+  --dimmer: #3D5040;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, #0D150D 39px, #0D150D 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, #0D150D 39px, #0D150D 40px);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP BAR ── */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  height: 42px;
+}
+
+.top-bar-logo {
+  color: var(--yellow);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.top-bar-center {
+  color: var(--dim);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.top-bar-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* ── ALERT BANNER ── */
+.alert-banner {
+  margin-top: 42px;
+  background: #2D4A35;
+  color: #8FCF9A;
+  padding: 8px 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* ── MAIN CONTENT ── */
+.main-content {
+  padding: 16px 20px;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 60% 40%;
+  gap: 16px;
+}
+
+/* ── SECTION HEADERS ── */
+.section-header {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text);
+  padding: 8px 12px;
+  margin-bottom: 2px;
+}
+
+.section-header--yellow {
+  border-left: 3px solid var(--yellow);
+}
+
+.section-header--red {
+  border-left: 3px solid var(--red);
+}
+
+.section-header .sub {
+  color: var(--dim);
+  font-weight: 400;
+}
+
+/* ── SIGNAL BOARD ── */
+.signal-board {
+  border: 1px solid var(--border);
+}
+
+.signal-row {
+  display: grid;
+  grid-template-columns: 62px 1fr 1fr 80px;
+  align-items: center;
+  padding: 7px 12px;
+  border-bottom: 1px solid #121C14;
+  font-size: 0.75rem;
+  gap: 8px;
+}
+
+.signal-row:last-child {
+  border-bottom: none;
+}
+
+.signal-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  width: 52px;
+}
+
+.signal-tag--bull {
+  background: var(--green);
+  color: #060A06;
+}
+
+.signal-tag--bear {
+  background: var(--red);
+  color: #F0E0D8;
+}
+
+.signal-name {
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.signal-detail {
+  color: var(--dim);
+  font-size: 0.7rem;
+}
+
+.signal-conf {
+  text-align: right;
+  color: var(--dimmer);
+  font-size: 0.7rem;
+}
+
+.signal-verdict {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--yellow);
+  letter-spacing: 0.05em;
+}
+
+/* ── THREAT BOARD ── */
+.threat-board {
+  border: 1px solid var(--border);
+}
+
+.threat-entry {
+  padding: 10px 12px;
+  border-bottom: 1px solid #121C14;
+}
+
+.threat-entry:last-of-type {
+  border-bottom: none;
+}
+
+.threat-line1 {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.threat-line1 .rank {
+  color: var(--dimmer);
+}
+
+.threat-line1 .ticker {
+  font-weight: 700;
+}
+
+.threat-line1 .type--long {
+  color: var(--red);
+}
+
+.threat-line1 .type--short {
+  color: var(--green);
+}
+
+.threat-line1 .zscore {
+  color: var(--dim);
+}
+
+.threat-line2 {
+  font-size: 0.65rem;
+  color: #3A4D3C;
+  padding-left: 22px;
+}
+
+/* ── DIVERGENCE STRIP ── */
+.divergence-strip {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding: 12px 0;
+}
+
+.divergence-header {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.divergence-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--yellow);
+}
+
+.divergence-items {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.divergence-item {
+  font-size: 0.72rem;
+  color: var(--dim);
+}
+
+.divergence-item .ticker {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.divergence-item .pending {
+  color: var(--yellow);
+  font-weight: 500;
+}
+
+.divergence-item .noconf {
+  color: var(--dimmer);
+}
+
+.divergence-sep {
+  color: #1E2A20;
+}
+
+/* ── ACCESS SECTION ── */
+.access-section {
+  margin-top: 40px;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.access-title {
+  color: var(--yellow);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+
+.access-subtitle {
+  color: var(--dim);
+  font-size: 0.8rem;
+  margin-bottom: 30px;
+  letter-spacing: 0.05em;
+}
+
+.access-form {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.access-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #0A120A;
+  border: 1px solid var(--border);
+  border-right: none;
+  padding: 0 14px;
+}
+
+.access-input-wrap .prompt {
+  color: var(--dim);
+  margin-right: 8px;
+  font-size: 0.85rem;
+}
+
+.access-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  padding: 12px 0;
+  caret-color: var(--yellow);
+}
+
+.access-input::placeholder {
+  color: #3D5040;
+}
+
+.access-input-wrap .cursor-blink {
+  width: 8px;
+  height: 16px;
+  background: var(--yellow);
+  opacity: 0;
+  animation: cursor-blink 1s step-end infinite;
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.8; }
+}
+
+.access-input:focus ~ .cursor-blink {
+  display: none;
+}
+
+.access-btn {
+  background: var(--bg);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 12px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.access-btn:hover {
+  background: var(--yellow);
+  color: #060A06;
+}
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: 40px;
+  border-top: 1px solid var(--border);
+  padding: 10px 20px;
+  text-align: center;
+  font-size: 0.6rem;
+  color: #3D5040;
+  letter-spacing: 0.1em;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  html {
+    font-size: 12px;
+  }
+
+  .top-bar-center {
+    display: none;
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-row {
+    grid-template-columns: 52px 1fr 80px;
+  }
+
+  .signal-detail {
+    display: none;
+  }
+
+  .divergence-items {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .access-form {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .access-input-wrap {
+    border-right: 1px solid var(--border);
+    border-bottom: none;
+  }
+
+  .access-title {
+    font-size: 1.1rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div class="top-bar-logo">&#9670; CONTEXT8</div>
+  <div class="top-bar-center">SIGNAL OPERATIONS CENTER</div>
+  <div class="top-bar-status">
+    STATUS: OPERATIONAL <span class="status-dot"></span>
+  </div>
+</header>
+
+<!-- ALERT BANNER -->
+<div class="alert-banner">
+  &#9888; ACTIVE CONFLICTS DETECTED: 4 of 6 modules disagree on BTC &mdash; CONFIDENCE: 3/10
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+  <div class="main-grid">
+
+    <!-- SIGNAL BOARD -->
+    <section class="signal-board">
+      <div class="section-header section-header--yellow">SIGNAL BOARD <span class="sub">&mdash; BTC</span></div>
+
+      <div class="signal-row">
+        <span class="signal-tag signal-tag--bull">BULL</span>
+        <span class="signal-name">TA SCANNER</span>
+        <span class="signal-detail">RSI 58, MACD+</span>
+        <span class="signal-conf">CONF: 70%</span>
+      </div>
+
+      <div class="signal-row">
+        <span class="signal-tag signal-tag--bear">BEAR</span>
+        <span class="signal-name">FUNDING</span>
+        <span class="signal-detail">Crowded longs, z: 1.4</span>
+        <span class="signal-conf">CONF: 80%</span>
+      </div>
+
+      <div class="signal-row">
+        <span class="signal-tag signal-tag--bear">BEAR</span>
+        <span class="signal-name">OI DIVERGENCE</span>
+        <span class="signal-detail">Shorts accumulating</span>
+        <span class="signal-conf">CONF: 65%</span>
+      </div>
+
+      <div class="signal-row">
+        <span class="signal-tag signal-tag--bull">BULL</span>
+        <span class="signal-name">SOCIAL</span>
+        <span class="signal-detail">Greed index: 72</span>
+        <span class="signal-conf">CONF: 55%</span>
+      </div>
+
+      <div class="signal-row">
+        <span class="signal-tag signal-tag--bear">BEAR</span>
+        <span class="signal-name">MACRO REGIME</span>
+        <span class="signal-detail">DXY up, risk-off</span>
+        <span class="signal-conf">CONF: 75%</span>
+      </div>
+
+      <div class="signal-row">
+        <span class="signal-tag signal-tag--bear">BEAR</span>
+        <span class="signal-name">FEAR &amp; GREED</span>
+        <span class="signal-detail">Extreme fear (28)</span>
+        <span class="signal-conf">CONF: 60%</span>
+      </div>
+
+      <div class="signal-verdict">VERDICT: BEARISH LEAN 4-2 &nbsp;|&nbsp; CONVICTION: 3/10</div>
+    </section>
+
+    <!-- THREAT BOARD -->
+    <section class="threat-board">
+      <div class="section-header section-header--red">CROWDED TRADES</div>
+
+      <div class="threat-entry">
+        <div class="threat-line1">
+          <span class="rank">#1</span>
+          <span class="ticker">DOGE</span> &mdash;
+          <span class="type--long">CROWDED LONGS</span>
+          <span class="zscore">(z: 3.2)</span>
+        </div>
+        <div class="threat-line2">Last: Jan 18 &rarr; -14% in 3d</div>
+      </div>
+
+      <div class="threat-entry">
+        <div class="threat-line1">
+          <span class="rank">#2</span>
+          <span class="ticker">SOL</span> &mdash;
+          <span class="type--long">CROWDED LONGS</span>
+          <span class="zscore">(z: 2.1)</span>
+        </div>
+        <div class="threat-line2">Last: Jan 22 &rarr; -9% in 5d</div>
+      </div>
+
+      <div class="threat-entry">
+        <div class="threat-line1">
+          <span class="rank">#3</span>
+          <span class="ticker">AVAX</span> &mdash;
+          <span class="type--short">CROWDED SHORTS</span>
+          <span class="zscore">(z: -1.9)</span>
+        </div>
+        <div class="threat-line2">Last: Dec 30 &rarr; +11% in 2d (squeeze)</div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- DIVERGENCE STRIP -->
+  <div class="divergence-strip">
+    <div class="divergence-header">
+      <span class="divergence-dot"></span> DIVERGENCE WATCH
+    </div>
+    <div class="divergence-items">
+      <span class="divergence-item">
+        <span class="ticker">AVAX:</span> Sentiment 78 / Price flat &rarr; <span class="pending">PENDING MOVE</span>
+      </span>
+      <span class="divergence-sep">|</span>
+      <span class="divergence-item">
+        <span class="ticker">LINK:</span> Sentiment 34 / Price +5% &rarr; <span class="noconf">NO CONFIRMATION</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ACCESS SECTION -->
+  <div class="access-section">
+    <div class="access-title">REQUESTING ACCESS</div>
+    <div class="access-subtitle">One API key. Full signal intelligence.</div>
+    <form class="access-form" onsubmit="return false;">
+      <div class="access-input-wrap">
+        <span class="prompt">&gt;</span>
+        <input type="email" class="access-input" placeholder="ENTER EMAIL" autocomplete="email">
+        <span class="cursor-blink"></span>
+      </div>
+      <button type="submit" class="access-btn">AUTHORIZE ACCESS</button>
+    </form>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  &copy; 2026 CONTEXT8 &nbsp;|&nbsp; CLASSIFICATION: PUBLIC &nbsp;|&nbsp; API v1.0
+</footer>
+
+</body>
+</html>
