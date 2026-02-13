@@ -1,9 +1,20 @@
 import type { AuthProviderProps } from 'react-oidc-context'
 import { WebStorageStateStore } from 'oidc-client-ts'
 
-const authority = import.meta.env.VITE_ZITADEL_AUTHORITY as string
-const clientId = import.meta.env.VITE_ZITADEL_CLIENT_ID as string
-const projectId = import.meta.env.VITE_ZITADEL_PROJECT_ID as string
+import { getEnvString } from './runtimeEnv'
+
+const authority = getEnvString(
+  'VITE_ZITADEL_AUTHORITY',
+  import.meta.env.VITE_ZITADEL_AUTHORITY as string,
+)
+const clientId = getEnvString(
+  'VITE_ZITADEL_CLIENT_ID',
+  import.meta.env.VITE_ZITADEL_CLIENT_ID as string,
+)
+const projectId = getEnvString(
+  'VITE_ZITADEL_PROJECT_ID',
+  import.meta.env.VITE_ZITADEL_PROJECT_ID as string,
+)
 
 export const oidcConfig: AuthProviderProps = {
   authority,
