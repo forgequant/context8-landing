@@ -14,21 +14,21 @@ const authority = requiredEnv(
   'VITE_ZITADEL_AUTHORITY',
   getEnvString(
     'VITE_ZITADEL_AUTHORITY',
-    import.meta.env.VITE_ZITADEL_AUTHORITY as string,
+    (import.meta.env.VITE_ZITADEL_AUTHORITY as string | undefined) ?? '',
   ),
 )
 const clientId = requiredEnv(
   'VITE_ZITADEL_CLIENT_ID',
   getEnvString(
     'VITE_ZITADEL_CLIENT_ID',
-    import.meta.env.VITE_ZITADEL_CLIENT_ID as string,
+    (import.meta.env.VITE_ZITADEL_CLIENT_ID as string | undefined) ?? '',
   ),
 )
 const projectId = requiredEnv(
   'VITE_ZITADEL_PROJECT_ID',
   getEnvString(
     'VITE_ZITADEL_PROJECT_ID',
-    import.meta.env.VITE_ZITADEL_PROJECT_ID as string,
+    (import.meta.env.VITE_ZITADEL_PROJECT_ID as string | undefined) ?? '',
   ),
 )
 
