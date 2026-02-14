@@ -3,17 +3,33 @@ import { WebStorageStateStore } from 'oidc-client-ts'
 
 import { getEnvString } from './runtimeEnv'
 
-const authority = getEnvString(
+function requiredEnv(key: string, value: string): string {
+  if (value.trim() === '') {
+    throw new Error(`Missing required environment variable: ${key}`)
+  }
+  return value
+}
+
+const authority = requiredEnv(
   'VITE_ZITADEL_AUTHORITY',
-  import.meta.env.VITE_ZITADEL_AUTHORITY as string,
+  getEnvString(
+    'VITE_ZITADEL_AUTHORITY',
+    import.meta.env.VITE_ZITADEL_AUTHORITY as string,
+  ),
 )
-const clientId = getEnvString(
+const clientId = requiredEnv(
   'VITE_ZITADEL_CLIENT_ID',
-  import.meta.env.VITE_ZITADEL_CLIENT_ID as string,
+  getEnvString(
+    'VITE_ZITADEL_CLIENT_ID',
+    import.meta.env.VITE_ZITADEL_CLIENT_ID as string,
+  ),
 )
-const projectId = getEnvString(
+const projectId = requiredEnv(
   'VITE_ZITADEL_PROJECT_ID',
-  import.meta.env.VITE_ZITADEL_PROJECT_ID as string,
+  getEnvString(
+    'VITE_ZITADEL_PROJECT_ID',
+    import.meta.env.VITE_ZITADEL_PROJECT_ID as string,
+  ),
 )
 
 export const oidcConfig: AuthProviderProps = {

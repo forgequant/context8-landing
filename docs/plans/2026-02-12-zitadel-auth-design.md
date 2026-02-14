@@ -60,7 +60,7 @@ Auth is infrastructure state managed by a security-critical library. Do not mirr
 ### Subdomains
 
 ```
-auth.context8.markets  →  Zitadel (OIDC provider)
+auth.10g.dev           →  Zitadel (OIDC provider)
 api.context8.markets   →  ctx8-api (Go backend)
 context8.markets       →  Vercel (React SPA)
 ```
@@ -111,7 +111,7 @@ function addSubscriptionTier(ctx, api) {
 
 ```go
 type AuthConfig struct {
-    Issuer       string // "https://auth.context8.markets" (matches JWT iss claim)
+    Issuer       string // "https://auth.10g.dev" (matches JWT iss claim)
     JWKSEndpoint string // "http://zitadel.default.svc.cluster.local:8080/oauth/v2/keys"
     ClientID     string
 }
@@ -210,11 +210,13 @@ Console: `http://localhost:8080/ui/console`
 # .env.development
 VITE_ZITADEL_AUTHORITY=http://localhost:8080
 VITE_ZITADEL_CLIENT_ID=<local-client-id>
+VITE_ZITADEL_PROJECT_ID=<local-project-id>
 VITE_API_URL=http://localhost:8081
 
 # Vercel dashboard (production)
-VITE_ZITADEL_AUTHORITY=https://auth.context8.markets
+VITE_ZITADEL_AUTHORITY=https://auth.10g.dev
 VITE_ZITADEL_CLIENT_ID=<production-client-id>
+VITE_ZITADEL_PROJECT_ID=<production-project-id>
 VITE_API_URL=https://api.context8.markets
 ```
 
