@@ -63,7 +63,7 @@ let requestIdCounter = 0
 
 async function callMcpTool<T>(
   toolName: string,
-  args: Record<string, any> = {},
+  args: Record<string, unknown> = {},
   apiKey?: string
 ): Promise<T | null> {
   const requestId = `${Date.now()}-${++requestIdCounter}`
@@ -136,9 +136,9 @@ async function fetchMarketData(apiKey: string) {
   // PHASE 1: Core data (coins, fear/greed, fear/greed history)
   const [fearGreed, fearGreedHistory, ...coinResults] = await Promise.all([
     callMcpTool<{ value: number; classification: string }>('get_fear_greed_index', {}, apiKey),
-    callMcpTool<{ data: any[]; count: number }>('get_fear_greed_history', {}, apiKey),
+    callMcpTool<{ data: unknown[]; count: number }>('get_fear_greed_history', {}, apiKey),
     ...symbols.map((symbol) =>
-      callMcpTool<{ data: any }>('lunarcrush_get_coin', { symbol }, apiKey)
+      callMcpTool<{ data: unknown }>('lunarcrush_get_coin', { symbol }, apiKey)
     ),
   ])
 
@@ -147,7 +147,7 @@ async function fetchMarketData(apiKey: string) {
   // PHASE 2: Social & sentiment data
   // Fetch sentiment for BTC and ETH using raw fetch (more reliable)
   console.log('[fetchMarketData] Fetching sentiment for BTC and ETH...')
-  const sentimentResults: any[] = []
+  const sentimentResults: unknown[] = []
 
   for (const symbol of ['BTC', 'ETH']) {
     try {
@@ -181,8 +181,9 @@ async function fetchMarketData(apiKey: string) {
           }
         }
       }
-    } catch (err: any) {
-      console.error(`[fetchMarketData] ${symbol} sentiment error:`, err?.message || err)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[fetchMarketData] ${symbol} sentiment error:`, msg)
     }
   }
 
@@ -192,8 +193,8 @@ async function fetchMarketData(apiKey: string) {
   const [newsResults, galaxyScores, altRanks] = await Promise.all([
     // News for BTC and ETH
     Promise.all([
-      callMcpTool<any>('lunarcrush_get_news', { symbol: 'BTC' }, apiKey),
-      callMcpTool<any>('lunarcrush_get_news', { symbol: 'ETH' }, apiKey),
+      callMcpTool<unknown>('lunarcrush_get_news', { symbol: 'BTC' }, apiKey),
+      callMcpTool<unknown>('lunarcrush_get_news', { symbol: 'ETH' }, apiKey),
     ]),
     // Galaxy scores for all coins
     Promise.all(
@@ -216,31 +217,31 @@ async function fetchMarketData(apiKey: string) {
     // Technical summaries
     Promise.all(
       tradingPairs.map((symbol) =>
-        callMcpTool<any>('get_technical_summary', { symbol, interval: '4h' }, apiKey)
+        callMcpTool<unknown>('get_technical_summary', { symbol, interval: '4h' }, apiKey)
       )
     ),
     // RSI for top 3
     Promise.all(
       tradingPairs.slice(0, 3).map((symbol) =>
-        callMcpTool<any>('get_rsi', { symbol, interval: '4h' }, apiKey)
+        callMcpTool<unknown>('get_rsi', { symbol, interval: '4h' }, apiKey)
       )
     ),
     // MACD for top 3
     Promise.all(
       tradingPairs.slice(0, 3).map((symbol) =>
-        callMcpTool<any>('get_macd', { symbol, interval: '4h' }, apiKey)
+        callMcpTool<unknown>('get_macd', { symbol, interval: '4h' }, apiKey)
       )
     ),
     // Bollinger Bands for top 3
     Promise.all(
       tradingPairs.slice(0, 3).map((symbol) =>
-        callMcpTool<any>('get_bollinger_bands', { symbol, interval: '4h' }, apiKey)
+        callMcpTool<unknown>('get_bollinger_bands', { symbol, interval: '4h' }, apiKey)
       )
     ),
     // EMA crossovers for top 3
     Promise.all(
       tradingPairs.slice(0, 3).map((symbol) =>
-        callMcpTool<any>('get_ema_crossover', { symbol, interval: '4h' }, apiKey)
+        callMcpTool<unknown>('get_ema_crossover', { symbol, interval: '4h' }, apiKey)
       )
     ),
   ])
@@ -325,7 +326,7 @@ async function fetchMarketData(apiKey: string) {
 
 async function generateReportWithOpenAI(
   openaiKey: string,
-  marketData: any
+  marketData: unknown
 ): Promise<DailyReport | null> {
   const today = new Date().toISOString().split('T')[0]
 

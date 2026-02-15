@@ -1,9 +1,12 @@
 /**
  * Hook for fetching the Daily Disagree report from ctx8-api.
- * Stub implementation returning mock data until ctx8-api endpoint is ready.
  */
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { format, parseISO } from 'date-fns';
+import { apiFetch, ApiError, API_BASE_URL } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import type { ModuleData } from '@/components/disagree/ModuleScorecard';
 import type { Conflict, ConflictSeverity } from '@/components/disagree/conflict-types';
 import type { CrowdedTradeCardProps } from '@/components/disagree/CrowdedTradeCard';
@@ -52,6 +55,22 @@ interface UseDailyDisagreeReportReturn {
   loading: boolean;
   error: string | null;
 }
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null;
+}
+
+type Ctx8Report = {
+  id: string;
+  asset: string;
+  report_date: string;
+  headline: string;
+  payload: unknown;
+  status: string;
+  version: number;
+  created_at: string;
+  published_at: string | null;
+};
 
 // ── Mock data ─────────────────────────────────────────────────
 
@@ -204,28 +223,297 @@ function buildMockReport(): DailyDisagreeReport {
 
 // ── Hook ──────────────────────────────────────────────────────
 
+function formatReportDate(isoDate: string): string {
+  try {
+    return format(parseISO(isoDate), 'MMM d, yyyy');
+  } catch {
+    return isoDate;
+  }
+}
+
+function reportNumberFromDate(isoDate: string): number {
+  // Stable and human-parseable (YYYYMMDD) even when we don't have a real sequence number.
+  const n = Number(isoDate.replace(/-/g, ''));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function stripQuoteSuffix(sym: string): string {
+  return sym.toUpperCase().replace(/USDT$/, '');
+}
+
+function biasToSignal(bias: unknown): 'bullish' | 'bearish' | 'neutral' {
+  if (bias === 'bullish') return 'bullish';
+  if (bias === 'bearish') return 'bearish';
+  return 'neutral';
+}
+
+function confidenceToConviction(confidence: unknown): number {
+  const n = typeof confidence === 'number' ? confidence : Number(confidence);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(10, Math.round(n / 10)));
+}
+
+function moduleNameToCategory(moduleId: string): ModuleData['category'] {
+  switch (moduleId) {
+    case 'ta_scanner':
+      return 'Technical';
+    case 'funding':
+    case 'oi_divergence':
+      return 'Positioning';
+    case 'social':
+      return 'Sentiment';
+    case 'macro':
+    case 'feargreed':
+      return 'Macro';
+    default:
+      return 'On-Chain';
+  }
+}
+
+function moduleNameToLabel(moduleId: string): string {
+  switch (moduleId) {
+    case 'ta_scanner':
+      return 'TA Scanner';
+    case 'oi_divergence':
+      return 'Open Interest';
+    case 'feargreed':
+      return 'Fear & Greed';
+    default:
+      return moduleId.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+}
+
+function quantizeStrength(strength: unknown): 1 | 2 | 3 {
+  const n = typeof strength === 'number' ? strength : Number(strength);
+  if (!Number.isFinite(n)) return 1;
+  if (n >= 20) return 3;
+  if (n >= 10) return 2;
+  return 1;
+}
+
+function normalizeFromCtx8Report(ctx8: Ctx8Report): DailyDisagreeReport {
+  const reportDate = ctx8.report_date;
+  const reportNumber = reportNumberFromDate(reportDate);
+  const payload = isRecord(ctx8.payload) ? ctx8.payload : {};
+
+  // If the backend already stores the full dashboard shape, accept it with light patch-up.
+  if (Array.isArray(payload.modules) && payload.headline) {
+    return {
+      ...payload,
+      date: (payload.date as string | undefined) ?? reportDate,
+      reportNumber: (payload.reportNumber as number | undefined) ?? reportNumber,
+    } as DailyDisagreeReport;
+  }
+
+  // v2 payload from docs/plans/2026-02-11-daily-disagree-design.md
+  const convictionScores = Array.isArray(payload.conviction_scores) ? payload.conviction_scores : [];
+  const featured = convictionScores.reduce<unknown>((best, cur) => {
+    const curRec = isRecord(cur) ? cur : {};
+    const bestRec = isRecord(best) ? best : {};
+    const curScore = typeof curRec.score === 'number' ? curRec.score : Number(curRec.score);
+    const bestScore = typeof bestRec.score === 'number' ? bestRec.score : Number(bestRec.score);
+    if (!Number.isFinite(bestScore)) return cur;
+    if (!Number.isFinite(curScore)) return best;
+    return curScore < bestScore ? cur : best;
+  }, convictionScores[0]);
+
+  const featuredModules = isRecord(featured) && Array.isArray(featured.modules) ? featured.modules : [];
+  const modules: ModuleData[] = featuredModules.map((m): ModuleData => {
+    const rec = isRecord(m) ? m : {};
+    const moduleId = String(rec.module ?? 'unknown');
+    return {
+      id: moduleId,
+      name: moduleNameToLabel(moduleId),
+      category: moduleNameToCategory(moduleId),
+      signal: biasToSignal(rec.bias),
+      conviction: confidenceToConviction(rec.confidence),
+    };
+  });
+
+  const hasBull = modules.some((m) => m.signal === 'bullish');
+  const hasBear = modules.some((m) => m.signal === 'bearish');
+  const withConflicts = modules.map((m) => ({
+    ...m,
+    hasConflict: (m.signal === 'bullish' && hasBear) || (m.signal === 'bearish' && hasBull),
+  }));
+
+  const bullishTop = withConflicts
+    .filter((m) => m.signal === 'bullish')
+    .sort((a, b) => b.conviction - a.conviction)[0];
+  const bearishTop = withConflicts
+    .filter((m) => m.signal === 'bearish')
+    .sort((a, b) => b.conviction - a.conviction)[0];
+
+  const conflicts: Conflict[] =
+    bullishTop && bearishTop
+      ? [
+          {
+            id: 'auto-1',
+            severity: (Math.max(bullishTop.conviction, bearishTop.conviction) >= 8
+              ? 'critical'
+              : Math.max(bullishTop.conviction, bearishTop.conviction) >= 7
+                ? 'high'
+                : 'medium') as ConflictSeverity,
+            moduleA: { name: bullishTop.name, signal: bullishTop.signal, conviction: bullishTop.conviction },
+            moduleB: { name: bearishTop.name, signal: bearishTop.signal, conviction: bearishTop.conviction },
+            nature: 'Top bullish vs bearish module disagreement (auto-derived from conviction scores).',
+          },
+        ]
+      : [];
+
+  const crowdedTradesRaw = Array.isArray(payload.crowded_trades) ? payload.crowded_trades : [];
+  const crowdedTrades: CrowdedTradeCardProps[] = crowdedTradesRaw.map((ct): CrowdedTradeCardProps => {
+    const rec = isRecord(ct) ? ct : {};
+    const direction = rec.direction === 'short' ? 'SHORTS' : 'LONGS';
+    const z = typeof rec.z_score === 'number' ? rec.z_score : Number(rec.z_score);
+    const sym = stripQuoteSuffix(String(rec.symbol ?? ''));
+    const analog = isRecord(rec.historical_analog)
+      ? {
+          date: String(rec.historical_analog.date ?? ''),
+          outcome: `${(rec.historical_analog as Record<string, unknown>).outcome_pct ?? '?'}% in ${(rec.historical_analog as Record<string, unknown>).outcome_days ?? '?'} days`,
+        }
+      : undefined;
+    return {
+      symbol: sym,
+      direction,
+      zScore: Number.isFinite(z) ? z : 0,
+      ratio: 0.5,
+      modules: ['Funding'],
+      totalModules: 6,
+      analog,
+    };
+  });
+
+  const divergencesRaw = Array.isArray(payload.divergences) ? payload.divergences : [];
+  const divergences: DivergenceItem[] = divergencesRaw.map((d): DivergenceItem => {
+    const rec = isRecord(d) ? d : {};
+    return {
+      type: String(rec.type ?? 'Divergence'),
+      asset: stripQuoteSuffix(String(rec.symbol ?? '')),
+      strength: quantizeStrength(rec.strength),
+      description: String(rec.description ?? ''),
+    };
+  });
+
+  const macroRegime = isRecord(payload.macro_regime) ? payload.macro_regime : {};
+  const macro: MacroBadge = {
+    regime: macroRegime.bias === 'risk_on' ? 'risk_on' : macroRegime.bias === 'risk_off' ? 'risk_off' : 'mixed',
+    fearGreed: typeof macroRegime.feargreed_value === 'number' ? macroRegime.feargreed_value : Number(macroRegime.feargreed_value ?? 0),
+    dxyTrend: macroRegime.dxy_trend === 'up' ? 'up' : macroRegime.dxy_trend === 'down' ? 'down' : 'flat',
+  };
+
+  const conviction =
+    isRecord(featured) && typeof featured.score === 'number' ? featured.score : Number(isRecord(featured) ? featured.score ?? 0 : 0);
+
+  const headline: HeadlineBannerProps = {
+    headline: String(payload.headline ?? ctx8.headline ?? ''),
+    conviction: Number.isFinite(conviction) ? conviction : 0,
+    reportDate: formatReportDate(reportDate),
+    reportNumber,
+    macro,
+  };
+
+  const assets: DisagreeAssetSummary[] = convictionScores.map((s) => {
+    const rec = isRecord(s) ? s : {};
+    return {
+    symbol: stripQuoteSuffix(String(rec.symbol ?? '')),
+    price: 0,
+    change24h: 0,
+    volume: '\u2014',
+    marketCap: '\u2014',
+    bullCount: typeof rec.bullish_modules === 'number' ? rec.bullish_modules : Number(rec.bullish_modules ?? 0),
+    bearCount: typeof rec.bearish_modules === 'number' ? rec.bearish_modules : Number(rec.bearish_modules ?? 0),
+    topConflictSeverity: null,
+    conviction: typeof rec.score === 'number' ? rec.score : Number(rec.score ?? 0),
+    };
+  });
+
+  const riskCallout =
+    typeof macroRegime.summary === 'string' && macroRegime.summary.trim() !== ''
+      ? macroRegime.summary
+      : crowdedTrades[0]?.analog
+        ? `Crowded ${crowdedTrades[0].direction} on ${crowdedTrades[0].symbol} (z=${crowdedTrades[0].zScore.toFixed(1)}).`
+        : undefined;
+
+  return {
+    date: reportDate,
+    reportNumber,
+    headline,
+    modules: withConflicts,
+    conflicts,
+    crowdedTrades,
+    divergences,
+    macro,
+    assets,
+    priceData: [],
+    heatmapRows: [],
+    riskCallout,
+  };
+}
+
 export function useDailyDisagreeReport(date?: string): UseDailyDisagreeReportReturn {
   const [report, setReport] = useState<DailyDisagreeReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const location = useLocation();
+  const { accessToken, isAuthenticated, login } = useAuth();
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    const returnTo = `${location.pathname}${location.search}${location.hash}`;
+    const controller = new AbortController();
 
-    // Simulate API fetch with mock data
-    const timer = setTimeout(() => {
-      try {
+    async function run() {
+      setLoading(true);
+      setError(null);
+
+      // Local/dev convenience: keep UI working when API isn't configured.
+      // Production should always provide VITE_API_URL.
+      if (!API_BASE_URL || API_BASE_URL.trim() === '') {
         setReport(buildMockReport());
+        setLoading(false);
+        return;
+      }
+
+      if (!isAuthenticated || !accessToken) {
+        setError('Not authenticated. Redirecting to sign-in...');
+        setLoading(false);
+        try {
+          await login(returnTo);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : 'Failed to start sign-in redirect';
+          setError(msg);
+        }
+        return;
+      }
+
+      try {
+        const asset = 'MARKET';
+        const path = date
+          ? `/api/v1/reports/${encodeURIComponent(asset)}/${encodeURIComponent(date)}`
+          : `/api/v1/reports/${encodeURIComponent(asset)}/latest`;
+        const ctx8 = await apiFetch<Ctx8Report>(path, { token: accessToken, signal: controller.signal });
+        setReport(normalizeFromCtx8Report(ctx8));
       } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          setError('Session expired. Redirecting to sign-in...');
+          try {
+            await login(returnTo);
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Failed to start sign-in redirect';
+            setError(msg);
+          }
+          return;
+        }
+        if (err instanceof DOMException && err.name === 'AbortError') return;
         setError(err instanceof Error ? err.message : 'Failed to fetch report');
       } finally {
         setLoading(false);
       }
-    }, 400);
+    }
 
-    return () => clearTimeout(timer);
-  }, [date]);
+    void run();
+    return () => controller.abort();
+  }, [accessToken, date, isAuthenticated, location.hash, location.pathname, location.search, login]);
 
   return { report, loading, error };
 }

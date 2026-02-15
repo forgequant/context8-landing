@@ -10,7 +10,7 @@ interface ChainSelectorProps {
 const CHAINS: BlockchainNetwork[] = ['ethereum', 'polygon', 'bsc']
 
 export function ChainSelector({ selectedChain, onChainChange }: ChainSelectorProps) {
-  const { gasPrices, loading } = useGasPrices()
+  const { gasPrices } = useGasPrices()
 
   const formatGasFee = (chain: BlockchainNetwork): string => {
     const price = gasPrices[chain]

@@ -15,7 +15,7 @@ interface UseAuthReturn {
   isAdmin: boolean
   accessToken: string | null
   subscriptionTier: SubscriptionTier
-  login: () => Promise<void>
+  login: (returnTo?: string) => Promise<void>
   logout: () => Promise<void>
   hasRole: (role: string) => boolean
   hasTier: (minTier: SubscriptionTier) => boolean
@@ -61,7 +61,8 @@ export function useAuth(): UseAuthReturn {
     isAdmin: roles.includes('admin'),
     accessToken: oidc.user?.access_token ?? null,
     subscriptionTier,
-    login: () => oidc.signinRedirect(),
+    login: (returnTo?: string) =>
+      oidc.signinRedirect(returnTo ? { state: { returnTo } } : undefined),
     logout: () =>
       oidc.signoutRedirect({ post_logout_redirect_uri: window.location.origin }),
     hasRole: (role: string) => roles.includes(role),

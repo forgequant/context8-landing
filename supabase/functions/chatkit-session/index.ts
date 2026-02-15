@@ -57,7 +57,7 @@ serve(async (req) => {
     console.log('[chatkit-session] Creating session', { workflowId, workflowVersion, userId })
 
     // Build workflow object
-    const workflow: any = { id: workflowId }
+    const workflow: { id: string; version?: string } = { id: workflowId }
     if (workflowVersion) {
       workflow.version = workflowVersion
     }

@@ -193,11 +193,11 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
 
 ✅ **Chart updated** with ${data.candles.length} candles (${data.interval} timeframe)`
 
-          return result as any
+          return result
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error'
           console.error('[AnalyticsChatKit] Failed to fetch market data:', errorMessage)
-          return `✗ Failed to fetch market data: ${errorMessage}` as any
+          return `✗ Failed to fetch market data: ${errorMessage}`
         }
       }
 

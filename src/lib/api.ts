@@ -1,6 +1,6 @@
 import { getEnvString } from './runtimeEnv'
 
-const API_BASE_URL = getEnvString(
+export const API_BASE_URL = getEnvString(
   'VITE_API_URL',
   (import.meta.env.VITE_API_URL as string) ?? '',
 )

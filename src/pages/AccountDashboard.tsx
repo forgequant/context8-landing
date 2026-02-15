@@ -12,6 +12,7 @@ import { RenewalReminder } from '../components/subscription/RenewalReminder'
 import { PaymentHistory } from '../components/subscription/PaymentHistory'
 import { MCPInstructions } from '../components/dashboard/MCPInstructions'
 import { ApiKeySection } from '../components/dashboard/ApiKeySection'
+import type { BlockchainNetwork, StablecoinType } from '../types/subscription'
 
 // Section header component
 function SectionHeader({ number, title }: { number: string; title: string }) {
@@ -367,7 +368,7 @@ export function AccountDashboard() {
   const auth = useAuth()
   const [loading, setLoading] = useState(true)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [pendingPayment, setPendingPayment] = useState<any>(null)
+  const [pendingPayment, setPendingPayment] = useState<unknown | null>(null)
   const [hasApiKey, setHasApiKey] = useState(false)
   const { submitPayment } = usePaymentSubmit()
 
@@ -433,7 +434,7 @@ export function AccountDashboard() {
     }
   }, [subLoading, isExpired, isInGrace, pendingPayment])
 
-  const handlePaymentSubmit = async (data: any) => {
+  const handlePaymentSubmit = async (data: { chain: BlockchainNetwork; stablecoin: StablecoinType; txHash: string }) => {
     await submitPayment(data)
     if (!auth.user) return
     // Refresh pending payment status (legacy: migrate to ctx8-api)

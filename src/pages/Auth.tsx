@@ -1,21 +1,25 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 
 export function Auth() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated, isLoading, login } = useAuth()
+  const returnTo =
+    (location.state as { returnTo?: string } | null)?.returnTo ?? '/dashboard'
+  const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/dashboard'
 
   // Auto-redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard')
+      navigate(safeReturnTo, { replace: true })
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, navigate, safeReturnTo])
 
   const handleSignIn = () => {
-    login()
+    login(safeReturnTo)
   }
 
   if (isLoading) {

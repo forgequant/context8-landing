@@ -20,7 +20,7 @@ client = Client(api_key="your_api_key")
 # Stream real-time data
 @client.on("ticker")
 def handle_ticker(data):
-    print(f"\{data.symbol}: $\{data.price}")
+    print(f"{data.symbol}: $" + f"{data.price}")
 
 # Start streaming
 client.stream("BTC/USDT", exchange="binance")`
@@ -74,8 +74,8 @@ best_buy = min(prices, key=prices.get)
 best_sell = max(prices, key=prices.get)
 spread = prices[best_sell] - prices[best_buy]
 
-print(f"Buy on \{best_buy}, sell on \{best_sell}")
-print(f"Potential profit: $\{spread:.2f}")`
+print(f"Buy on {best_buy}, sell on {best_sell}")
+print(f"Potential profit: $" + f"{spread:.2f}")`
   },
   {
     id: 'webhooks',
@@ -100,7 +100,7 @@ def check_rsi(candle):
     if rsi > 70:
         client.notify(
             channel="telegram",
-            message=f"⚠️ \{candle.symbol} RSI overbought: \{rsi}"
+            message=f"⚠️ {candle.symbol} RSI overbought: {rsi}"
         )`
   }
 ]

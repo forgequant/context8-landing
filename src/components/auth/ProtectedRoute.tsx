@@ -27,7 +27,8 @@ export function ProtectedRoute({
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={fallbackPath} state={{ returnTo: location.pathname }} replace />
+    const returnTo = `${location.pathname}${location.search}${location.hash}`
+    return <Navigate to={fallbackPath} state={{ returnTo }} replace />
   }
 
   if (requiredRole && !hasRole(requiredRole)) {

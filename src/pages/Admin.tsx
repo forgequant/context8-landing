@@ -212,7 +212,7 @@ export function Admin() {
             }}
             className="space-y-3"
           >
-            {payments.map((payment, index) => (
+            {payments.map((payment) => (
               <motion.div
                 key={payment.id}
                 variants={{

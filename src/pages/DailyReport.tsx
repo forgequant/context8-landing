@@ -1,12 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useDailyReport } from '../hooks/useDailyReport'
 import {
-  DailyReport as DailyReportType,
   ExecutiveSummaryItem,
   Narrative,
   TopMover,
-  Risk,
-  Influencer,
   formatLargeNumber,
   formatPercentChange,
 } from '../types/dailyReport'
@@ -78,7 +75,6 @@ function shortenComment(comment: string): string {
   // Extract key insight only, removing technical details
   // Priority: Galaxy Score > key event > first sentence
   const galaxyMatch = comment.match(/Galaxy Score[:\s]+(\d+\.?\d*)/i)
-  const supportMatch = comment.match(/support \$[\d,]+/i)
   const keyEventMatch = comment.match(/(ETF|взлом|hack|rally|ралли|breakout|breakdown)[^.;]*/i)
 
   // Remove RSI/MACD technical noise

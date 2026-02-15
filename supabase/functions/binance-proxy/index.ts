@@ -37,6 +37,24 @@ interface MarketDataResponse {
   ts: number
 }
 
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null
+}
+
+type BinanceKline = [number, string, string, string, string, string, ...unknown[]]
+
+function isBinanceKline(v: unknown): v is BinanceKline {
+  return (
+    Array.isArray(v) &&
+    typeof v[0] === 'number' &&
+    typeof v[1] === 'string' &&
+    typeof v[2] === 'string' &&
+    typeof v[3] === 'string' &&
+    typeof v[4] === 'string' &&
+    typeof v[5] === 'string'
+  )
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -95,8 +113,17 @@ serve(async (req) => {
     }
 
     // Parse responses
-    const klinesData = await klinesRes.json()
-    const tickerData = await tickerRes.json()
+    const klinesData: unknown = await klinesRes.json()
+    const tickerData: unknown = await tickerRes.json()
+
+    if (!Array.isArray(klinesData)) {
+      return new Response(JSON.stringify({ error: 'invalid_klines_response' }), {
+        status: 502,
+        headers: CORS_HEADERS,
+      })
+    }
+
+    const tickerRec = isRecord(tickerData) ? tickerData : {}
 
     // Calculate 7d change
     let change7dPct: number | null = null
@@ -121,7 +148,7 @@ serve(async (req) => {
     }
 
     // Transform klines to candle format
-    const candles: Candle[] = klinesData.map((k: any[]) => ({
+    const candles: Candle[] = klinesData.filter(isBinanceKline).map((k) => ({
       time: Math.floor(k[0] / 1000), // Convert ms to seconds
       open: parseFloat(k[1]),
       high: parseFloat(k[2]),
@@ -137,12 +164,12 @@ serve(async (req) => {
       limit,
       candles,
       ticker24h: {
-        lastPrice: parseFloat(tickerData.lastPrice),
-        priceChangePercent: parseFloat(tickerData.priceChangePercent),
-        volume: parseFloat(tickerData.volume),
-        quoteVolume: parseFloat(tickerData.quoteVolume),
-        highPrice: parseFloat(tickerData.highPrice),
-        lowPrice: parseFloat(tickerData.lowPrice),
+        lastPrice: parseFloat(String(tickerRec.lastPrice ?? '0')),
+        priceChangePercent: parseFloat(String(tickerRec.priceChangePercent ?? '0')),
+        volume: parseFloat(String(tickerRec.volume ?? '0')),
+        quoteVolume: parseFloat(String(tickerRec.quoteVolume ?? '0')),
+        highPrice: parseFloat(String(tickerRec.highPrice ?? '0')),
+        lowPrice: parseFloat(String(tickerRec.lowPrice ?? '0')),
       },
       change7dPct,
       ts: Date.now(),

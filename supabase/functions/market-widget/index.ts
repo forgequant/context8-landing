@@ -71,7 +71,9 @@ serve(async (req) => {
             change7dPct = ((lastClose - sevenAgoClose) / sevenAgoClose) * 100
           }
         }
-      } catch {}
+      } catch {
+        // Best-effort: ignore 7d change calc failures.
+      }
     }
 
     // Build ChatKit Widget Card

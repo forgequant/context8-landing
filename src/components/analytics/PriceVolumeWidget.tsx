@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   createChart,
-  IChartApi,
-  ISeriesApi,
-  CandlestickData,
-  HistogramData,
   CandlestickSeries,
   HistogramSeries,
+  type CandlestickData,
+  type HistogramData,
+  type IChartApi,
+  type ISeriesApi,
+  type UTCTimestamp,
 } from 'lightweight-charts'
 
 interface Candle {
@@ -52,8 +53,8 @@ export function PriceVolumeWidget({
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
-  const candleSeriesRef = useRef<ISeriesApi<any> | null>(null)
-  const volumeSeriesRef = useRef<ISeriesApi<any> | null>(null)
+  const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
+  const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null)
 
   const [symbol, setSymbol] = useState(defaultSymbol)
   const [interval, setInterval] = useState(defaultInterval)
@@ -62,58 +63,8 @@ export function PriceVolumeWidget({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Event listener for external updates (from ChatKit client tool)
-  useEffect(() => {
-    const handleRefresh = (e: Event) => {
-      const detail = (e as CustomEvent).detail || {}
-      if (detail.symbol) setSymbol(String(detail.symbol).toUpperCase())
-      if (detail.interval) setInterval(String(detail.interval))
-      if (detail.limit) setLimit(Number(detail.limit))
-
-      // If data is provided directly, use it
-      if (detail.data) {
-        setSnapshot(detail.data)
-        updateChart(detail.data)
-      }
-    }
-
-    window.addEventListener('crypto:refresh', handleRefresh as EventListener)
-    return () =>
-      window.removeEventListener('crypto:refresh', handleRefresh as EventListener)
-  }, [])
-
-  // Load data from API
-  async function loadData() {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const params = new URLSearchParams({
-        symbol,
-        interval,
-        limit: String(limit),
-      })
-
-      const url = `${fetchUrl}?${params}`
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const data: MarketDataSnapshot = await response.json()
-      setSnapshot(data)
-      updateChart(data)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      console.error('[PriceVolumeWidget] Load error:', message)
-      setError(message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   // Initialize and update chart
-  function updateChart(data: MarketDataSnapshot) {
+  const updateChart = useCallback((data: MarketDataSnapshot) => {
     if (!containerRef.current) return
 
     // Initialize chart if not exists
@@ -162,7 +113,7 @@ export function PriceVolumeWidget({
 
     // Update series data
     const candleData: CandlestickData[] = data.candles.map((c) => ({
-      time: c.time as any,
+      time: c.time as UTCTimestamp,
       open: c.open,
       high: c.high,
       low: c.low,
@@ -170,7 +121,7 @@ export function PriceVolumeWidget({
     }))
 
     const volumeData: HistogramData[] = data.candles.map((c) => ({
-      time: c.time as any,
+      time: c.time as UTCTimestamp,
       value: c.volume,
       color: c.close >= c.open ? '#10b981' : '#ef4444',
     }))
@@ -178,12 +129,62 @@ export function PriceVolumeWidget({
     candleSeriesRef.current?.setData(candleData)
     volumeSeriesRef.current?.setData(volumeData)
     chartRef.current?.timeScale().fitContent()
-  }
+  }, [])
+
+  // Event listener for external updates (from ChatKit client tool)
+  useEffect(() => {
+    const handleRefresh = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {}
+      if (detail.symbol) setSymbol(String(detail.symbol).toUpperCase())
+      if (detail.interval) setInterval(String(detail.interval))
+      if (detail.limit) setLimit(Number(detail.limit))
+
+      // If data is provided directly, use it
+      if (detail.data) {
+        setSnapshot(detail.data)
+        updateChart(detail.data)
+      }
+    }
+
+    window.addEventListener('crypto:refresh', handleRefresh as EventListener)
+    return () =>
+      window.removeEventListener('crypto:refresh', handleRefresh as EventListener)
+  }, [updateChart])
+
+  // Load data from API
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const params = new URLSearchParams({
+        symbol,
+        interval,
+        limit: String(limit),
+      })
+
+      const url = `${fetchUrl}?${params}`
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const data: MarketDataSnapshot = await response.json()
+      setSnapshot(data)
+      updateChart(data)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      console.error('[PriceVolumeWidget] Load error:', message)
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchUrl, interval, limit, symbol, updateChart])
 
   // Load data on mount and when params change
   useEffect(() => {
     void loadData()
-  }, [symbol, interval, limit])
+  }, [loadData])
 
   // Format number with commas
   const formatNum = (n: number, decimals = 2) =>

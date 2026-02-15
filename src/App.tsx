@@ -52,7 +52,14 @@ export default function App() {
             <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Dashboard layout with nested routes */}
-            <Route path="/dashboard" element={<Dashboard />}>
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<Navigate to="report/latest" replace />} />
               <Route path="report/:date" element={<DailyReportView />} />
               <Route path="report/:date/:asset" element={<AssetDetail />} />
@@ -66,8 +73,8 @@ export default function App() {
             {/* Legacy account dashboard */}
             <Route path="/account" element={<ProtectedRoute><AccountDashboard /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-            <Route path="/reports/daily" element={<DailyReport />} />
-            <Route path="/reports/daily-ru" element={<DailyReportRu />} />
+            <Route path="/reports/daily" element={<ProtectedRoute><DailyReport /></ProtectedRoute>} />
+            <Route path="/reports/daily-ru" element={<ProtectedRoute><DailyReportRu /></ProtectedRoute>} />
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/what-is-mcp" element={<WhatIsMcp />} />
             <Route path="/blog/ai-crypto-data-integration" element={<AiCryptoData />} />

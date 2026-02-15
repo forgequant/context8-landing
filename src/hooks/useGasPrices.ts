@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { BlockchainNetwork } from '../types/subscription'
 
 interface GasPrices {
@@ -78,7 +78,7 @@ export function useGasPrices(): UseGasPricesReturn {
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
-  const fetchGasPrice = async (chain: BlockchainNetwork): Promise<number | null> => {
+  const fetchGasPrice = useCallback(async (chain: BlockchainNetwork): Promise<number | null> => {
     try {
       const rpcUrls: Record<BlockchainNetwork, string> = {
         ethereum: 'https://eth.llamarpc.com',
@@ -113,9 +113,9 @@ export function useGasPrices(): UseGasPricesReturn {
       console.error(`Failed to fetch ${chain} gas price:`, err)
       return null
     }
-  }
+  }, [])
 
-  const fetchAllGasPrices = async () => {
+  const fetchAllGasPrices = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -140,17 +140,17 @@ export function useGasPrices(): UseGasPricesReturn {
     } finally {
       setLoading(false)
     }
-  }
+  }, [fetchGasPrice])
 
   useEffect(() => {
     // Initial fetch
-    fetchAllGasPrices()
+    void fetchAllGasPrices()
 
     // Update every 60 seconds
     const interval = setInterval(fetchAllGasPrices, 60000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchAllGasPrices])
 
   return {
     gasPrices,
