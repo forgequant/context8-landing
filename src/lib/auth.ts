@@ -38,6 +38,10 @@ export const oidcConfig: AuthProviderProps = {
   redirect_uri: `${window.location.origin}/auth/callback`,
   post_logout_redirect_uri: window.location.origin,
   response_type: 'code',
+  // We handle the redirect callback explicitly in the /auth/callback route.
+  // This avoids edge cases where the provider processes it too early/late and
+  // the app bounces back into a fresh signin redirect.
+  skipSigninCallback: true,
   scope: [
     'openid',
     'profile',
