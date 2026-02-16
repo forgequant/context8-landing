@@ -1,5 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const E2E_ENV = {
+  VITE_ZITADEL_AUTHORITY: process.env.VITE_ZITADEL_AUTHORITY ?? 'http://localhost:8080',
+  VITE_ZITADEL_CLIENT_ID: process.env.VITE_ZITADEL_CLIENT_ID ?? 'e2e-client',
+  VITE_ZITADEL_PROJECT_ID: process.env.VITE_ZITADEL_PROJECT_ID ?? 'e2e-project',
+  VITE_API_URL: process.env.VITE_API_URL ?? 'http://localhost:8081',
+} as const
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -26,7 +33,12 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: 'npm run dev',
+    command:
+      `VITE_ZITADEL_AUTHORITY=${E2E_ENV.VITE_ZITADEL_AUTHORITY} ` +
+      `VITE_ZITADEL_CLIENT_ID=${E2E_ENV.VITE_ZITADEL_CLIENT_ID} ` +
+      `VITE_ZITADEL_PROJECT_ID=${E2E_ENV.VITE_ZITADEL_PROJECT_ID} ` +
+      `VITE_API_URL=${E2E_ENV.VITE_API_URL} ` +
+      'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI
   }
