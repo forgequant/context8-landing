@@ -9,6 +9,7 @@ import {
   type ISeriesApi,
   type UTCTimestamp,
 } from 'lightweight-charts'
+import { apiFetchWithFallback, extractObjectFromResponse } from '@/lib/api'
 
 interface Candle {
   time: number
@@ -45,8 +46,66 @@ interface Props {
   defaultLimit?: number
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
+}
+
+function asNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const n = Number(value)
+    if (Number.isFinite(n)) return n
+  }
+  return null
+}
+
+function parseTicker24h(value: unknown): Ticker24h | null {
+  const rec = asRecord(value)
+  if (!rec) return null
+
+  const lastPrice = asNumber(rec.lastPrice ?? rec.last_price)
+  const priceChangePercent = asNumber(rec.priceChangePercent ?? rec.price_change_percent)
+  const volume = asNumber(rec.volume)
+  const quoteVolume = asNumber(rec.quoteVolume ?? rec.quote_volume)
+  const highPrice = asNumber(rec.highPrice ?? rec.high_price)
+  const lowPrice = asNumber(rec.lowPrice ?? rec.low_price)
+
+  if (
+    lastPrice === null ||
+    priceChangePercent === null ||
+    volume === null ||
+    quoteVolume === null ||
+    highPrice === null ||
+    lowPrice === null
+  ) {
+    return null
+  }
+
+  return { lastPrice, priceChangePercent, volume, quoteVolume, highPrice, lowPrice }
+}
+
+function parseCandles(value: unknown): Candle[] | null {
+  if (!Array.isArray(value)) return null
+  const parsed: Candle[] = []
+  for (const item of value) {
+    const rec = asRecord(item)
+    if (!rec) continue
+    const time = asNumber(rec.time)
+    const open = asNumber(rec.open)
+    const high = asNumber(rec.high)
+    const low = asNumber(rec.low)
+    const close = asNumber(rec.close)
+    const volume = asNumber(rec.volume)
+    if (time === null || open === null || high === null || low === null || close === null || volume === null) {
+      continue
+    }
+    parsed.push({ time, open, high, low, close, volume })
+  }
+  return parsed.length > 0 ? parsed : null
+}
+
 export function PriceVolumeWidget({
-  fetchUrl = import.meta.env.VITE_SUPABASE_URL + '/functions/v1/binance-proxy',
+  fetchUrl = '/api/v1/market/spot/binance-proxy',
   defaultSymbol = 'BTCUSDT',
   defaultInterval = '1h',
   defaultLimit = 200,
@@ -63,11 +122,9 @@ export function PriceVolumeWidget({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Initialize and update chart
   const updateChart = useCallback((data: MarketDataSnapshot) => {
     if (!containerRef.current) return
 
-    // Initialize chart if not exists
     if (!chartRef.current) {
       const chart = createChart(containerRef.current, {
         height: 320,
@@ -111,7 +168,6 @@ export function PriceVolumeWidget({
       volumeSeriesRef.current = volumeSeries
     }
 
-    // Update series data
     const candleData: CandlestickData[] = data.candles.map((c) => ({
       time: c.time as UTCTimestamp,
       open: c.open,
@@ -139,7 +195,6 @@ export function PriceVolumeWidget({
       if (detail.interval) setInterval(String(detail.interval))
       if (detail.limit) setLimit(Number(detail.limit))
 
-      // If data is provided directly, use it
       if (detail.data) {
         setSnapshot(detail.data)
         updateChart(detail.data)
@@ -150,6 +205,50 @@ export function PriceVolumeWidget({
     return () =>
       window.removeEventListener('crypto:refresh', handleRefresh as EventListener)
   }, [updateChart])
+
+  const parsePayload = useCallback((raw: unknown): MarketDataSnapshot => {
+    const payload = extractObjectFromResponse<Record<string, unknown>>(raw, [
+      'data',
+      'result',
+      'payload',
+      'snapshot',
+      'report',
+    ])
+
+    if (!payload) {
+      throw new Error('Invalid market data payload')
+    }
+
+    const candles = parseCandles(payload.candles)
+    if (!candles) {
+      throw new Error('Invalid market data payload: missing candles')
+    }
+
+    const tickerCandidate = payload.ticker24h ?? payload.ticker ?? payload.ticker_24h
+    const ticker24h = parseTicker24h(tickerCandidate)
+    if (!ticker24h) {
+      throw new Error('Invalid market data payload: missing ticker24h')
+    }
+
+    const ts = asNumber(payload.ts) ?? Date.now()
+    const change7dPctRaw = payload.change7dPct ?? payload.change7d_pct
+    const change7dPct =
+      change7dPctRaw === null ? null : (asNumber(change7dPctRaw) ?? null)
+
+    const symbolValue = typeof payload.symbol === 'string' && payload.symbol.trim() ? payload.symbol : symbol
+    const intervalValue = typeof payload.interval === 'string' && payload.interval.trim() ? payload.interval : interval
+    const limitValue = asNumber(payload.limit) ?? limit
+
+    return {
+      symbol: symbolValue,
+      interval: intervalValue,
+      limit: limitValue,
+      candles,
+      ticker24h,
+      change7dPct,
+      ts,
+    }
+  }, [interval, limit, symbol])
 
   // Load data from API
   const loadData = useCallback(async () => {
@@ -162,14 +261,19 @@ export function PriceVolumeWidget({
         interval,
         limit: String(limit),
       })
+      const query = params.toString()
 
-      const url = `${fetchUrl}?${params}`
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
+      const paths = [
+        `${fetchUrl}?${query}`,
+        `/api/v1/analytics/market-data/binance-proxy?${query}`,
+        `/api/v1/market-data/binance-proxy?${query}`,
+        `/api/v1/binance-proxy?${query}`,
+        `/api/v1/market/binance-proxy?${query}`,
+      ]
 
-      const data: MarketDataSnapshot = await response.json()
+      const response = await apiFetchWithFallback<unknown>(paths, { method: 'GET' })
+      const data = parsePayload(response)
+
       setSnapshot(data)
       updateChart(data)
     } catch (err) {
@@ -179,14 +283,12 @@ export function PriceVolumeWidget({
     } finally {
       setLoading(false)
     }
-  }, [fetchUrl, interval, limit, symbol, updateChart])
+  }, [fetchUrl, interval, limit, symbol, parsePayload, updateChart])
 
-  // Load data on mount and when params change
   useEffect(() => {
     void loadData()
   }, [loadData])
 
-  // Format number with commas
   const formatNum = (n: number, decimals = 2) =>
     n.toLocaleString('en-US', {
       minimumFractionDigits: decimals,
@@ -195,7 +297,6 @@ export function PriceVolumeWidget({
 
   return (
     <div className="bg-graphite-900 border border-graphite-800 rounded-lg p-4">
-      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-baseline gap-3">
           <h3 className="text-terminal-cyan text-sm font-mono font-semibold">
@@ -210,7 +311,6 @@ export function PriceVolumeWidget({
         )}
       </div>
 
-      {/* KPI Panel */}
       {snapshot && (
         <div className="grid grid-cols-2 gap-2 mb-3 text-xs font-mono">
           <div>
@@ -266,13 +366,11 @@ export function PriceVolumeWidget({
         </div>
       )}
 
-      {/* Chart */}
       <div
         ref={containerRef}
         className="w-full h-80 bg-graphite-950 border border-graphite-800 rounded mb-3"
       />
 
-      {/* Controls */}
       <div className="space-y-2">
         <div className="flex gap-2 flex-wrap">
           <span className="text-terminal-muted text-xs font-mono">Interval:</span>
@@ -309,7 +407,6 @@ export function PriceVolumeWidget({
         </div>
       </div>
 
-      {/* Error */}
       {error && (
         <div className="mt-3 bg-red-900/20 border border-red-500/50 rounded p-2">
           <span className="text-red-500 text-xs font-mono">ERR: {error}</span>

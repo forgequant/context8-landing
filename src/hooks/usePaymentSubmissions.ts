@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
+import { useCallback, useEffect, useState } from 'react'
+import { useAuth } from './useAuth'
 import { PaymentSubmission } from '../types/subscription'
+import { apiFetch, extractArrayFromResponse } from '../lib/api'
 
 interface PaymentSubmissionWithEmail extends PaymentSubmission {
   user_email: string
@@ -21,19 +22,34 @@ export function usePaymentSubmissions(): UsePaymentSubmissionsReturn {
   const [payments, setPayments] = useState<PaymentSubmissionWithEmail[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { accessToken, isAdmin, isLoading } = useAuth()
 
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
+    if (!isAdmin) {
+      setPayments([])
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
 
     try {
-      // Call RPC function to get payments with user emails
-      const { data, error: fetchError } = await supabase
-        .rpc('get_pending_payments_with_emails')
+      const response = await apiFetch<
+        PaymentSubmissionWithEmail[] | { items?: PaymentSubmissionWithEmail[] }
+      >('/api/v1/admin/payments?status=pending', {
+        method: 'GET',
+        token: accessToken,
+      })
 
-      if (fetchError) throw fetchError
+      const pending = extractArrayFromResponse<PaymentSubmissionWithEmail>(response, [
+        'items',
+        'data',
+        'results',
+        'payments',
+      ])
 
-      setPayments(data || [])
+      setPayments(pending)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch payments'
       setError(message)
@@ -41,37 +57,28 @@ export function usePaymentSubmissions(): UsePaymentSubmissionsReturn {
     } finally {
       setLoading(false)
     }
-  }
+  }, [accessToken, isAdmin])
 
   useEffect(() => {
-    fetchPayments()
+    if (isLoading) return
 
-    // Subscribe to real-time updates for payment_submissions table
-    const subscription = supabase
-      .channel('payment_submissions_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'payment_submissions'
-        },
-        () => {
-          // Refetch on any change to payment_submissions
-          fetchPayments()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      subscription.unsubscribe()
+    if (!isAdmin) {
+      setPayments([])
+      setLoading(false)
+      setError(null)
+      return
     }
-  }, [])
+
+    void fetchPayments()
+
+    const interval = setInterval(fetchPayments, 10000)
+    return () => clearInterval(interval)
+  }, [isAdmin, isLoading, fetchPayments])
 
   return {
     payments,
     loading,
     error,
-    refetch: fetchPayments
+    refetch: fetchPayments,
   }
 }

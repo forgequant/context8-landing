@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
 import { useAuth } from './useAuth'
+import {
+  ApiError,
+  apiFetch,
+  apiFetchWithFallback,
+  extractArrayFromResponse,
+  extractObjectFromResponse,
+} from '../lib/api'
 
 interface ApiKey {
   id: string
@@ -16,135 +22,203 @@ interface ApiUsage {
   daily_limit: number
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function parseUsage(value: unknown): ApiUsage | null {
+  if (!isRecord(value)) return null
+
+  if (
+    typeof value.daily_usage === 'number' &&
+    typeof value.daily_limit === 'number'
+  ) {
+    return {
+      daily_usage: value.daily_usage,
+      daily_limit: value.daily_limit,
+    }
+  }
+
+  if (isRecord(value.usage)) {
+    return parseUsage(value.usage)
+  }
+
+  return null
+}
+
+function parseApiKey(value: unknown): ApiKey | null {
+  if (!isRecord(value)) return null
+
+  const candidate = value.key ?? value.api_key
+  if (isRecord(candidate)) {
+    const keyCandidate = extractObjectFromResponse<ApiKey>(candidate, ['key', 'api_key', 'result'])
+    if (keyCandidate && keyCandidate.id && keyCandidate.key_prefix) {
+      return {
+        ...keyCandidate,
+        is_active: Boolean(keyCandidate.is_active),
+        last_used_at: keyCandidate.last_used_at ?? null,
+      }
+    }
+  }
+
+  if (value.id && typeof value.id === 'string') {
+    const keyCandidate = extractObjectFromResponse<ApiKey>(value, ['result', 'payload', 'data'])
+    if (
+      keyCandidate &&
+      keyCandidate.id &&
+      keyCandidate.key_prefix
+    ) {
+      return keyCandidate
+    }
+  }
+
+  return null
+}
+
+function parseGeneratedKey(response: unknown): string | null {
+  if (typeof response === 'string') return response.trim() || null
+
+  if (!isRecord(response)) return null
+
+  if (typeof response.key === 'string') return response.key.trim() || null
+  if (typeof response.api_key === 'string') return response.api_key.trim() || null
+  if (typeof response.secret === 'string') return response.secret.trim() || null
+  if (typeof response.secret_key === 'string') return response.secret_key.trim() || null
+  if (typeof response.token === 'string') return response.token.trim() || null
+
+  const envelope = extractObjectFromResponse<Record<string, unknown>>(response, ['data', 'result', 'payload'])
+  if (isRecord(envelope)) {
+    if (typeof envelope.key === 'string') return envelope.key.trim() || null
+    if (typeof envelope.api_key === 'string') return envelope.api_key.trim() || null
+    if (typeof envelope.secret === 'string') return envelope.secret.trim() || null
+    if (typeof envelope.secret_key === 'string') return envelope.secret_key.trim() || null
+    if (typeof envelope.token === 'string') return envelope.token.trim() || null
+  }
+
+  return null
+}
+
+function parseDefaultUsage() {
+  return { daily_usage: 0, daily_limit: 2 }
+}
+
 export function useApiKey() {
   const [apiKey, setApiKey] = useState<ApiKey | null>(null)
-  const [usage, setUsage] = useState<ApiUsage | null>(null)
+  const [usage, setUsage] = useState<ApiUsage>(parseDefaultUsage())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [newKey, setNewKey] = useState<string | null>(null)
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
 
   const fetchApiKey = useCallback(async () => {
-    if (!user) return
+    if (!user) {
+      setApiKey(null)
+      setUsage(parseDefaultUsage())
+      setLoading(false)
+      return
+    }
 
     try {
-      // legacy: migrate to ctx8-api
-      const { data: keyData, error: keyError } = await supabase
-        .from('api_keys')
-        .select('id, key_prefix, name, is_active, created_at, last_used_at')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
+      setError(null)
+      const response = await apiFetchWithFallback<unknown>(
+        ['/api/v1/api-keys/me', '/api/v1/me/api-keys', '/api/v1/api-keys'],
+        { method: 'GET', token: accessToken },
+      )
 
-      if (keyError && keyError.code !== 'PGRST116') {
-        throw keyError
+      const responseRecord = isRecord(response) ? response : null
+      let payload = responseRecord ? null : null
+      if (responseRecord) {
+        if (isRecord(responseRecord.result)) {
+          payload = responseRecord.result
+        } else if (isRecord(responseRecord.payload)) {
+          payload = responseRecord.payload
+        } else if (isRecord(responseRecord.data)) {
+          payload = responseRecord.data
+        } else {
+          payload = responseRecord
+        }
       }
 
-      setApiKey(keyData)
-
-      // legacy: migrate to ctx8-api
-      const { data: usageData, error: usageError } = await supabase
-        .rpc('get_daily_usage', { p_user_id: user.id })
-
-      if (usageError) {
-        console.error('Error fetching usage:', usageError)
+      let nextKey = parseApiKey(payload)
+      if (!nextKey) {
+        const keys = extractArrayFromResponse<ApiKey>(response, ['keys', 'items', 'data'])
+        nextKey = keys.length > 0 ? keys[0] : null
       }
 
-      const { data: limitData } = await supabase
-        .rpc('get_user_rate_limit', { p_user_id: user.id })
-
-      setUsage({
-        daily_usage: usageData || 0,
-        daily_limit: limitData || 2
-      })
-
+      const nextUsage = parseUsage(payload) ?? parseDefaultUsage()
+      setApiKey(nextKey)
+      setUsage(nextUsage)
     } catch (err) {
-      console.error('Error fetching API key:', err)
-      setError('Failed to load API key')
+      if (err instanceof ApiError && err.status === 404) {
+        // 404 is commonly used to mean "no API key yet" for self endpoints.
+        setError(null)
+        setApiKey(null)
+        setUsage(parseDefaultUsage())
+      } else {
+        console.error('Error fetching API key:', err)
+        setError('Failed to load API key')
+        setApiKey(null)
+        setUsage(parseDefaultUsage())
+      }
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [user, accessToken])
 
   useEffect(() => {
-    fetchApiKey()
+    void fetchApiKey()
   }, [fetchApiKey])
 
   const generateKey = useCallback(async () => {
+    if (!user) return null
+
     try {
       setError(null)
-      if (!user) throw new Error('Not authenticated')
 
-      // Generate a new API key locally
-      const keyBytes = new Uint8Array(24)
-      crypto.getRandomValues(keyBytes)
-      const rawKey = 'ctx8_' + Array.from(keyBytes)
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('')
+      const response = await apiFetchWithFallback<unknown>(
+        ['/api/v1/api-keys', '/api/v1/me/api-keys'],
+        {
+          method: 'POST',
+          token: accessToken,
+          body: JSON.stringify({ name: 'Generated key' }),
+        },
+      )
 
-      // Hash the key for storage
-      const encoder = new TextEncoder()
-      const data = encoder.encode(rawKey)
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-      const keyHash = Array.from(new Uint8Array(hashBuffer))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('')
+      const rawKey = parseGeneratedKey(response)
+      if (!rawKey) {
+        throw new Error('Failed to create API key')
+      }
 
-      // legacy: migrate to ctx8-api
-      await supabase
-        .from('api_keys')
-        .update({ is_active: false })
-        .eq('user_id', user.id)
-
-      const { data: newKeyData, error: insertError } = await supabase
-        .from('api_keys')
-        .insert({
-          user_id: user.id,
-          key_hash: keyHash,
-          key_prefix: rawKey.substring(0, 12) + '...',
-          name: 'Generated key',
-          is_active: true
-        })
-        .select()
-        .single()
-
-      if (insertError) throw insertError
-
+      await fetchApiKey()
       setNewKey(rawKey)
-      setApiKey({
-        ...newKeyData,
-        key_prefix: rawKey.substring(0, 12) + '...'
-      })
-
       return rawKey
     } catch (err) {
       console.error('Error generating key:', err)
       setError('Failed to generate API key')
       return null
     }
-  }, [user])
+  }, [accessToken, fetchApiKey, user])
 
   const revokeKey = useCallback(async () => {
+    if (!apiKey) return
+
     try {
       setError(null)
-      if (!apiKey) return
 
-      const { error: updateError } = await supabase
-        .from('api_keys')
-        .update({ is_active: false })
-        .eq('id', apiKey.id)
-
-      if (updateError) throw updateError
+      const endpoint = `/api/v1/api-keys/${encodeURIComponent(apiKey.id)}`
+      await apiFetch(endpoint, {
+        method: 'DELETE',
+        token: accessToken,
+      })
 
       setApiKey(null)
+      setUsage(parseDefaultUsage())
       setNewKey(null)
     } catch (err) {
       console.error('Error revoking key:', err)
       setError('Failed to revoke API key')
     }
-  }, [apiKey])
+  }, [apiKey, accessToken])
 
   const clearNewKey = useCallback(() => {
     setNewKey(null)
@@ -159,6 +233,6 @@ export function useApiKey() {
     generateKey,
     revokeKey,
     clearNewKey,
-    refresh: fetchApiKey
+    refresh: fetchApiKey,
   }
 }

@@ -283,6 +283,6 @@ docs/
 ### Current project:
 - **Name**: `context8-landing`
 - **Custom domain**: `context8.markets`
-- **Env vars**: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+- **Env vars**: VITE_API_URL, VITE_CHATKIT_WORKFLOW_ID
 
 <!-- MANUAL ADDITIONS END -->

@@ -1,100 +1,269 @@
 import { ChatKit, useChatKit } from '@openai/chatkit-react'
 import { useState, useCallback, memo } from 'react'
+import { apiFetchWithFallback, extractObjectFromResponse } from '@/lib/api'
 import type { MarketData } from '@/types/analytics'
 
 interface AnalyticsChatKitProps {
   onWidgetData: (data: MarketData) => void
 }
 
+interface MarketDataSnapshot {
+  symbol: string
+  interval: string
+  limit: number
+  candles: Array<{
+    time: number
+    open: number
+    high: number
+    low: number
+    close: number
+    volume: number
+  }>
+  ticker24h: {
+    lastPrice: number
+    priceChangePercent: number
+    volume: number
+    quoteVolume: number
+    highPrice: number
+    lowPrice: number
+  }
+  change7dPct: number | null
+  ts: number
+}
+
 const WORKFLOW_ID = (import.meta.env.VITE_CHATKIT_WORKFLOW_ID || '').trim()
+
+const CHATKIT_SESSION_ENDPOINTS = [
+  '/api/v1/chatkit/session',
+  '/api/v1/chatkit-session',
+  '/api/v1/analytics/chatkit/session',
+]
+
+const BINANCE_DATA_ENDPOINTS = [
+  '/api/v1/analytics/binance-proxy',
+  '/api/v1/market-data/binance',
+  '/api/v1/binance-proxy',
+  '/api/v1/market/binance-proxy',
+]
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
+}
+
+function asNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const n = Number(value)
+    if (Number.isFinite(n)) return n
+  }
+  return null
+}
+
+function parseCandles(value: unknown): MarketDataSnapshot['candles'] | null {
+  if (!Array.isArray(value)) return null
+
+  const parsed: MarketDataSnapshot['candles'] = []
+  for (const item of value) {
+    const rec = asRecord(item)
+    if (!rec) continue
+
+    const time = asNumber(rec.time)
+    const open = asNumber(rec.open)
+    const high = asNumber(rec.high)
+    const low = asNumber(rec.low)
+    const close = asNumber(rec.close)
+    const volume = asNumber(rec.volume)
+
+    if (time === null || open === null || high === null || low === null || close === null || volume === null) {
+      continue
+    }
+
+    parsed.push({ time, open, high, low, close, volume })
+  }
+
+  return parsed.length > 0 ? parsed : null
+}
+
+function parseTicker24h(value: unknown): MarketDataSnapshot['ticker24h'] | null {
+  const rec = asRecord(value)
+  if (!rec) return null
+
+  const lastPrice = asNumber(rec.lastPrice ?? rec.last_price)
+  const priceChangePercent = asNumber(rec.priceChangePercent ?? rec.price_change_percent)
+  const volume = asNumber(rec.volume)
+  const quoteVolume = asNumber(rec.quoteVolume ?? rec.quote_volume)
+  const highPrice = asNumber(rec.highPrice ?? rec.high_price)
+  const lowPrice = asNumber(rec.lowPrice ?? rec.low_price)
+
+  if (
+    lastPrice === null ||
+    priceChangePercent === null ||
+    volume === null ||
+    quoteVolume === null ||
+    highPrice === null ||
+    lowPrice === null
+  ) {
+    return null
+  }
+
+  return { lastPrice, priceChangePercent, volume, quoteVolume, highPrice, lowPrice }
+}
+
+function extractClientSecret(response: unknown): string | null {
+  if (typeof response === 'string') {
+    const secret = response.trim()
+    return secret.length > 0 ? secret : null
+  }
+
+  const extractSecretString = (value: unknown): string | null => {
+    if (typeof value === 'string') return value.trim() || null
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const rec = value as Record<string, unknown>
+      if (typeof rec.value === 'string') return rec.value.trim() || null
+    }
+    return null
+  }
+
+  const parsed = extractObjectFromResponse<{
+    client_secret?: unknown
+    clientSecret?: unknown
+    secret?: unknown
+  }>(response, ['result', 'data', 'payload'])
+
+  const secret = parsed?.client_secret ?? parsed?.clientSecret ?? parsed?.secret
+  const extracted = extractSecretString(secret)
+  if (extracted) return extracted
+
+  return null
+}
+
+function normalizeMarketSnapshot(
+  response: unknown,
+  fallback: { symbol: string; interval: string; limit: number },
+): MarketDataSnapshot {
+  const payload = extractObjectFromResponse<Record<string, unknown>>(response, [
+    'data',
+    'result',
+    'payload',
+    'snapshot',
+    'report',
+  ])
+
+  if (!payload) {
+    throw new Error('Invalid market data response from API')
+  }
+
+  const candles = parseCandles(payload.candles)
+  if (!candles) {
+    throw new Error('Invalid market data response from API: missing candles')
+  }
+
+  const tickerCandidate = payload.ticker24h ?? payload.ticker ?? payload.ticker_24h
+  const ticker24h = parseTicker24h(tickerCandidate)
+  if (!ticker24h) {
+    throw new Error('Invalid market data response from API: missing ticker24h')
+  }
+
+  const symbol = typeof payload.symbol === 'string' && payload.symbol.trim() ? payload.symbol : fallback.symbol
+  const interval = typeof payload.interval === 'string' && payload.interval.trim() ? payload.interval : fallback.interval
+  const limit = asNumber(payload.limit) ?? fallback.limit
+  const ts = asNumber(payload.ts) ?? Date.now()
+
+  const change7dPctRaw = payload.change7dPct ?? payload.change7d_pct
+  const change7dPct = change7dPctRaw === null ? null : (asNumber(change7dPctRaw) ?? null)
+
+  return {
+    symbol,
+    interval,
+    limit,
+    candles,
+    ticker24h,
+    change7dPct,
+    ts,
+  }
+}
+
+function toWidgetData(snapshot: MarketDataSnapshot): MarketData {
+  return {
+    symbol: snapshot.symbol,
+    price: snapshot.ticker24h.lastPrice.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }),
+    volume: snapshot.ticker24h.volume.toLocaleString('en-US', {
+      maximumFractionDigits: 0,
+    }),
+    spread: ((snapshot.ticker24h.highPrice - snapshot.ticker24h.lowPrice) / snapshot.ticker24h.lowPrice * 100)
+      .toFixed(2),
+    timestamp: snapshot.ts ?? Date.now(),
+  }
+}
 
 export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }: AnalyticsChatKitProps) {
   const [error, setError] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
 
-
-  // Create session with OpenAI ChatKit - wrapped in useCallback for stable reference
   const getClientSecret = useCallback(async (currentSecret: string | null) => {
-
     if (!WORKFLOW_ID) {
       const errMsg = 'VITE_CHATKIT_WORKFLOW_ID not configured'
+      setIsInitializing(false)
       setError(errMsg)
       throw new Error(errMsg)
     }
 
-    if (!import.meta.env.VITE_SUPABASE_URL) {
-      const errMsg = 'VITE_SUPABASE_URL not configured'
-      setError(errMsg)
-      throw new Error(errMsg)
-    }
-
-    if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
-      const errMsg = 'VITE_SUPABASE_ANON_KEY not configured'
-      setError(errMsg)
-      throw new Error(errMsg)
+    if (!currentSecret) {
+      setIsInitializing(true)
     }
 
     try {
-      // Only set initializing for the first session creation
-      if (!currentSecret) {
-        setIsInitializing(true)
-      }
-
-      // legacy: migrate to ctx8-api — Supabase Edge Function for ChatKit session
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-      const response = await fetch(`${supabaseUrl}/functions/v1/chatkit-session`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-        },
-        body: JSON.stringify({
-          workflow_id: WORKFLOW_ID,
-          workflow_version: '3',
-          user_id: 'anonymous-' + Date.now(),
-        }),
+      const body = JSON.stringify({
+        workflow_id: WORKFLOW_ID,
+        workflow_version: '3',
+        user_id: `web-${Date.now()}`,
       })
 
-      if (!response.ok) {
-        throw new Error(`Failed to create session: ${response.status} ${response.statusText}`)
+      const data = await apiFetchWithFallback<unknown>(CHATKIT_SESSION_ENDPOINTS, {
+        method: 'POST',
+        body,
+      })
+
+      const clientSecret = extractClientSecret(data)
+      if (!clientSecret) {
+        throw new Error('Session API did not return a client_secret')
       }
 
-      const data = await response.json()
       setError(null)
+      setIsInitializing(false)
 
-      // Only clear initializing state after first session
-      if (!currentSecret) {
-        setIsInitializing(false)
-      }
-
-      // ChatKit API returns client_secret directly as a string
-      return typeof data.client_secret === 'string'
-        ? data.client_secret
-        : data.client_secret?.value
+      return clientSecret
     } catch (err) {
-      console.error('[AnalyticsChatKit] Failed to create ChatKit session:', err)
-      const errMsg = err instanceof Error ? err.message : 'Unknown error creating session'
+      const errMsg = err instanceof Error ? err.message : 'Failed to create ChatKit session'
       setError(errMsg)
-
-      // Only clear initializing state on first session error
       if (!currentSecret) {
         setIsInitializing(false)
       }
-
       throw err
     }
-  }, []) // Empty deps - function doesn't depend on any props/state
+  }, [])
 
-  // Note: We don't call getClientSecret in useEffect
-  // ChatKit will call it automatically when needed
+  const loadBinanceMarketData = async (symbol: string, interval: string, limit: number) => {
+    const params = new URLSearchParams({
+      symbol,
+      interval,
+      limit: String(limit),
+    })
+    const query = params.toString()
 
+    const paths = BINANCE_DATA_ENDPOINTS.map((path) => `${path}?${query}`)
+    const response = await apiFetchWithFallback<unknown>(paths, { method: 'GET' })
+    return normalizeMarketSnapshot(response, { symbol, interval, limit })
+  }
 
   const chatkit = useChatKit({
     api: {
       getClientSecret,
     },
-    initialThread: null, // Show start screen
+    initialThread: null,
     theme: {
       colorScheme: 'dark',
       color: {
@@ -104,7 +273,7 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
           shade: -4,
         },
         accent: {
-          primary: '#06b6d4', // terminal-cyan
+          primary: '#06b6d4',
           level: 2,
         },
       },
@@ -147,40 +316,38 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
       name: string
       params: Record<string, unknown>
     }) => {
-      // Handle Binance market data fetch
       if (invocation.name === 'fetch_binance_marketdata') {
         const symbol = String(invocation.params.symbol || 'BTCUSDT').toUpperCase()
         const interval = String(invocation.params.interval || '1h')
         const limit = Math.min(Math.max(Number(invocation.params.limit || 200), 10), 500)
 
         try {
-          // Fetch data from Supabase Edge Function
-          const params = new URLSearchParams({ symbol, interval, limit: String(limit) })
-          const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/binance-proxy?${params}`
-          const response = await fetch(url)
+          const data = await loadBinanceMarketData(symbol, interval, limit)
 
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-          }
-
-          const data = await response.json()
-
-          // Trigger widget update via CustomEvent
           window.dispatchEvent(new CustomEvent('crypto:refresh', {
-            detail: { symbol, interval, limit, data }
+            detail: {
+              symbol,
+              interval,
+              limit,
+              data,
+            },
           }))
 
-          // Return formatted markdown summary to agent
-          const formatPrice = (price: number) => `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-          const formatPercent = (pct: number) => `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`
-          const formatVolume = (vol: number) => vol.toLocaleString('en-US', { maximumFractionDigits: 0 })
+          onWidgetData(toWidgetData(data))
+
+          const formatPrice = (price: number) =>
+            `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+          const formatPercent = (pct: number) =>
+            `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`
+          const formatVolume = (vol: number) =>
+            vol.toLocaleString('en-US', { maximumFractionDigits: 0 })
 
           const change24h = data.ticker24h.priceChangePercent
           const change7d = data.change7dPct
           const emoji24h = change24h >= 0 ? '🟢' : '🔴'
           const emoji7d = change7d !== null ? (change7d >= 0 ? '🟢' : '🔴') : '⚪'
 
-          const result = `### 📊 ${data.symbol} Market Report
+          const report = `### 📊 ${data.symbol} Market Report
 
 | Metric | Value | 24h Change | 7d Change |
 |--------|-------|------------|-----------|
@@ -192,19 +359,22 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
 ---
 
 ✅ **Chart updated** with ${data.candles.length} candles (${data.interval} timeframe)`
-
-          return result
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-          console.error('[AnalyticsChatKit] Failed to fetch market data:', errorMessage)
-          return `✗ Failed to fetch market data: ${errorMessage}`
+          return {
+            success: true,
+            message: report,
+          }
+        } catch (clientErr) {
+          const message = clientErr instanceof Error ? clientErr.message : 'Unknown error'
+          console.error('[AnalyticsChatKit] Failed to fetch market data:', message)
+          return {
+            success: false,
+            message: `✗ Failed to fetch market data: ${message}`,
+          }
         }
       }
 
-      // Handle legacy widget rendering from LLM
       if (invocation.name === 'render_market_widget') {
         const { symbol, price, volume, spread } = invocation.params
-
         const marketData: MarketData = {
           symbol: String(symbol || 'UNKNOWN'),
           price: String(price || '0'),
@@ -227,7 +397,6 @@ export const AnalyticsChatKit = memo(function AnalyticsChatKit({ onWidgetData }:
       setError(error instanceof Error ? error.message : 'Unknown error')
     },
   })
-
 
   return (
     <div className="h-full flex flex-col min-h-[600px]">

@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
 import { useAuth } from '../hooks/useAuth'
 import { PaymentModal } from '../components/payment/PaymentModal'
 import { usePaymentSubmit } from '../hooks/usePaymentSubmit'
@@ -12,7 +11,8 @@ import { RenewalReminder } from '../components/subscription/RenewalReminder'
 import { PaymentHistory } from '../components/subscription/PaymentHistory'
 import { MCPInstructions } from '../components/dashboard/MCPInstructions'
 import { ApiKeySection } from '../components/dashboard/ApiKeySection'
-import type { BlockchainNetwork, StablecoinType } from '../types/subscription'
+import type { BlockchainNetwork, StablecoinType, PaymentSubmission } from '../types/subscription'
+import { ApiError, apiFetch, apiFetchWithFallback, extractObjectFromResponse, extractArrayFromResponse } from '../lib/api'
 
 // Section header component
 function SectionHeader({ number, title }: { number: string; title: string }) {
@@ -368,7 +368,7 @@ export function AccountDashboard() {
   const auth = useAuth()
   const [loading, setLoading] = useState(true)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [pendingPayment, setPendingPayment] = useState<unknown | null>(null)
+  const [pendingPayment, setPendingPayment] = useState<PaymentSubmission | null>(null)
   const [hasApiKey, setHasApiKey] = useState(false)
   const { submitPayment } = usePaymentSubmit()
 
@@ -400,32 +400,100 @@ export function AccountDashboard() {
 
     // Fetch pending payment and API key status
     const fetchUserData = async () => {
-      // legacy: migrate to ctx8-api
-      const { data: payment } = await supabase
-        .from('payment_submissions')
-        .select('*')
-        .eq('user_id', auth.user!.id)
-        .eq('status', 'pending')
-        .order('submitted_at', { ascending: false })
-        .limit(1)
-        .single()
+      setLoading(true)
 
-      setPendingPayment(payment)
+      const fetchPendingPaymentSelf = async () => {
+        const querySelf = new URLSearchParams({
+          scope: 'self',
+          status: 'pending',
+          sort: 'submitted_at:desc',
+          limit: '1',
+        })
 
-      // legacy: migrate to ctx8-api
-      const { data: apiKey } = await supabase
-        .from('api_keys')
-        .select('id')
-        .eq('user_id', auth.user!.id)
-        .limit(1)
-        .single()
+        try {
+          return await apiFetch<unknown>(`/api/v1/payments?${querySelf.toString()}`, {
+            method: 'GET',
+            token: auth.accessToken,
+          })
+        } catch (err) {
+          // Backward compatibility: some backends require explicit user_id filter.
+          if (!(err instanceof ApiError) || (err.status !== 400 && err.status !== 404 && err.status !== 422)) {
+            throw err
+          }
 
-      setHasApiKey(!!apiKey)
-      setLoading(false)
+          const queryLegacy = new URLSearchParams({
+            user_id: auth.user!.id,
+            status: 'pending',
+            sort: 'submitted_at:desc',
+            limit: '1',
+          })
+          return await apiFetch<unknown>(`/api/v1/payments?${queryLegacy.toString()}`, {
+            method: 'GET',
+            token: auth.accessToken,
+          })
+        }
+      }
+
+      const fetchPendingPayment = async () => {
+        try {
+          const paymentResponse = await fetchPendingPaymentSelf()
+
+          const payments = extractArrayFromResponse<PaymentSubmission>(paymentResponse, [
+            'items',
+            'data',
+            'results',
+            'payments',
+          ])
+          setPendingPayment(payments[0] ?? null)
+        } catch {
+          setPendingPayment(null)
+        }
+      }
+
+      const fetchApiKeyStatus = async () => {
+        try {
+          const keyResponse = await apiFetchWithFallback<unknown>(
+            ['/api/v1/api-keys/me', '/api/v1/me/api-keys', '/api/v1/api-keys'],
+            {
+              method: 'GET',
+              token: auth.accessToken,
+            },
+          )
+
+          const keysList = extractArrayFromResponse<Record<string, unknown>>(
+            keyResponse,
+            ['keys', 'items', 'data', 'results', 'api_keys'],
+            (item): item is Record<string, unknown> =>
+              !!item && typeof item === 'object' && !Array.isArray(item) && 'id' in item,
+          )
+          if (keysList.length > 0) {
+            setHasApiKey(true)
+            return
+          }
+
+          const keyPayload = extractObjectFromResponse<Record<string, unknown>>(keyResponse, [
+            'key',
+            'api_key',
+            'data',
+            'result',
+            'payload',
+          ])
+
+          setHasApiKey(!!(keyPayload && typeof keyPayload.id === 'string' && keyPayload.id.trim()))
+        } catch {
+          setHasApiKey(false)
+        }
+      }
+
+      try {
+        await Promise.all([fetchPendingPayment(), fetchApiKeyStatus()])
+      } finally {
+        setLoading(false)
+      }
     }
 
-    fetchUserData()
-  }, [auth.user])
+    void fetchUserData()
+  }, [auth.user, auth.accessToken])
 
   // Check for expired subscription (outside grace period) and prompt upgrade
   useEffect(() => {
@@ -437,16 +505,45 @@ export function AccountDashboard() {
   const handlePaymentSubmit = async (data: { chain: BlockchainNetwork; stablecoin: StablecoinType; txHash: string }) => {
     await submitPayment(data)
     if (!auth.user) return
-    // Refresh pending payment status (legacy: migrate to ctx8-api)
-    const { data: payment } = await supabase
-      .from('payment_submissions')
-      .select('*')
-      .eq('user_id', auth.user.id)
-      .eq('status', 'pending')
-      .order('submitted_at', { ascending: false })
-      .limit(1)
-      .single()
-    setPendingPayment(payment)
+    try {
+      const querySelf = new URLSearchParams({
+        scope: 'self',
+        status: 'pending',
+        sort: 'submitted_at:desc',
+        limit: '1',
+      })
+      let paymentResponse: unknown
+      try {
+        paymentResponse = await apiFetch<unknown>(`/api/v1/payments?${querySelf.toString()}`, {
+          method: 'GET',
+          token: auth.accessToken,
+        })
+      } catch (err) {
+        if (!(err instanceof ApiError) || (err.status !== 400 && err.status !== 404 && err.status !== 422)) {
+          throw err
+        }
+        const queryLegacy = new URLSearchParams({
+          user_id: auth.user.id,
+          status: 'pending',
+          sort: 'submitted_at:desc',
+          limit: '1',
+        })
+        paymentResponse = await apiFetch<unknown>(`/api/v1/payments?${queryLegacy.toString()}`, {
+          method: 'GET',
+          token: auth.accessToken,
+        })
+      }
+
+      const payments = extractArrayFromResponse<PaymentSubmission>(paymentResponse, [
+        'items',
+        'data',
+        'results',
+        'payments',
+      ])
+      setPendingPayment(payments[0] ?? null)
+    } catch (err) {
+      console.error('Payment was submitted but refresh failed:', err)
+    }
   }
 
   const handleLogout = async () => {

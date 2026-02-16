@@ -27,3 +27,6 @@ dist-ssr
 # Environment overrides (safe defaults are in .env.development)
 .env.local
 .env.production
+
+# Keep project repos clean: Beads trackers live in beads-hub, not here.
+.beads/

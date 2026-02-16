@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase' // legacy: migrate to ctx8-api
 import { useAuth } from './useAuth'
+import { apiFetch } from '../lib/api'
 
 interface UsePendingPaymentsCountReturn {
   count: number
@@ -10,13 +10,13 @@ interface UsePendingPaymentsCountReturn {
 
 /**
  * Hook for fetching count of pending payments (for admin badge)
- * Updates in real-time when payments are added/updated
+ * Polls every 10 seconds for updates.
  */
 export function usePendingPaymentsCount(): UsePendingPaymentsCountReturn {
   const [count, setCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin, accessToken } = useAuth()
 
   useEffect(() => {
     if (!user || !isAdmin) {
@@ -27,13 +27,18 @@ export function usePendingPaymentsCount(): UsePendingPaymentsCountReturn {
 
     const fetchCount = async () => {
       try {
-        // legacy: migrate to ctx8-api
-        const { data: countData, error: fetchError } = await supabase
-          .rpc('count_pending_payments')
+        const response = await apiFetch<unknown>('/api/v1/admin/payments/pending/count', {
+          method: 'GET',
+          token: accessToken,
+        })
 
-        if (fetchError) throw fetchError
-
-        setCount(countData || 0)
+        if (typeof response === 'number') {
+          setCount(response)
+        } else if (typeof response === 'object' && response !== null) {
+          const rec = response as { count?: unknown }
+          const value = typeof rec.count === 'number' ? rec.count : Number(rec.count)
+          setCount(Number.isFinite(value) ? value : 0)
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to fetch count'
         setError(message)
@@ -43,19 +48,15 @@ export function usePendingPaymentsCount(): UsePendingPaymentsCountReturn {
       }
     }
 
-    fetchCount()
+    void fetchCount()
 
-    // Poll every 10 seconds for updates
     const interval = setInterval(fetchCount, 10000)
-
-    return () => {
-      clearInterval(interval)
-    }
-  }, [user, isAdmin])
+    return () => clearInterval(interval)
+  }, [user, isAdmin, accessToken])
 
   return {
     count,
     loading,
-    error
+    error,
   }
 }
