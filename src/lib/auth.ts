@@ -1,5 +1,5 @@
 import type { AuthProviderProps } from 'react-oidc-context'
-import { WebStorageStateStore } from 'oidc-client-ts'
+import { UserManager, WebStorageStateStore, type UserManagerSettings } from 'oidc-client-ts'
 
 import { getEnvString } from './runtimeEnv'
 
@@ -32,16 +32,12 @@ export const ZITADEL_PROJECT_ID = requiredEnv(
   ),
 )
 
-export const oidcConfig: AuthProviderProps = {
+const oidcSettings: UserManagerSettings = {
   authority: ZITADEL_AUTHORITY,
   client_id: ZITADEL_CLIENT_ID,
   redirect_uri: `${window.location.origin}/auth/callback`,
   post_logout_redirect_uri: window.location.origin,
   response_type: 'code',
-  // We handle the redirect callback explicitly in the /auth/callback route.
-  // This avoids edge cases where the provider processes it too early/late and
-  // the app bounces back into a fresh signin redirect.
-  skipSigninCallback: true,
   scope: [
     'openid',
     'profile',
@@ -52,6 +48,16 @@ export const oidcConfig: AuthProviderProps = {
   ].join(' '),
   automaticSilentRenew: true,
   userStore: new WebStorageStateStore({ store: window.localStorage }),
+}
+
+export const oidcUserManager = new UserManager(oidcSettings)
+
+export const oidcConfig: AuthProviderProps = {
+  userManager: oidcUserManager,
+  // We handle the redirect callback explicitly in the /auth/callback route.
+  // This avoids edge cases where the provider processes it too early/late and
+  // the app bounces back into a fresh signin redirect.
+  skipSigninCallback: true,
 }
 
 export type SubscriptionTier = 'free' | 'pro' | 'enterprise'

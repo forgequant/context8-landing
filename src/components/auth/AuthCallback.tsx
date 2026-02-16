@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth as useOidcAuth } from 'react-oidc-context'
+import { oidcUserManager } from '../../lib/auth'
 
 export function AuthCallback() {
-  const oidc = useOidcAuth()
   const navigate = useNavigate()
-  const [localError, setLocalError] = useState<Error | null>(null)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -13,12 +12,18 @@ export function AuthCallback() {
     // Only attempt callback handling when we actually have OIDC params.
     const params = new URLSearchParams(window.location.search)
     const hasCallbackParams = params.has('code') || params.has('error')
-    if (!hasCallbackParams) return
+    if (!hasCallbackParams) {
+      navigate('/auth', { replace: true })
+      return
+    }
 
     ;(async () => {
       try {
-        const user = await oidc.signinRedirectCallback()
+        const user = await oidcUserManager.signinRedirectCallback()
         if (cancelled) return
+
+        // Remove code/state from the URL to avoid re-processing on refresh.
+        window.history.replaceState({}, document.title, window.location.pathname)
 
         const maybeState = user?.state as unknown
         const returnTo =
@@ -26,41 +31,27 @@ export function AuthCallback() {
             ? String((maybeState as { returnTo?: unknown }).returnTo ?? '/dashboard')
             : '/dashboard'
 
-        navigate(returnTo.startsWith('/') ? returnTo : '/dashboard', { replace: true })
+        // Hard reload so the AuthProvider initializes from localStorage and
+        // protected routes don't bounce during state transitions.
+        window.location.replace(returnTo.startsWith('/') ? returnTo : '/dashboard')
       } catch (err) {
         if (cancelled) return
-        setLocalError(err instanceof Error ? err : new Error(String(err)))
+        setError(err instanceof Error ? err : new Error(String(err)))
       }
     })()
 
     return () => {
       cancelled = true
     }
-  }, [navigate, oidc])
+  }, [navigate])
 
-  useEffect(() => {
-    if (oidc.error || localError) {
-      return
-    }
-
-    if (oidc.isAuthenticated) {
-      const maybeState = oidc.user?.state as unknown
-      const returnTo =
-        typeof maybeState === 'object' && maybeState !== null && 'returnTo' in maybeState
-          ? String((maybeState as { returnTo?: unknown }).returnTo ?? '/dashboard')
-          : '/dashboard'
-      navigate(returnTo.startsWith('/') ? returnTo : '/dashboard', { replace: true })
-    }
-  }, [oidc.isAuthenticated, oidc.error, oidc.user, navigate, localError])
-
-  const err = localError ?? oidc.error
-  if (err) {
+  if (error) {
     return (
       <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono flex items-center justify-center px-6">
         <div className="max-w-lg w-full bg-graphite-900 rounded-lg border border-graphite-800 p-6">
           <p className="text-terminal-red text-sm font-semibold mb-2">Sign-in failed</p>
           <p className="text-terminal-muted text-xs leading-relaxed">
-            {err.message}
+            {error.message}
           </p>
           <div className="mt-5 flex gap-3">
             <button
