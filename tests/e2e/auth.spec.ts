@@ -156,7 +156,9 @@ test('authenticated (no roles) can load dashboard and performs authorized report
   })
 
   await page.goto('/dashboard')
-  await expect(page.getByText('Daily Disagree')).toBeVisible()
+  // The "Daily Disagree" wordmark is hidden on small viewports; use a stable
+  // accessibility hook that renders across breakpoints.
+  await expect(page.getByLabel('Previous day')).toBeVisible()
 
   // Non-admin should be bounced out of /admin.
   await page.goto('/admin')

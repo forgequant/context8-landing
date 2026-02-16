@@ -10,21 +10,21 @@ function requiredEnv(key: string, value: string): string {
   return value
 }
 
-const authority = requiredEnv(
+export const ZITADEL_AUTHORITY = requiredEnv(
   'VITE_ZITADEL_AUTHORITY',
   getEnvString(
     'VITE_ZITADEL_AUTHORITY',
     (import.meta.env.VITE_ZITADEL_AUTHORITY as string | undefined) ?? '',
   ),
 )
-const clientId = requiredEnv(
+export const ZITADEL_CLIENT_ID = requiredEnv(
   'VITE_ZITADEL_CLIENT_ID',
   getEnvString(
     'VITE_ZITADEL_CLIENT_ID',
     (import.meta.env.VITE_ZITADEL_CLIENT_ID as string | undefined) ?? '',
   ),
 )
-const projectId = requiredEnv(
+export const ZITADEL_PROJECT_ID = requiredEnv(
   'VITE_ZITADEL_PROJECT_ID',
   getEnvString(
     'VITE_ZITADEL_PROJECT_ID',
@@ -33,8 +33,8 @@ const projectId = requiredEnv(
 )
 
 export const oidcConfig: AuthProviderProps = {
-  authority,
-  client_id: clientId,
+  authority: ZITADEL_AUTHORITY,
+  client_id: ZITADEL_CLIENT_ID,
   redirect_uri: `${window.location.origin}/auth/callback`,
   post_logout_redirect_uri: window.location.origin,
   response_type: 'code',
@@ -43,7 +43,7 @@ export const oidcConfig: AuthProviderProps = {
     'profile',
     'email',
     'offline_access',
-    `urn:zitadel:iam:org:project:id:${projectId}:aud`,
+    `urn:zitadel:iam:org:project:id:${ZITADEL_PROJECT_ID}:aud`,
     'urn:zitadel:iam:org:project:roles',
   ].join(' '),
   automaticSilentRenew: true,

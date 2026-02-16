@@ -18,20 +18,24 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry'
   },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
-    },
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] }
+  projects: (() => {
+    const projects = [
+      { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+      { name: 'Mobile Chrome', use: { ...devices['Pixel 5'] } },
+    ] as const
+
+    // WebKit on Linux commonly requires extra system libraries (install via
+    // `npx playwright install-deps webkit`). Enable explicitly when available.
+    if (process.platform === 'darwin' || process.env.PLAYWRIGHT_WEBKIT === '1') {
+      return [
+        projects[0],
+        { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+        projects[1],
+      ]
     }
-  ],
+
+    return projects
+  })(),
   webServer: {
     command:
       `VITE_ZITADEL_AUTHORITY=${E2E_ENV.VITE_ZITADEL_AUTHORITY} ` +

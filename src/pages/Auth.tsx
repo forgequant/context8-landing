@@ -1,12 +1,20 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
+import { ZITADEL_CLIENT_ID, ZITADEL_PROJECT_ID } from '../lib/auth'
 
 export function Auth() {
   const navigate = useNavigate()
   const location = useLocation()
   const { isAuthenticated, isLoading, login } = useAuth()
+  const [signInError, setSignInError] = useState<string | null>(null)
+  const [isSigningIn, setIsSigningIn] = useState(false)
+  const oidcMisconfigured =
+    ZITADEL_CLIENT_ID === 'placeholder' || ZITADEL_PROJECT_ID === 'placeholder'
+  const oidcMisconfiguredMessage =
+    'OAuth is not configured for local development. ' +
+    'Set VITE_ZITADEL_CLIENT_ID and VITE_ZITADEL_PROJECT_ID in .env.local (or your environment) and restart the dev server.'
   const returnTo =
     (location.state as { returnTo?: string } | null)?.returnTo ?? '/dashboard'
   const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/dashboard'
@@ -18,8 +26,24 @@ export function Auth() {
     }
   }, [isAuthenticated, navigate, safeReturnTo])
 
-  const handleSignIn = () => {
-    login(safeReturnTo)
+  const handleSignIn = async () => {
+    setSignInError(null)
+    if (oidcMisconfigured) {
+      setSignInError(oidcMisconfiguredMessage)
+      return
+    }
+
+    setIsSigningIn(true)
+    try {
+      await login(safeReturnTo)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setSignInError(
+        `Sign-in failed: ${msg}. ` +
+          `If you're running locally, check VITE_ZITADEL_AUTHORITY is reachable.`,
+      )
+      setIsSigningIn(false)
+    }
   }
 
   if (isLoading) {
@@ -71,14 +95,33 @@ export function Auth() {
               <span className="text-terminal-muted">auth --method=oidc</span>
             </div>
 
+            {oidcMisconfigured ? (
+              <div
+                role="alert"
+                className="mb-4 text-xs text-terminal-red bg-graphite-950/50 border border-terminal-red/30 rounded-md p-3"
+              >
+                {oidcMisconfiguredMessage}
+              </div>
+            ) : null}
+
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleSignIn}
-              className="w-full py-3 bg-terminal-cyan text-graphite-950 rounded-lg text-sm font-semibold hover:bg-terminal-cyan/90 transition-all"
+              disabled={isSigningIn || oidcMisconfigured}
+              className="w-full py-3 bg-terminal-cyan text-graphite-950 rounded-lg text-sm font-semibold hover:bg-terminal-cyan/90 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Sign In / Register
+              {isSigningIn ? 'Redirecting...' : 'Sign In / Register'}
             </motion.button>
+
+            {signInError ? (
+              <div
+                role="alert"
+                className="mt-4 text-xs text-terminal-red bg-graphite-950/50 border border-terminal-red/30 rounded-md p-3"
+              >
+                {signInError}
+              </div>
+            ) : null}
 
             <motion.div
               initial={{ opacity: 0 }}

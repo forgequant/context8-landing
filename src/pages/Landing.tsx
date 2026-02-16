@@ -428,6 +428,59 @@ export function Landing() {
         </div>
       </motion.section>
 
+      {/* ── STATUS ── */}
+      <section id="status" style={{ padding: '56px 0 64px' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
+          <div
+            style={{
+              background: C.surface,
+              border: `1px solid ${C.border}`,
+              borderRadius: C.radius,
+              padding: 20,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                marginBottom: 8,
+              }}
+            >
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: '0.875rem',
+                  fontWeight: 800,
+                  letterSpacing: '-0.01em',
+                  color: C.text,
+                }}
+              >
+                Status
+              </h3>
+              <span
+                style={{
+                  fontFamily: font.mono,
+                  fontSize: '0.6875rem',
+                  color: C.textMuted,
+                  border: `1px solid ${C.border}`,
+                  background: 'rgba(22,18,16,0.5)',
+                  borderRadius: 999,
+                  padding: '3px 10px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Beta
+              </span>
+            </div>
+            <p style={{ margin: 0, color: C.textSecondary, fontSize: '0.9375rem', lineHeight: 1.55 }}>
+              Public status page is coming soon. For now, local development uses mocked auth and API routes in E2E.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ── FOOTER ── */}
       <footer style={{ borderTop: `1px solid ${C.border}`, padding: '24px 0' }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
@@ -436,8 +489,20 @@ export function Landing() {
               &copy; 2026 Context8. All rights reserved.
             </span>
             <div style={{ display: 'flex', gap: 24 }}>
-              {['Docs', 'Status', 'GitHub'].map(link => (
-                <a key={link} href="#" style={{ fontSize: '0.8125rem', color: C.textMuted, textDecoration: 'none' }}>{link}</a>
+              {(
+                [
+                  { label: 'Docs', href: '#api' },
+                  { label: 'Status', href: '#status' },
+                  { label: 'GitHub', href: 'https://github.com/forgequant/context8-landing' },
+                ] as const
+              ).map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  style={{ fontSize: '0.8125rem', color: C.textMuted, textDecoration: 'none' }}
+                >
+                  {link.label}
+                </a>
               ))}
             </div>
           </div>
