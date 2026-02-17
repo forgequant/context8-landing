@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react'
 import { Command } from 'cmdk'
 import { useNavigate } from 'react-router-dom'
-import { FileText, TrendingUp, GitBranch, Clock, Settings, Search, Lock } from 'lucide-react'
+import { FileText, TrendingUp, GitBranch, Clock, Settings, Search, Lock, type LucideIcon } from 'lucide-react'
 
-const NAV_COMMANDS = [
+type NavCommand = {
+  label: string
+  route: string
+  icon: LucideIcon
+  group: 'Navigation'
+  disabled?: boolean
+  hint?: string
+}
+
+const NAV_COMMANDS: readonly NavCommand[] = [
   { label: "Today's Report", route: '/dashboard/report/latest', icon: FileText, group: 'Navigation' },
   { label: 'Crowded Trades', route: '/dashboard/crowded', icon: TrendingUp, group: 'Navigation', disabled: true, hint: 'Coming soon' },
   { label: 'Divergence Watch', route: '/dashboard/divergence', icon: GitBranch, group: 'Navigation', disabled: true, hint: 'Coming soon' },
   { label: 'History', route: '/dashboard/history', icon: Clock, group: 'Navigation', disabled: true, hint: 'Coming soon' },
-] as const
+]
 
 const ASSET_COMMANDS = [
   { label: 'BTC — Bitcoin', keywords: ['bitcoin', 'btc'], route: '/dashboard/report/latest' },
