@@ -123,7 +123,7 @@ export function ApiKeySection() {
       {!apiKey && !newKey && (
         <div className="text-center py-4">
           <p className="text-sm text-terminal-muted mb-4">
-            Generate an API key to use Context8 MCP server
+            Generate an API key to call the Context8 API
           </p>
           <button
             onClick={handleGenerate}

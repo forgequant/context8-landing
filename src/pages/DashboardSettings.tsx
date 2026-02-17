@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ApiKeySection } from '@/components/dashboard/ApiKeySection'
-import { MCPInstructions } from '@/components/dashboard/MCPInstructions'
+import { ApiUsageInstructions } from '@/components/dashboard/ApiUsageInstructions'
 import { PaymentModal } from '@/components/payment/PaymentModal'
 import { PaymentHistory } from '@/components/subscription/PaymentHistory'
 import { RenewalReminder } from '@/components/subscription/RenewalReminder'
@@ -80,10 +80,10 @@ export function DashboardSettings() {
               </p>
               <button
                 type="button"
-                onClick={() => setPaymentOpen(true)}
-                className="px-4 py-2 bg-terminal-cyan text-graphite-950 rounded-lg text-sm font-semibold hover:bg-terminal-cyan/90 transition-colors"
+                disabled
+                className="px-4 py-2 bg-terminal-cyan/50 text-graphite-950 rounded-lg text-sm font-semibold opacity-60 cursor-not-allowed"
               >
-                Upgrade to Pro
+                Upgrade to Pro (Coming soon)
               </button>
             </div>
           ) : null}
@@ -95,7 +95,7 @@ export function DashboardSettings() {
       <SectionTitle label="Developer" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ApiKeySection />
-        <MCPInstructions />
+        <ApiUsageInstructions />
       </div>
 
       <PaymentModal

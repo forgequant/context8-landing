@@ -25,9 +25,6 @@ const DashboardSettings = lazy(() => import('./pages/DashboardSettings').then(m 
 
 // Blog pages
 const BlogIndex = lazy(() => import('./pages/blog/BlogIndex').then(m => ({ default: m.BlogIndex })))
-const WhatIsMcp = lazy(() => import('./pages/blog/articles/WhatIsMcp').then(m => ({ default: m.WhatIsMcp })))
-const AiCryptoData = lazy(() => import('./pages/blog/articles/AiCryptoData').then(m => ({ default: m.AiCryptoData })))
-const McpVsRestApi = lazy(() => import('./pages/blog/articles/McpVsRestApi').then(m => ({ default: m.McpVsRestApi })))
 
 // Loading fallback component
 function LoadingFallback() {
@@ -78,9 +75,6 @@ export default function App() {
             }
           />
           <Route path="/blog" element={<Suspense fallback={<LoadingFallback />}><BlogIndex /></Suspense>} />
-          <Route path="/blog/what-is-mcp" element={<Suspense fallback={<LoadingFallback />}><WhatIsMcp /></Suspense>} />
-          <Route path="/blog/ai-crypto-data-integration" element={<Suspense fallback={<LoadingFallback />}><AiCryptoData /></Suspense>} />
-          <Route path="/blog/mcp-vs-rest-api" element={<Suspense fallback={<LoadingFallback />}><McpVsRestApi /></Suspense>} />
           <Route
             path="/admin"
             element={

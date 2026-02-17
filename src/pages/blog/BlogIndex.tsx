@@ -2,27 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
 const articles = [
-  {
-    slug: 'what-is-mcp',
-    title: 'What is MCP (Model Context Protocol)? A Complete Guide',
-    description: 'Learn how MCP enables AI assistants to securely connect to external data sources and why it matters for developers.',
-    publishedAt: 'Dec 4, 2025',
-    readTime: '8 min'
-  },
-  {
-    slug: 'ai-crypto-data-integration',
-    title: 'How to Connect Your AI to Real-Time Crypto Data',
-    description: 'Step-by-step guide to giving your AI assistant access to live market prices, volume, and sentiment data.',
-    publishedAt: 'Dec 4, 2025',
-    readTime: '6 min'
-  },
-  {
-    slug: 'mcp-vs-rest-api',
-    title: 'MCP vs REST API: Which is Better for AI Integration?',
-    description: 'Comparing Model Context Protocol with traditional REST APIs for building AI-powered applications.',
-    publishedAt: 'Dec 4, 2025',
-    readTime: '7 min'
-  }
+  // Articles intentionally empty for now; product docs live on the landing page.
 ]
 
 export function BlogIndex() {
@@ -54,11 +34,21 @@ export function BlogIndex() {
             Blog
           </h1>
           <p className="text-lg text-terminal-muted">
-            Guides, tutorials, and insights about MCP, AI integration, and crypto data.
+            Guides, tutorials, and insights about API usage and crypto data.
           </p>
         </motion.div>
 
         <div className="space-y-6">
+          {articles.length === 0 ? (
+            <div className="bg-graphite-900 border border-graphite-800 rounded-xl p-6 text-terminal-muted">
+              <p className="text-sm">
+                No articles published yet.
+              </p>
+              <p className="text-xs mt-2 font-mono">
+                API quickstart is on the landing page under the API section.
+              </p>
+            </div>
+          ) : null}
           {articles.map((article, index) => (
             <motion.article
               key={article.slug}

@@ -43,7 +43,6 @@ export function Analytics() {
             </button>
             <h1 className="text-lg font-extrabold tracking-tight">
               <span className="text-terminal-text">Analytics</span>{' '}
-              <span className="text-terminal-muted font-mono text-sm font-semibold">MCP</span>
             </h1>
           </div>
           <div className="text-xs text-terminal-muted font-mono">

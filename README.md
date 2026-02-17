@@ -106,29 +106,15 @@ export const WALLET_ADDRESSES: WalletAddresses = {
 
 For detailed implementation guide, see `specs/003-crypto-subscription-payments/quickstart.md`.
 
-### 4. MCP Integration
+### 4. API Integration
 
-Context8 provides MCP server integration for Claude Code:
+Context8 is API-first. Generate an API key in `/dashboard/settings` and call the API with Bearer auth:
 
 ```bash
-# Install Context8 CLI
-npm install -g context8
-
-# Add to claude_desktop_config.json:
-{
-  "mcpServers": {
-    "context8": {
-      "command": "context8",
-      "args": ["mcp"],
-      "env": {
-        "CONTEXT8_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
+curl https://api.context8.markets/v1/signals \
+  -H "Authorization: Bearer ctx8_sk_..." \
+  -d '{"asset": "BTC", "modules": "all"}'
 ```
-
-Pro subscribers get API access. The MCP setup instructions are displayed in the user dashboard.
 
 ## Development
 
