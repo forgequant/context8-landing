@@ -63,7 +63,7 @@ Context8 supports Pro subscriptions paid with stablecoins (USDT/USDC) on three b
 Run the migration in Supabase Dashboard → SQL Editor:
 
 ```sql
--- Copy entire content from specs/003-crypto-subscription-payments/contracts/database.sql
+-- Copy entire content from the database contract (removed from repo with Specify specs cleanup)
 ```
 
 Grant admin role to your email:
@@ -104,7 +104,7 @@ export const WALLET_ADDRESSES: WalletAddresses = {
 5. Approve or reject with notes
 6. Approved payments activate Pro subscriptions automatically (30 days)
 
-For detailed implementation guide, see `specs/003-crypto-subscription-payments/quickstart.md`.
+For detailed implementation guide, see project docs in `docs/`.
 
 ### 4. API Integration
 
