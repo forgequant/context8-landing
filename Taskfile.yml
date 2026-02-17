@@ -48,18 +48,7 @@ tasks:
     cmd: npm run format
 
   # ── Beads ──────────────────────────────────────────────
-
-  bd:ready:
-    desc: Show issues ready to work on
-    cmd: bd ready
-
-  bd:stats:
-    desc: Project statistics
-    cmd: bd stats
-
-  bd:sync:
-    desc: Sync beads with git
-    cmd: bd sync
+  # Beads trackers live in beads-hub, not in this repo.
 
   # ── Observer ─────────────────────────────────────────
 
@@ -78,7 +67,6 @@ tasks:
     cmds:
       - task: check
       - git status
-      - bd sync
       - echo "✓ Ready to commit and push"
 
   clean:
@@ -88,7 +76,7 @@ tasks:
   # ── Hooks ──────────────────────────────────────────────
 
   hooks:install:
-    desc: Install git hooks (prek + beads chained)
+    desc: Install git hooks (prek chained)
     cmds:
       - |
         for hook in pre-commit commit-msg pre-push post-merge post-checkout prepare-commit-msg; do
@@ -100,7 +88,7 @@ tasks:
             echo "  ✓ $hook"
           fi
         done
-      - echo "✓ Git hooks installed (prek + beads chained)"
+      - echo "✓ Git hooks installed (prek chained)"
 
   hooks:check:
     desc: Verify git hooks are installed and up to date

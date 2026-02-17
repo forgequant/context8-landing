@@ -14,7 +14,7 @@ Landing design: `docs/plans/2026-02-12-landing-design-decisions.md`
 
 ## Task Management: orx + beads
 
-Every task is a **strict scope contract** in beads:
+Every task is a **strict scope contract** in beads-hub:
 
 ```markdown
 ## Objective
@@ -103,8 +103,7 @@ task check         # typecheck + lint + test (all quality gates)
 task dev           # run dev server
 task test          # vitest
 task lint          # eslint
-task done          # session completion: check + git status + bd sync
-task bd:ready      # find available work
+task done          # session completion: check + git status
 task hooks:install # install git hooks
 ```
 
@@ -112,12 +111,13 @@ task hooks:install # install git hooks
 
 Before saying "done":
 ```
-[ ] 1. task done              (quality gates + beads sync)
+[ ] 1. task done              (quality gates)
 [ ] 2. git add <files>        (stage changes)
 [ ] 3. git commit             (with proper message)
-[ ] 4. bd sync                (sync any new beads)
-[ ] 5. git push               (push to remote)
+[ ] 4. git push               (push to remote)
 ```
+
+Note: beads tracking is centralized in beads-hub; this repo does not run `bd` locally.
 
 ## Team Workflow (parallel agents)
 

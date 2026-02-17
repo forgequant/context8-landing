@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# context8-landing pre-commit hook: prek checks + beads sync
+# context8-landing pre-commit hook: prek checks
 # Versioned in scripts/hooks/, installed via task hooks:install
 
 set -e
@@ -10,11 +10,4 @@ if command -v uvx >/dev/null 2>&1; then
     uvx prek run --hook-stage pre-commit
 else
     echo "Warning: uvx not found, skipping prek checks" >&2
-fi
-
-# 2. Run beads sync (flush pending changes to JSONL)
-if command -v bd >/dev/null 2>&1; then
-    bd hooks run pre-commit "$@"
-else
-    echo "Warning: bd not found, skipping beads sync" >&2
 fi

@@ -1,11 +1,7 @@
 #!/usr/bin/env sh
-# context8-landing post-merge hook: beads import after pull/merge
+# context8-landing post-merge hook: no-op placeholder
 # Versioned in scripts/hooks/, installed via task hooks:install
 
 set -e
 
-if command -v bd >/dev/null 2>&1; then
-    bd hooks run post-merge "$@"
-else
-    echo "Warning: bd not found, skipping beads post-merge" >&2
-fi
+exit 0
