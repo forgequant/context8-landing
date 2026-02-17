@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, LogOut, Search } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 function formatReportDate(date: string | undefined): string {
   if (!date || date === 'latest') return 'Latest Report'
@@ -18,6 +19,7 @@ function formatReportDate(date: string | undefined): string {
 export function DashboardHeader() {
   const navigate = useNavigate()
   const { date } = useParams<{ date: string }>()
+  const { logout } = useAuth()
 
   const navigateDay = (direction: -1 | 1) => {
     const base = date && date !== 'latest' ? new Date(date) : new Date()
@@ -57,12 +59,24 @@ export function DashboardHeader() {
         </button>
       </div>
 
-      {/* Right: Ctrl+K hint */}
-      <div className="flex items-center gap-1.5 text-terminal-muted">
-        <Search size={14} />
-        <kbd className="hidden sm:inline text-[10px] font-mono px-1.5 py-0.5 rounded border border-graphite-800 bg-graphite-900">
-          Ctrl+K
-        </kbd>
+      {/* Right: Ctrl+K hint + logout */}
+      <div className="flex items-center gap-3 text-terminal-muted">
+        <div className="flex items-center gap-1.5">
+          <Search size={14} />
+          <kbd className="hidden sm:inline text-[10px] font-mono px-1.5 py-0.5 rounded border border-graphite-800 bg-graphite-900">
+            Ctrl+K
+          </kbd>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => void logout()}
+          className="inline-flex items-center gap-1.5 text-terminal-muted hover:text-terminal-red transition-colors"
+          aria-label="Logout"
+        >
+          <LogOut size={14} />
+          <span className="hidden sm:inline text-[11px] font-mono">Logout</span>
+        </button>
       </div>
     </header>
   )
