@@ -8,8 +8,6 @@ export function AuthCallback() {
 
   useEffect(() => {
     let cancelled = false
-
-    // Only attempt callback handling when we actually have OIDC params.
     const params = new URLSearchParams(window.location.search)
     const hasCallbackParams = params.has('code') || params.has('error')
     if (!hasCallbackParams) {
@@ -21,8 +19,6 @@ export function AuthCallback() {
       try {
         const user = await oidcUserManager.signinRedirectCallback()
         if (cancelled) return
-
-        // Remove code/state from the URL to avoid re-processing on refresh.
         window.history.replaceState({}, document.title, window.location.pathname)
 
         const maybeState = user?.state as unknown
@@ -30,9 +26,6 @@ export function AuthCallback() {
           typeof maybeState === 'object' && maybeState !== null && 'returnTo' in maybeState
             ? String((maybeState as { returnTo?: unknown }).returnTo ?? '/dashboard')
             : '/dashboard'
-
-        // Hard reload so the AuthProvider initializes from localStorage and
-        // protected routes don't bounce during state transitions.
         window.location.replace(returnTo.startsWith('/') ? returnTo : '/dashboard')
       } catch (err) {
         if (cancelled) return

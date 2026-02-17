@@ -49,7 +49,7 @@ export const usePriceStore = create<PriceState>((set) => ({
   setConnectionStatus: (status) => set({ connectionStatus: status }),
 }));
 
-/** Per-symbol selector — minimizes re-renders to only the subscribing PriceCell */
+
 export const selectPrice = (symbol: string) => (state: PriceState) =>
   state.prices[symbol];
 

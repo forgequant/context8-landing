@@ -10,15 +10,15 @@ export interface MacroBadge {
 }
 
 export interface HeadlineBannerProps {
-  /** Daily report headline text */
+  
   headline: string;
-  /** Conviction score 0-10 */
+  
   conviction: number;
-  /** Report date string (e.g. "Feb 12, 2026") */
+  
   reportDate: string;
-  /** Report number */
+  
   reportNumber: number;
-  /** Macro regime badges */
+  
   macro: MacroBadge;
 }
 
@@ -50,7 +50,6 @@ export function HeadlineBanner({
         borderBottom: '1px solid #1A1C2144',
       }}
     >
-      {/* Top row: headline + conviction */}
       <div className="flex items-center gap-4 min-w-0">
         <h1
           className="font-sans font-extrabold leading-tight truncate flex-1 min-w-0"
@@ -64,7 +63,6 @@ export function HeadlineBanner({
         </div>
       </div>
 
-      {/* Bottom row: meta + macro badges */}
       <div className="flex items-center gap-3 mt-2">
         <span className="font-mono text-xs text-[#7B8FA0]">
           {reportDate} &middot; Report #{reportNumber}

@@ -30,8 +30,6 @@ export const PriceChart = memo(function PriceChart({
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const [activeTimeframe, setActiveTimeframe] = useState<Timeframe>('1h');
-
-  // Create chart once
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -70,8 +68,6 @@ export const PriceChart = memo(function PriceChart({
 
     chartRef.current = chart;
     seriesRef.current = series;
-
-    // Responsive resize
     const ro = new ResizeObserver((entries) => {
       const { width } = entries[0].contentRect;
       chart.applyOptions({ width });
@@ -85,8 +81,6 @@ export const PriceChart = memo(function PriceChart({
       seriesRef.current = null;
     };
   }, []);
-
-  // Update data
   useEffect(() => {
     if (!seriesRef.current) return;
     seriesRef.current.setData(data);

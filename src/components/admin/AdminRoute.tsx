@@ -16,17 +16,11 @@ export function AdminRoute({ children }: AdminRouteProps) {
       </div>
     )
   }
-
-  // Redirect to auth if not logged in
   if (!user) {
     return <Navigate to="/auth" replace />
   }
-
-  // Redirect to dashboard if not admin
   if (!isAdmin) {
     return <Navigate to="/dashboard" replace />
   }
-
-  // Render protected content if admin
   return <>{children}</>
 }

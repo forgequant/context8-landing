@@ -85,9 +85,6 @@ function extractTier(
 
 export function useAuth(): UseAuthReturn {
   const oidc = useOidcAuth()
-  // `react-oidc-context` may provide a new object identity across renders.
-  // Keep a ref so callbacks (login/logout) can be stable and not trigger
-  // dependency cascades (e.g. effects that depend on `login`).
   const oidcRef = useRef(oidc)
   useEffect(() => {
     oidcRef.current = oidc

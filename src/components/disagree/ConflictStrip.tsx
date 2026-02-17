@@ -3,19 +3,19 @@ import { DD_COLORS } from '@/lib/colors';
 import type { ConflictSeverity } from './conflict-types';
 
 export interface ConflictChip {
-  /** Asset symbol */
+  
   symbol: string;
-  /** Bull vs Bear count string e.g. "4-2 BEAR" */
+  
   verdictRatio: string;
-  /** Conviction score 0-10 */
+  
   conviction: number;
-  /** Highest conflict severity for this asset */
+  
   severity: ConflictSeverity | null;
 }
 
 export interface ConflictStripProps {
   chips: ConflictChip[];
-  /** Called when a chip is clicked */
+  
   onChipClick?: (symbol: string) => void;
 }
 
@@ -33,7 +33,7 @@ const SEVERITY_COLORS: Record<ConflictSeverity, string> = {
   low: DD_COLORS.conflictLow,
 };
 
-/** Horizontal scrollable row of conflict chips sorted by intensity. */
+
 export function ConflictStrip({ chips, onChipClick }: ConflictStripProps) {
   const sorted = useMemo(() => {
     return [...chips].sort((a, b) => {
@@ -68,7 +68,6 @@ export function ConflictStrip({ chips, onChipClick }: ConflictStripProps) {
                 : undefined,
             }}
           >
-            {/* Asset name */}
             <div
               className="font-mono text-sm font-semibold leading-none"
               style={{ color: '#E8E9EC' }}
@@ -76,7 +75,6 @@ export function ConflictStrip({ chips, onChipClick }: ConflictStripProps) {
               {chip.symbol}
             </div>
 
-            {/* Verdict ratio */}
             <div
               className="font-mono text-[10px] mt-1.5"
               style={{ color: '#7B8FA0' }}
@@ -84,7 +82,6 @@ export function ConflictStrip({ chips, onChipClick }: ConflictStripProps) {
               {chip.verdictRatio}
             </div>
 
-            {/* Conviction mini bar */}
             <div
               className="mt-2 rounded-full overflow-hidden"
               style={{ height: 3, backgroundColor: '#1A1C21' }}

@@ -4,7 +4,6 @@ import { SIGNAL_DISPLAY, type SignalType } from '@/lib/signals';
 import { ModulePill } from './ModulePill';
 import { BullBearBalance } from './BullBearBalance';
 
-// ── Types ────────────────────────────────────────────────────────
 
 export type ModuleCategory = 'Technical' | 'Positioning' | 'Sentiment' | 'Macro' | 'On-Chain';
 
@@ -13,13 +12,12 @@ export interface ModuleData {
   name: string;
   category: ModuleCategory;
   signal: SignalType;
-  conviction: number; // 0-10
+  conviction: number;
   hasConflict?: boolean;
 }
 
 type FilterMode = 'all' | 'conflicts' | 'highConviction';
 
-// ── Constants ────────────────────────────────────────────────────
 
 const CATEGORY_ORDER: ModuleCategory[] = [
   'Technical',
@@ -43,7 +41,6 @@ const FILTERS: { key: FilterMode; label: string }[] = [
   { key: 'highConviction', label: 'High Conviction' },
 ];
 
-// ── Helpers ──────────────────────────────────────────────────────
 
 function aggregateVerdict(modules: ModuleData[]): string {
   let bull = 0, bear = 0, neut = 0;
@@ -60,7 +57,6 @@ function aggregateVerdict(modules: ModuleData[]): string {
   return `${label} ${bull}-${bear}`;
 }
 
-// ── Category Group ───────────────────────────────────────────────
 
 interface CategoryGroupProps {
   category: ModuleCategory;
@@ -114,7 +110,6 @@ const CategoryGroup = memo(function CategoryGroup({ category, modules }: Categor
   );
 });
 
-// ── Main Scorecard ───────────────────────────────────────────────
 
 interface ModuleScorecardProps {
   modules: ModuleData[];
@@ -128,7 +123,7 @@ export const ModuleScorecard = memo(function ModuleScorecard({ modules }: Module
       case 'conflicts':
         return modules.filter((m) => m.hasConflict);
       case 'highConviction':
-        return modules.filter((m) => m.conviction >= 7); // >70% on 0-10 scale
+        return modules.filter((m) => m.conviction >= 7);
       default:
         return modules;
     }
@@ -150,7 +145,6 @@ export const ModuleScorecard = memo(function ModuleScorecard({ modules }: Module
 
   return (
     <div>
-      {/* Filter pills */}
       <div className="flex gap-2 mb-3">
         {FILTERS.map((f) => (
           <button
@@ -168,14 +162,12 @@ export const ModuleScorecard = memo(function ModuleScorecard({ modules }: Module
         ))}
       </div>
 
-      {/* Category groups */}
       {CATEGORY_ORDER.map((cat) => {
         const catModules = grouped.get(cat);
         if (!catModules || catModules.length === 0) return null;
         return <CategoryGroup key={cat} category={cat} modules={catModules} />;
       })}
 
-      {/* Bull/Bear Balance */}
       <div className="mt-4">
         <BullBearBalance signals={allSignals} />
       </div>

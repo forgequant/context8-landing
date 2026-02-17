@@ -2,13 +2,11 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
 const articles = [
-  // Articles intentionally empty for now; product docs live on the landing page.
 ]
 
 export function BlogIndex() {
   return (
     <div className="min-h-screen bg-graphite-950 text-terminal-text">
-      {/* Header */}
       <header className="max-w-4xl mx-auto px-6 py-8 flex justify-between items-center">
         <Link to="/" className="text-lg font-extrabold tracking-tight flex items-center gap-2">
           <span className="text-terminal-cyan font-mono text-sm">&#9670;</span>
@@ -22,7 +20,6 @@ export function BlogIndex() {
         </Link>
       </header>
 
-      {/* Content */}
       <main className="max-w-4xl mx-auto px-6 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -77,7 +74,6 @@ export function BlogIndex() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="max-w-4xl mx-auto px-6 py-8 border-t border-graphite-800">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-terminal-muted">
           <span>© 2025 Context8</span>

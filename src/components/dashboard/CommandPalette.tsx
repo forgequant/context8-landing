@@ -28,8 +28,6 @@ interface CommandPaletteProps {
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
-
-  // Reset search when palette closes
   useEffect(() => {
     if (!open) setSearch('')
   }, [open])
@@ -49,7 +47,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       loop
     >
       <div className="bg-graphite-900 border border-graphite-700 rounded-lg shadow-2xl overflow-hidden">
-        {/* Search input */}
         <div className="flex items-center gap-2 px-3 border-b border-graphite-800">
           <Search size={16} className="text-terminal-muted shrink-0" />
           <Command.Input
@@ -63,13 +60,11 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           </kbd>
         </div>
 
-        {/* Results list */}
         <Command.List className="max-h-72 overflow-y-auto p-1.5">
           <Command.Empty className="py-6 text-center text-sm text-terminal-muted font-mono">
             No results found.
           </Command.Empty>
 
-          {/* Navigation group */}
           <Command.Group
             heading="Navigation"
             className="[&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-terminal-muted [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5"
@@ -94,7 +89,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             ))}
           </Command.Group>
 
-          {/* Assets group */}
           <Command.Group
             heading="Assets"
             className="[&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-terminal-muted [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5"
@@ -113,7 +107,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             ))}
           </Command.Group>
 
-          {/* Actions group */}
           <Command.Group
             heading="Actions"
             className="[&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-terminal-muted [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5"

@@ -10,10 +10,7 @@ interface UsePaymentHistoryReturn {
   refetch: () => Promise<void>
 }
 
-/**
- * Hook for fetching user's payment submission history
- * Returns all payment submissions ordered by submitted_at DESC
- */
+
 export function usePaymentHistory(): UsePaymentHistoryReturn {
   const [payments, setPayments] = useState<PaymentSubmission[]>([])
   const [loading, setLoading] = useState(true)
@@ -28,8 +25,6 @@ export function usePaymentHistory(): UsePaymentHistoryReturn {
       hasLoadedOnceRef.current = false
       return
     }
-
-    // Avoid UI flicker: only show the blocking loading state on the initial fetch.
     setLoading(!hasLoadedOnceRef.current)
     setError(null)
 

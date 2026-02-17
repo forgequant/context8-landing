@@ -10,8 +10,6 @@ interface PaymentSubmissionRowProps {
 export function PaymentSubmissionRow({ payment, onVerify }: PaymentSubmissionRowProps) {
   const explorerUrl = getExplorerTxUrl(payment.chain, payment.tx_hash)
   const chainName = getChainDisplayName(payment.chain)
-
-  // Chain-specific colors and badges
   const getChainBadge = (chain: string) => {
     switch(chain) {
       case 'ethereum':
@@ -35,7 +33,6 @@ export function PaymentSubmissionRow({ payment, onVerify }: PaymentSubmissionRow
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 space-y-3">
-          {/* User Info */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-graphite-800 flex items-center justify-center text-terminal-cyan text-sm font-semibold">
               {payment.user_email.charAt(0).toUpperCase()}
@@ -46,7 +43,6 @@ export function PaymentSubmissionRow({ payment, onVerify }: PaymentSubmissionRow
             </div>
           </div>
 
-          {/* Chain & Amount */}
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-2">
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${chainBadge.color}`}>
@@ -60,7 +56,6 @@ export function PaymentSubmissionRow({ payment, onVerify }: PaymentSubmissionRow
             </div>
           </div>
 
-          {/* Transaction Hash */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-terminal-muted">TX:</span>
             <code className="text-xs bg-graphite-950 px-2 py-1 rounded font-mono text-terminal-text border border-graphite-800">
@@ -79,7 +74,6 @@ export function PaymentSubmissionRow({ payment, onVerify }: PaymentSubmissionRow
             </a>
           </div>
 
-          {/* Submitted At */}
           <div className="flex items-center gap-2 text-xs text-terminal-muted">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -88,7 +82,6 @@ export function PaymentSubmissionRow({ payment, onVerify }: PaymentSubmissionRow
           </div>
         </div>
 
-        {/* Verify Button */}
         <button
           onClick={() => onVerify(payment)}
           className="px-5 py-2.5 bg-terminal-cyan text-graphite-950 rounded-lg text-sm font-semibold hover:bg-terminal-cyan/90 transition-all hover:shadow-lg hover:shadow-terminal-cyan/20 group-hover:scale-105"

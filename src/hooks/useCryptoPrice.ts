@@ -8,10 +8,7 @@ interface CryptoPrice {
   error: string | null
 }
 
-/**
- * Custom hook for fetching live cryptocurrency prices from CoinGecko
- * Uses free API with 1-minute cache to avoid rate limiting
- */
+
 export function useCryptoPrice(coinId: string): CryptoPrice {
   const [data, setData] = useState<CryptoPrice>({
     symbol: coinId.toUpperCase(),
@@ -24,7 +21,6 @@ export function useCryptoPrice(coinId: string): CryptoPrice {
   useEffect(() => {
     const fetchPrice = async () => {
       try {
-        // Using CoinGecko free API - no API key required
         const response = await fetch(
           `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true`,
           { cache: 'no-cache' }
@@ -56,11 +52,7 @@ export function useCryptoPrice(coinId: string): CryptoPrice {
         }))
       }
     }
-
-    // Initial fetch
     fetchPrice()
-
-    // Update every 30 seconds to respect rate limits
     const interval = setInterval(fetchPrice, 30000)
 
     return () => clearInterval(interval)

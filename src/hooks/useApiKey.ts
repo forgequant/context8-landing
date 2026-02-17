@@ -150,7 +150,6 @@ export function useApiKey() {
       setUsage(nextUsage)
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
-        // 404 is commonly used to mean "no API key yet" for self endpoints.
         setError(null)
         setApiKey(null)
         setUsage(parseDefaultUsage())

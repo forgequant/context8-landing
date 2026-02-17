@@ -186,8 +186,6 @@ export function PriceVolumeWidget({
     volumeSeriesRef.current?.setData(volumeData)
     chartRef.current?.timeScale().fitContent()
   }, [])
-
-  // Event listener for external updates (from ChatKit client tool)
   useEffect(() => {
     const handleRefresh = (e: Event) => {
       const detail = (e as CustomEvent).detail || {}
@@ -249,8 +247,6 @@ export function PriceVolumeWidget({
       ts,
     }
   }, [interval, limit, symbol])
-
-  // Load data from API
   const loadData = useCallback(async () => {
     setLoading(true)
     setError(null)

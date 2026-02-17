@@ -7,8 +7,6 @@ import { useVerifyPayment } from '../hooks/useVerifyPayment'
 import { PaymentSubmissionRow } from '../components/admin/PaymentSubmissionRow'
 import { VerificationModal } from '../components/admin/VerificationModal'
 import { PaymentSubmission } from '../types/subscription'
-
-// Skeleton loader component
 function SkeletonCard() {
   return (
     <div className="bg-graphite-900 rounded-lg p-4 animate-pulse">
@@ -62,8 +60,6 @@ export function Admin() {
     await verifyPayment(selectedPayment.id, 'rejected', notes)
     await refetch()
   }
-
-  // Redirect non-admins
   if (!authLoading && !isAdmin) {
     navigate('/')
     return null
@@ -74,7 +70,6 @@ export function Admin() {
 
   return (
     <div className="min-h-screen bg-graphite-950 text-terminal-text px-6 py-8 md:py-12">
-      {/* Header */}
       <motion.header
         ref={headerRef}
         initial={{ opacity: 0, y: -20 }}
@@ -119,7 +114,6 @@ export function Admin() {
           </div>
         </div>
 
-        {/* Stats Bar */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: isHeaderInView ? 1 : 0, y: isHeaderInView ? 0 : 10 }}
@@ -139,7 +133,6 @@ export function Admin() {
         </motion.div>
       </motion.header>
 
-      {/* Main content */}
       <motion.div
         ref={contentRef}
         initial={{ opacity: 0 }}
@@ -147,7 +140,6 @@ export function Admin() {
         transition={{ duration: 0.5 }}
         className="max-w-6xl mx-auto"
       >
-        {/* Section Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-sm text-terminal-cyan flex items-center gap-2 font-mono">
             <span className="text-terminal-muted">01</span>
@@ -164,7 +156,6 @@ export function Admin() {
           </button>
         </div>
 
-        {/* Error Display */}
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -175,7 +166,6 @@ export function Admin() {
           </motion.div>
         )}
 
-        {/* Loading State */}
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -183,7 +173,6 @@ export function Admin() {
             ))}
           </div>
         ) : payments.length === 0 ? (
-          /* Empty State */
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -199,7 +188,6 @@ export function Admin() {
             <p className="text-terminal-muted text-sm">No pending payments to verify</p>
           </motion.div>
         ) : (
-          /* Payments List */
           <motion.div
             initial="hidden"
             animate="visible"
@@ -230,7 +218,6 @@ export function Admin() {
           </motion.div>
         )}
 
-        {/* Info Footer */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: isContentInView ? 1 : 0 }}
@@ -241,7 +228,6 @@ export function Admin() {
         </motion.p>
       </motion.div>
 
-      {/* Verification Modal */}
       <VerificationModal
         isOpen={selectedPayment !== null}
         payment={selectedPayment}

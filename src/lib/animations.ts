@@ -1,4 +1,3 @@
-// Framer Motion animation variants
 
 export const fadeInUp = {
   hidden: { opacity: 0, y: 20 },

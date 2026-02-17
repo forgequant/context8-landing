@@ -5,7 +5,6 @@ interface RenewalReminderProps {
 }
 
 export function RenewalReminder({ daysRemaining, isInGrace, onRenew }: RenewalReminderProps) {
-  // Only show reminder if less than 7 days remaining or in grace period
   if (daysRemaining >= 7 && !isInGrace) {
     return null
   }

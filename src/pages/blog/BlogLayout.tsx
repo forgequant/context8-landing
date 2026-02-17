@@ -13,7 +13,6 @@ interface BlogLayoutProps {
 export function BlogLayout({ children, title, description, publishedAt, readTime }: BlogLayoutProps) {
   return (
     <div className="min-h-screen bg-graphite-950 text-terminal-text">
-      {/* Header */}
       <header className="max-w-4xl mx-auto px-6 py-8 flex justify-between items-center">
         <Link to="/" className="text-lg font-extrabold tracking-tight flex items-center gap-2">
           <span className="text-terminal-cyan font-mono text-sm">&#9670;</span>
@@ -27,7 +26,6 @@ export function BlogLayout({ children, title, description, publishedAt, readTime
         </Link>
       </header>
 
-      {/* Article */}
       <article className="max-w-4xl mx-auto px-6 pb-16">
         <motion.header
           initial={{ opacity: 0, y: 20 }}
@@ -58,7 +56,6 @@ export function BlogLayout({ children, title, description, publishedAt, readTime
         </motion.div>
       </article>
 
-      {/* CTA */}
       <section className="max-w-4xl mx-auto px-6 pb-16">
         <div className="p-8 rounded-2xl bg-graphite-900 border border-graphite-800 text-center">
           <h3 className="text-xl font-semibold text-terminal-text mb-3">
@@ -76,7 +73,6 @@ export function BlogLayout({ children, title, description, publishedAt, readTime
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="max-w-4xl mx-auto px-6 py-8 border-t border-graphite-800">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-terminal-muted">
           <span>© 2025 Context8</span>

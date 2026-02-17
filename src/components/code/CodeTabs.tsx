@@ -13,7 +13,6 @@ export function CodeTabs({ examples }: CodeTabsProps) {
 
   return (
     <div className="w-full">
-      {/* Tab buttons */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {examples.map((example, index) => (
           <button
@@ -31,7 +30,6 @@ export function CodeTabs({ examples }: CodeTabsProps) {
         ))}
       </div>
 
-      {/* Tab content */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}

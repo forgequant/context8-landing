@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom'
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 
-/* ── Warm amber palette (matches hybrid-amber.html mockup) ── */
 const C = {
   bg: '#0C0A08',
   surface: '#161210',
@@ -26,7 +25,6 @@ const font = {
   mono: "'JetBrains Mono', monospace",
 } as const
 
-/* ── Scorecard data ── */
 const modules = [
   { name: 'TA Scanner', signal: 'BULL' as const, detail: 'RSI 58, MACD+', conf: 70 },
   { name: 'Funding', signal: 'BEAR' as const, detail: 'Longs crowded, z:1.4', conf: 80 },
@@ -70,7 +68,6 @@ const features = [
   },
 ]
 
-/* ── Tag component ── */
 function SignalTag({ signal }: { signal: 'BULL' | 'BEAR' }) {
   const isBull = signal === 'BULL'
   return (
@@ -93,7 +90,6 @@ function SignalTag({ signal }: { signal: 'BULL' | 'BEAR' }) {
   )
 }
 
-/* ── Confidence bar ── */
 function ConfBar({ value, signal }: { value: number; signal: 'BULL' | 'BEAR' }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -105,7 +101,6 @@ function ConfBar({ value, signal }: { value: number; signal: 'BULL' | 'BEAR' }) 
   )
 }
 
-/* ── Main Landing Page ── */
 export function Landing() {
   const navigate = useNavigate()
   const featRef = useRef(null)
@@ -118,7 +113,6 @@ export function Landing() {
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: font.sans, WebkitFontSmoothing: 'antialiased' }}>
 
-      {/* ── NAV ── */}
       <nav
         style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
@@ -149,13 +143,10 @@ export function Landing() {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
       <section style={{ paddingTop: 120, paddingBottom: 80 }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Left copy */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              {/* Badge */}
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 padding: '4px 12px 4px 8px', background: C.accentDim,
@@ -178,7 +169,6 @@ export function Landing() {
                 23 independent AI modules score every crypto asset. When they conflict, you see what consensus traders miss. One API call. Full scorecard.
               </p>
 
-              {/* Stats */}
               <div className="grid grid-cols-3 gap-3" style={{ marginBottom: 32 }}>
                 {[
                   { num: '23', label: 'AI Modules' },
@@ -192,7 +182,6 @@ export function Landing() {
                 ))}
               </div>
 
-              {/* CTAs */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <button
                   onClick={() => navigate('/dashboard/report/latest')}
@@ -220,14 +209,12 @@ export function Landing() {
               </div>
             </motion.div>
 
-            {/* Right: Scorecard */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.radius, overflow: 'hidden' }}
             >
-              {/* Header */}
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '10px 16px', borderBottom: `1px solid ${C.border}`,
@@ -238,7 +225,6 @@ export function Landing() {
                 <span style={{ fontFamily: font.mono, fontSize: '0.6875rem', color: C.textMuted }}>BTC / USDT</span>
               </div>
 
-              {/* Table */}
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
@@ -274,7 +260,6 @@ export function Landing() {
                 </tbody>
               </table>
 
-              {/* Verdict */}
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '10px 16px', borderTop: `1px solid ${C.border}`,
@@ -292,7 +277,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* ── FEATURES ── */}
       <motion.section
         id="features"
         ref={featRef}
@@ -331,7 +315,6 @@ export function Landing() {
         </div>
       </motion.section>
 
-      {/* ── API PREVIEW ── */}
       <motion.section
         id="api"
         ref={apiRef}
@@ -349,7 +332,6 @@ export function Landing() {
           </h2>
 
           <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.radius, overflow: 'hidden' }}>
-            {/* Window chrome */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: `1px solid ${C.border}` }}>
               <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#FF5F57' }} />
               <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#FEBC2E' }} />
@@ -358,7 +340,6 @@ export function Landing() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2">
-              {/* Request */}
               <div style={{ borderRight: undefined }} className="md:border-r" >
                 <div style={{ fontFamily: font.mono, fontSize: '0.625rem', fontWeight: 600, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '8px 20px', borderBottom: `1px solid ${C.border}` }}>
                   Request
@@ -370,7 +351,6 @@ export function Landing() {
                 </div>
               </div>
 
-              {/* Response */}
               <div className="border-t md:border-t-0" style={{ borderColor: C.border }}>
                 <div style={{ fontFamily: font.mono, fontSize: '0.625rem', fontWeight: 600, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '8px 20px', borderBottom: `1px solid ${C.border}` }}>
                   Response
@@ -398,7 +378,6 @@ export function Landing() {
         </div>
       </motion.section>
 
-      {/* ── CTA ── */}
       <motion.section
         ref={ctaRef}
         initial={{ opacity: 0, y: 20 }}
@@ -428,7 +407,6 @@ export function Landing() {
         </div>
       </motion.section>
 
-      {/* ── STATUS ── */}
       <section id="status" style={{ padding: '56px 0 64px' }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
           <div
@@ -481,7 +459,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
       <footer style={{ borderTop: `1px solid ${C.border}`, padding: '24px 0' }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-3">
@@ -509,7 +486,6 @@ export function Landing() {
         </div>
       </footer>
 
-      {/* pulse animation for badge dot */}
       <style>{`
         @keyframes pulse {
           0%, 100% { opacity: 1; }

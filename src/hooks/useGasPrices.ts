@@ -13,29 +13,21 @@ interface UseGasPricesReturn {
   error: string | null
   lastUpdated: Date | null
 }
-
-// Fallback gas prices (realistic estimates, shown immediately)
 const FALLBACK_GAS_PRICES: GasPrices = {
-  ethereum: 2.5,   // ~$2-3 typical for ETH transfers
-  polygon: 0.005,  // ~$0.005 typical for Polygon
-  bsc: 0.15        // ~$0.15 typical for BSC
+  ethereum: 2.5,
+  polygon: 0.005,
+  bsc: 0.15
 }
-
-// Gas price in Gwei, converted to USD estimate
 const GWEI_TO_USD_TRANSFER = {
-  ethereum: (gwei: number) => (gwei * 21000 * 0.000000001) * 3500, // ~$3500 ETH price
-  polygon: (gwei: number) => (gwei * 21000 * 0.000000001) * 0.9, // ~$0.90 MATIC price
-  bsc: (gwei: number) => (gwei * 21000 * 0.000000001) * 600 // ~$600 BNB price
+  ethereum: (gwei: number) => (gwei * 21000 * 0.000000001) * 3500,
+  polygon: (gwei: number) => (gwei * 21000 * 0.000000001) * 0.9,
+  bsc: (gwei: number) => (gwei * 21000 * 0.000000001) * 600
 }
-
-// LocalStorage cache keys
 const CACHE_KEY = 'context8_gas_prices'
 const CACHE_TIMESTAMP_KEY = 'context8_gas_prices_timestamp'
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+const CACHE_TTL = 5 * 60 * 1000
 
-/**
- * Load cached gas prices from localStorage
- */
+
 function loadCachedPrices(): GasPrices | null {
   try {
     const cached = localStorage.getItem(CACHE_KEY)
@@ -44,7 +36,7 @@ function loadCachedPrices(): GasPrices | null {
     if (!cached || !timestamp) return null
 
     const age = Date.now() - parseInt(timestamp)
-    if (age > CACHE_TTL) return null // Cache expired
+    if (age > CACHE_TTL) return null
 
     return JSON.parse(cached)
   } catch {
@@ -52,25 +44,18 @@ function loadCachedPrices(): GasPrices | null {
   }
 }
 
-/**
- * Save gas prices to localStorage cache
- */
+
 function saveCachedPrices(prices: GasPrices) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(prices))
     localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString())
   } catch {
-    // Ignore localStorage errors
+    return
   }
 }
 
-/**
- * Fetches real-time gas prices from public RPC endpoints
- * Updates every 60 seconds
- * Shows cached/fallback values immediately for instant UX
- */
+
 export function useGasPrices(): UseGasPricesReturn {
-  // Initialize with cached prices or fallback
   const [gasPrices, setGasPrices] = useState<GasPrices>(
     () => loadCachedPrices() || FALLBACK_GAS_PRICES
   )
@@ -101,12 +86,8 @@ export function useGasPrices(): UseGasPricesReturn {
 
       const data = await response.json()
       if (!data.result) return null
-
-      // Convert hex to decimal Gwei
       const gasPriceWei = parseInt(data.result, 16)
       const gasPriceGwei = gasPriceWei / 1e9
-
-      // Convert to USD estimate
       const usdEstimate = GWEI_TO_USD_TRANSFER[chain](gasPriceGwei)
       return usdEstimate
     } catch (err) {
@@ -127,12 +108,8 @@ export function useGasPrices(): UseGasPricesReturn {
       ])
 
       const newPrices = { ethereum, polygon, bsc }
-
-      // Update state
       setGasPrices(newPrices)
       setLastUpdated(new Date())
-
-      // Save to cache
       saveCachedPrices(newPrices)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch gas prices'
@@ -143,10 +120,7 @@ export function useGasPrices(): UseGasPricesReturn {
   }, [fetchGasPrice])
 
   useEffect(() => {
-    // Initial fetch
     void fetchAllGasPrices()
-
-    // Update every 60 seconds
     const interval = setInterval(fetchAllGasPrices, 60000)
 
     return () => clearInterval(interval)

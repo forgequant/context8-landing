@@ -19,8 +19,6 @@ export const BullBearBalance = memo(function BullBearBalance({ signals }: BullBe
   }, [signals]);
 
   if (counts.total === 0) return null;
-
-  // Recharts stacked horizontal bar needs a single data row with 3 keys
   const data = [{ bull: counts.bull, neutral: counts.neutral, bear: counts.bear }];
 
   const COLORS = [DD_COLORS.bullish, DD_COLORS.neutral, DD_COLORS.bearish] as const;

@@ -8,10 +8,7 @@ interface UsePendingPaymentsCountReturn {
   error: string | null
 }
 
-/**
- * Hook for fetching count of pending payments (for admin badge)
- * Polls every 10 seconds for updates.
- */
+
 export function usePendingPaymentsCount(): UsePendingPaymentsCountReturn {
   const [count, setCount] = useState(0)
   const [loading, setLoading] = useState(true)

@@ -5,10 +5,7 @@ interface UseScrollAnimationOptions {
   triggerOnce?: boolean
 }
 
-/**
- * Custom hook for scroll-triggered animations
- * Detects when an element enters the viewport and triggers animation state
- */
+
 export function useScrollAnimation({
   threshold = 0.1,
   triggerOnce = true

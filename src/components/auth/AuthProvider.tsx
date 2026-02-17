@@ -7,7 +7,6 @@ import { queryClient } from '../../lib/queryClient'
 function LogoutCacheClearer({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
-      // oidc-client-ts removes the user key on logout; detect that across tabs
       if (e.key !== null && e.key.startsWith('oidc.') && e.newValue === null) {
         queryClient.clear()
       }

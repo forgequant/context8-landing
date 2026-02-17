@@ -1,8 +1,6 @@
 import { BlockchainNetwork, BlockchainExplorers } from '../types/subscription'
 
-/**
- * Blockchain explorer configurations for transaction verification
- */
+
 export const BLOCKCHAIN_EXPLORERS: BlockchainExplorers = {
   ethereum: {
     name: 'Etherscan',
@@ -24,30 +22,22 @@ export const BLOCKCHAIN_EXPLORERS: BlockchainExplorers = {
   }
 }
 
-/**
- * Get blockchain explorer transaction URL
- */
+
 export function getExplorerTxUrl(chain: BlockchainNetwork, txHash: string): string {
   return BLOCKCHAIN_EXPLORERS[chain].txUrl(txHash)
 }
 
-/**
- * Get blockchain explorer address URL
- */
+
 export function getExplorerAddressUrl(chain: BlockchainNetwork, address: string): string {
   return BLOCKCHAIN_EXPLORERS[chain].addressUrl(address)
 }
 
-/**
- * Get blockchain explorer name
- */
+
 export function getExplorerName(chain: BlockchainNetwork): string {
   return BLOCKCHAIN_EXPLORERS[chain].name
 }
 
-/**
- * Get human-readable chain name
- */
+
 export function getChainDisplayName(chain: BlockchainNetwork): string {
   const names: Record<BlockchainNetwork, string> = {
     ethereum: 'Ethereum',
@@ -57,10 +47,7 @@ export function getChainDisplayName(chain: BlockchainNetwork): string {
   return names[chain]
 }
 
-/**
- * Estimated gas fees for each network (in USD, approximate)
- * These are rough estimates and should be updated based on current network conditions
- */
+
 export function getEstimatedGasFee(chain: BlockchainNetwork): string {
   const fees: Record<BlockchainNetwork, string> = {
     ethereum: '$5-15',

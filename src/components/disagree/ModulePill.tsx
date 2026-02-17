@@ -4,7 +4,7 @@ import { SIGNAL_DISPLAY, type SignalType } from '@/lib/signals';
 export interface ModulePillProps {
   name: string;
   signal: SignalType;
-  conviction: number; // 0-10
+  conviction: number;
   hasConflict?: boolean;
 }
 
@@ -32,7 +32,7 @@ export const ModulePill = memo(function ModulePill({
       style={{
         minWidth: 140,
         height: 36,
-        backgroundColor: display.color + '1A', // 10% opacity
+        backgroundColor: display.color + '1A',
         borderLeft: `3px solid ${display.color}`,
         boxShadow: hasConflict ? `0 0 8px 0 #C49A3C88` : undefined,
       }}

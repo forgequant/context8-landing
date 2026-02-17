@@ -1,17 +1,13 @@
 import { DD_COLORS } from '@/lib/colors';
 
 export interface VerdictBarProps {
-  /** Number of bullish signals (0-12) */
+  
   bullCount: number;
-  /** Number of bearish signals (0-12) */
+  
   bearCount: number;
 }
 
-/**
- * Tug-of-war bi-directional horizontal bar.
- * Green fills from left (bull), red fills from right (bear).
- * Amber line at the contact point. Even split = glowing center.
- */
+
 export function VerdictBar({ bullCount, bearCount }: VerdictBarProps) {
   const total = bullCount + bearCount;
   const bullPct = total > 0 ? (bullCount / total) * 100 : 50;
@@ -20,7 +16,6 @@ export function VerdictBar({ bullCount, bearCount }: VerdictBarProps) {
 
   return (
     <div className="flex flex-col gap-1">
-      {/* Labels */}
       <div className="flex justify-between font-mono text-xs">
         <span style={{ color: DD_COLORS.bullish }}>
           {bullCount} BULL
@@ -30,7 +25,6 @@ export function VerdictBar({ bullCount, bearCount }: VerdictBarProps) {
         </span>
       </div>
 
-      {/* Bar */}
       <div
         className="relative overflow-hidden rounded"
         style={{ width: 200, height: 12, backgroundColor: '#1A1C21' }}
@@ -58,7 +52,6 @@ export function VerdictBar({ bullCount, bearCount }: VerdictBarProps) {
           }}
         />
 
-        {/* Amber contact line */}
         {total > 0 && (
           <div
             style={{

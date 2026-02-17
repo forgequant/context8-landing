@@ -54,9 +54,6 @@ export const oidcUserManager = new UserManager(oidcSettings)
 
 export const oidcConfig: AuthProviderProps = {
   userManager: oidcUserManager,
-  // We handle the redirect callback explicitly in the /auth/callback route.
-  // This avoids edge cases where the provider processes it too early/late and
-  // the app bounces back into a fresh signin redirect.
   skipSigninCallback: true,
 }
 

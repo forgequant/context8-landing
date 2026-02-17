@@ -24,14 +24,13 @@ function isActiveRoute(pathname: string, to: string): boolean {
   return pathname.startsWith(to)
 }
 
-/** Desktop sidebar: 48px collapsed, 200px on hover. Mobile: bottom tab bar. */
+
 export function Sidebar() {
   const [expanded, setExpanded] = useState(false)
   const { pathname } = useLocation()
 
   return (
     <>
-      {/* Desktop sidebar */}
       <nav
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
@@ -39,14 +38,12 @@ export function Sidebar() {
           bg-graphite-900 border-r border-graphite-800 transition-[width] duration-200 ease-in-out
           ${expanded ? 'w-[200px]' : 'w-12'}`}
       >
-        {/* Logo area */}
         <div className="h-14 flex items-center px-3 border-b border-graphite-800 overflow-hidden">
           <span className="text-amber font-sans font-bold text-sm whitespace-nowrap">
             {expanded ? 'Daily Disagree' : 'DD'}
           </span>
         </div>
 
-        {/* Nav items */}
         <div className="flex-1 flex flex-col gap-1 py-2 px-1.5">
           {NAV_ITEMS.map(({ to, icon: Icon, label, locked }) => {
             const active = isActiveRoute(pathname, to)
@@ -98,7 +95,6 @@ export function Sidebar() {
         </div>
       </nav>
 
-      {/* Mobile bottom tab bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-graphite-900 border-t border-graphite-800 flex items-center justify-around h-14 px-1">
         {NAV_ITEMS.map(({ to, icon: Icon, label, locked }) => {
           const active = isActiveRoute(pathname, to)

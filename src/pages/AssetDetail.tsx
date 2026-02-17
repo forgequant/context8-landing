@@ -5,7 +5,6 @@ import { CrowdedTradeCard } from '@/components/disagree/CrowdedTradeCard';
 import { PriceChart } from '@/components/disagree/PriceChart';
 import { DD_COLORS } from '@/lib/colors';
 
-// ── Section header ─────────────────────────────────────────────
 
 function SectionHeader({ label }: { label: string }) {
   return (
@@ -18,7 +17,6 @@ function SectionHeader({ label }: { label: string }) {
   );
 }
 
-// ── Quick stat card ────────────────────────────────────────────
 
 function StatCard({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
@@ -39,7 +37,6 @@ function StatCard({ label, value, color }: { label: string; value: string; color
   );
 }
 
-// ── Loading / Error ────────────────────────────────────────────
 
 function LoadingState() {
   return (
@@ -62,7 +59,6 @@ function ErrorState({ message }: { message: string }) {
   );
 }
 
-// ── Main Component ─────────────────────────────────────────────
 
 export function AssetDetail() {
   const { date, asset } = useParams<{ date: string; asset: string }>();
@@ -77,8 +73,6 @@ export function AssetDetail() {
   const symbol = asset?.toUpperCase() ?? '';
   const assetSummary = report.assets.find((a) => a.symbol === symbol);
   const crowdedTrade = report.crowdedTrades.find((ct) => ct.symbol === symbol);
-
-  // Filter modules — show all (in real API, would filter to asset-specific modules)
   const modules = report.modules;
 
   const changeColor = (assetSummary?.change24h ?? 0) >= 0
@@ -88,7 +82,6 @@ export function AssetDetail() {
 
   return (
     <div className="space-y-6">
-      {/* Back link + header */}
       <div>
         <Link
           to={`/dashboard/report/${date ?? 'latest'}`}
@@ -111,23 +104,18 @@ export function AssetDetail() {
         </div>
       </div>
 
-      {/* Quick Stats Sidebar + Main content */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6">
-        {/* Main content */}
         <div className="space-y-6">
-          {/* Price Chart */}
           <div>
             <SectionHeader label="Price Chart" />
             <PriceChart data={report.priceData} />
           </div>
 
-          {/* Module Scorecard (all modules, will be asset-filtered via API) */}
           <div>
             <SectionHeader label="Module Scorecard" />
             <ModuleScorecard modules={modules} />
           </div>
 
-          {/* Crowded Trade for this asset */}
           {crowdedTrade && (
             <div>
               <SectionHeader label="Crowded Trade Alert" />
@@ -136,7 +124,6 @@ export function AssetDetail() {
           )}
         </div>
 
-        {/* Quick Stats Sidebar */}
         <div className="space-y-3">
           <SectionHeader label="Quick Stats" />
           {assetSummary ? (

@@ -1,6 +1,4 @@
-/**
- * Hook for fetching the Daily Disagree report from ctx8-api.
- */
+
 
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -15,7 +13,6 @@ import type { HeadlineBannerProps, MacroBadge } from '@/components/disagree/Head
 import type { HeatmapRow } from '@/components/disagree/ConvictionHeatmap';
 import type { CandlestickData, Time } from 'lightweight-charts';
 
-// ── Report shape ──────────────────────────────────────────────
 
 export interface DisagreeAssetSummary {
   symbol: string;
@@ -72,7 +69,6 @@ type Ctx8Report = {
   published_at: string | null;
 };
 
-// ── Mock data ─────────────────────────────────────────────────
 
 function buildMockReport(): DailyDisagreeReport {
   const modules: ModuleData[] = [
@@ -169,8 +165,6 @@ function buildMockReport(): DailyDisagreeReport {
     { symbol: 'DOGE', price: 0.312, change24h: -1.8, volume: '$3.1B', marketCap: '$45.1B', bullCount: 2, bearCount: 8, topConflictSeverity: 'high', conviction: 2 },
     { symbol: 'XRP', price: 2.41, change24h: 1.2, volume: '$5.6B', marketCap: '$138B', bullCount: 5, bearCount: 4, topConflictSeverity: null, conviction: 6 },
   ];
-
-  // Mock candlestick data (7 days of daily candles)
   const priceData: CandlestickData<Time>[] = [
     { time: '2026-02-06' as unknown as Time, open: 94200, high: 95800, low: 93100, close: 95400 },
     { time: '2026-02-07' as unknown as Time, open: 95400, high: 96700, low: 94800, close: 95100 },
@@ -180,8 +174,6 @@ function buildMockReport(): DailyDisagreeReport {
     { time: '2026-02-11' as unknown as Time, open: 97900, high: 98100, low: 96400, close: 96700 },
     { time: '2026-02-12' as unknown as Time, open: 96700, high: 97800, low: 96200, close: 97432 },
   ];
-
-  // Mock heatmap rows (7 days per module)
   const heatmapRows: HeatmapRow[] = [
     { moduleName: 'RSI', days: [{ conviction: 5, signal: 'bearish' }, { conviction: 6, signal: 'bearish' }, { conviction: 4, signal: 'neutral' }, { conviction: 7, signal: 'bearish' }, { conviction: 6, signal: 'bearish' }, { conviction: 8, signal: 'bearish' }, { conviction: 7, signal: 'bearish' }] },
     { moduleName: 'Funding', days: [{ conviction: 6, signal: 'bearish' }, { conviction: 7, signal: 'bearish' }, { conviction: 7, signal: 'bearish' }, { conviction: 8, signal: 'bearish' }, { conviction: 9, signal: 'bearish' }, { conviction: 8, signal: 'bearish' }, { conviction: 8, signal: 'bearish' }] },
@@ -221,7 +213,6 @@ function buildMockReport(): DailyDisagreeReport {
   };
 }
 
-// ── Hook ──────────────────────────────────────────────────────
 
 function formatReportDate(isoDate: string): string {
   try {
@@ -232,7 +223,6 @@ function formatReportDate(isoDate: string): string {
 }
 
 function reportNumberFromDate(isoDate: string): number {
-  // Stable and human-parseable (YYYYMMDD) even when we don't have a real sequence number.
   const n = Number(isoDate.replace(/-/g, ''));
   return Number.isFinite(n) ? n : 0;
 }
@@ -295,8 +285,6 @@ function normalizeFromCtx8Report(ctx8: Ctx8Report): DailyDisagreeReport {
   const reportDate = ctx8.report_date;
   const reportNumber = reportNumberFromDate(reportDate);
   const payload = isRecord(ctx8.payload) ? ctx8.payload : {};
-
-  // If the backend already stores the full dashboard shape, accept it with light patch-up.
   if (Array.isArray(payload.modules) && payload.headline) {
     return {
       ...payload,
@@ -304,8 +292,6 @@ function normalizeFromCtx8Report(ctx8: Ctx8Report): DailyDisagreeReport {
       reportNumber: (payload.reportNumber as number | undefined) ?? reportNumber,
     } as DailyDisagreeReport;
   }
-
-  // v2 payload from docs/plans/2026-02-11-daily-disagree-design.md
   const convictionScores = Array.isArray(payload.conviction_scores) ? payload.conviction_scores : [];
   const featured = convictionScores.reduce<unknown>((best, cur) => {
     const curRec = isRecord(cur) ? cur : {};
@@ -465,8 +451,6 @@ export function useDailyDisagreeReport(date?: string): UseDailyDisagreeReportRet
     async function run() {
       setLoading(true);
       setError(null);
-
-      // Wait for OIDC to hydrate from storage before deciding we're unauthenticated.
       if (authLoading) return;
 
       if (!isAuthenticated || !accessToken) {
@@ -500,10 +484,6 @@ export function useDailyDisagreeReport(date?: string): UseDailyDisagreeReportRet
           return;
         }
         if (err instanceof DOMException && err.name === 'AbortError') return;
-        // Dev convenience: if the API is not reachable (common when VITE_API_URL
-        // is unset and no backend/proxy is running), fall back to a mock report.
-        // Note: keep this as a fallback (not an early return), so E2E tests that
-        // mock `**/api/v1/reports/**` still observe a real fetch.
         if (import.meta.env.DEV && (!API_BASE_URL || API_BASE_URL.trim() === '') && err instanceof TypeError) {
           setReport(buildMockReport());
           setError(null);

@@ -38,8 +38,6 @@ export function Auth() {
   const returnTo =
     (location.state as { returnTo?: string } | null)?.returnTo ?? '/dashboard'
   const safeReturnTo = returnTo.startsWith('/') ? returnTo : '/dashboard'
-
-  // Auto-redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate(safeReturnTo, { replace: true })

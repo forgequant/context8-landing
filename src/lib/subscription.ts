@@ -1,10 +1,7 @@
 import { addDays, isBefore, isAfter } from 'date-fns'
 import { Subscription, TxHashValidationResult, GRACE_PERIOD_HOURS } from '../types/subscription'
 
-/**
- * Validate transaction hash format
- * Must be 0x followed by 64 hexadecimal characters
- */
+
 export function validateTxHash(txHash: string): TxHashValidationResult {
   const trimmed = txHash.trim()
 
@@ -28,10 +25,7 @@ export function validateTxHash(txHash: string): TxHashValidationResult {
   return { valid: true }
 }
 
-/**
- * Calculate days remaining in subscription
- * Uses Math.ceil to always round up partial days (e.g., 29.99 days → 30 days)
- */
+
 export function getDaysRemaining(subscription: Subscription): number {
   const now = new Date()
   const endDate = new Date(subscription.end_date)
@@ -40,9 +34,7 @@ export function getDaysRemaining(subscription: Subscription): number {
   return Math.max(0, Math.ceil(diffInDays))
 }
 
-/**
- * Check if subscription is in grace period (48 hours after expiration)
- */
+
 export function isInGracePeriod(subscription: Subscription): boolean {
   const now = new Date()
   const endDate = new Date(subscription.end_date)
@@ -51,9 +43,7 @@ export function isInGracePeriod(subscription: Subscription): boolean {
   return isAfter(now, endDate) && isBefore(now, graceEndDate)
 }
 
-/**
- * Check if subscription is active (including grace period)
- */
+
 export function isSubscriptionActive(subscription: Subscription | null): boolean {
   if (!subscription || subscription.status !== 'active') {
     return false
@@ -66,17 +56,13 @@ export function isSubscriptionActive(subscription: Subscription | null): boolean
   return isBefore(now, graceEndDate)
 }
 
-/**
- * Check if subscription is expiring soon (within 7 days)
- */
+
 export function isExpiringSoon(subscription: Subscription): boolean {
   const daysRemaining = getDaysRemaining(subscription)
   return daysRemaining > 0 && daysRemaining <= 7
 }
 
-/**
- * Format date for display (e.g., "Jan 15, 2025")
- */
+
 export function formatSubscriptionDate(dateString: string): string {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
@@ -86,9 +72,7 @@ export function formatSubscriptionDate(dateString: string): string {
   })
 }
 
-/**
- * Get subscription status message
- */
+
 export function getSubscriptionStatusMessage(subscription: Subscription | null): string {
   if (!subscription) {
     return 'No active subscription'

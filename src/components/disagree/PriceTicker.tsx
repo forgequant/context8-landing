@@ -30,7 +30,7 @@ const STATUS_COLORS: Record<ConnectionStatus, string> = {
   disconnected: DD_COLORS.bearish,
 };
 
-/** Individual price cell — subscribes to a single symbol via selector */
+
 const PriceCell = memo(function PriceCell({ symbol }: { symbol: string }) {
   const data = usePriceStore(selectPrice(symbol));
   if (!data) return null;

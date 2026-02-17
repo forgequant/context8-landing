@@ -29,7 +29,6 @@ export const CodeBlock = forwardRef<HTMLPreElement, CodeBlockProps>(
 
     return (
       <div className="relative group">
-        {/* Header */}
         <div className="bg-graphite-950 border border-graphite-800 border-b-0 rounded-t-lg px-4 py-2 flex items-center justify-between">
           <span className="text-terminal-muted text-sm font-mono">{language}</span>
           {showCopyButton && (
@@ -43,7 +42,6 @@ export const CodeBlock = forwardRef<HTMLPreElement, CodeBlockProps>(
           )}
         </div>
 
-        {/* Code content */}
         <pre
           ref={ref}
           className={cn(

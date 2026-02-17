@@ -26,8 +26,6 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    // Validate transaction hash
     const validation = validateTxHash(txHash)
     if (!validation.valid) {
       setError(validation.error || 'Invalid transaction hash')
@@ -41,7 +39,6 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
         stablecoin: selectedStablecoin,
         txHash: txHash.trim()
       })
-      // Reset form on success
       setTxHash('')
       onClose()
     } catch (err) {
@@ -63,7 +60,6 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -72,7 +68,6 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
           />
 
-          {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -80,7 +75,6 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="w-full max-w-md bg-graphite-900 rounded-xl border border-graphite-800 shadow-2xl max-h-[90vh] overflow-y-auto text-terminal-text"
             >
-              {/* Header */}
               <div className="sticky top-0 bg-graphite-900 border-b border-graphite-800 px-6 py-4 flex items-center justify-between">
                 <h2 className="text-xl font-extrabold tracking-tight">Upgrade to Pro</h2>
                 <button
@@ -94,21 +88,17 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
                 </button>
               </div>
 
-              {/* Content */}
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                {/* Price Info */}
                 <div className="text-center p-4 bg-terminal-cyan/10 border border-terminal-cyan/30 rounded-lg">
                   <div className="text-3xl font-extrabold tracking-tight">$8</div>
                   <div className="text-sm text-terminal-muted">per month</div>
                 </div>
 
-                {/* Chain Selector */}
                 <ChainSelector
                   selectedChain={selectedChain}
                   onChainChange={setSelectedChain}
                 />
 
-                {/* Stablecoin Selector */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-terminal-muted">
                     Select Stablecoin
@@ -137,20 +127,17 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
                   </div>
                 </div>
 
-                {/* QR Code Display */}
                 <QRCodeDisplay
                   address={walletAddress}
                   chainName={getChainDisplayName(selectedChain)}
                 />
 
-                {/* Transaction Hash Input */}
                 <TxHashInput
                   value={txHash}
                   onChange={setTxHash}
                   error={error}
                 />
 
-                {/* Warning */}
                 <div className="p-4 bg-terminal-red/10 border border-terminal-red/30 rounded-lg text-sm text-terminal-text space-y-2">
                   <div className="flex items-start gap-2">
                     <svg className="w-5 h-5 text-terminal-red flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +152,6 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={isSubmitting || !txHash.trim()}
@@ -174,7 +160,6 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
                   {isSubmitting ? 'Submitting...' : 'Submit Payment'}
                 </button>
 
-                {/* Help Text */}
                 <p className="text-xs text-terminal-muted text-center">
                   Your subscription will be activated after admin verification (typically within 24 hours)
                 </p>

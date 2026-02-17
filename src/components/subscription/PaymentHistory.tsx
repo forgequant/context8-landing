@@ -75,7 +75,6 @@ export function PaymentHistory({ payments, loading }: PaymentHistoryProps) {
         </table>
       </div>
 
-      {/* Verification Notes (if any rejected payments have notes) */}
       {payments.some((p) => p.status === 'rejected' && p.verification_notes) && (
         <div className="border-t border-graphite-800 p-4">
           <p className="text-xs text-terminal-muted mb-2">Verification Notes:</p>

@@ -26,9 +26,7 @@ interface SubscriptionApiResponse {
   is_grace_period?: boolean
 }
 
-/**
- * Hook for fetching user's active subscription with grace period logic
- */
+
 export function useSubscription(): UseSubscriptionReturn {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
@@ -74,7 +72,6 @@ export function useSubscription(): UseSubscriptionReturn {
 
       setSubscription(nextSubscription)
     } catch (err) {
-      // Fallback for legacy API response shape during backend transition
       if (err instanceof ApiError && err.status === 404) {
         setSubscription(null)
       } else {
@@ -90,8 +87,6 @@ export function useSubscription(): UseSubscriptionReturn {
   useEffect(() => {
     void fetchSubscription()
   }, [fetchSubscription])
-
-  // Compute derived states
   const now = new Date()
   const isActive = subscription
     ? new Date(subscription.end_date) > now || isInGracePeriod(subscription)

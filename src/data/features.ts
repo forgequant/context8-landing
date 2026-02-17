@@ -2,9 +2,9 @@ export interface Feature {
   id: string
   title: string
   description: string
-  icon: string // Terminal icon or symbol
-  command: string // CLI command example
-  highlight?: string // Optional highlight text
+  icon: string
+  command: string
+  highlight?: string
 }
 
 export const features: Feature[] = [

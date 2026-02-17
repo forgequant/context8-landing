@@ -62,7 +62,6 @@ export function ApiKeySection() {
         </div>
       )}
 
-      {/* New key display (shown only once after generation) */}
       {newKey && (
         <div className="mb-4 p-4 bg-terminal-cyan/10 border border-terminal-cyan/30 rounded">
           <p className="text-xs text-terminal-cyan mb-2">
@@ -88,7 +87,6 @@ export function ApiKeySection() {
         </div>
       )}
 
-      {/* Existing key display */}
       {apiKey && !newKey && (
         <div className="flex items-center justify-between">
           <div>
@@ -119,7 +117,6 @@ export function ApiKeySection() {
         </div>
       )}
 
-      {/* No key - generate button */}
       {!apiKey && !newKey && (
         <div className="text-center py-4">
           <p className="text-sm text-terminal-muted mb-4">
@@ -135,7 +132,6 @@ export function ApiKeySection() {
         </div>
       )}
 
-      {/* Revoke confirmation */}
       {showRevokeConfirm && (
         <div className="fixed inset-0 bg-graphite-950/80 flex items-center justify-center z-50">
           <div className="bg-graphite-900 p-6 rounded-lg max-w-sm w-full mx-4">
@@ -161,7 +157,6 @@ export function ApiKeySection() {
         </div>
       )}
 
-      {/* Usage bar */}
       {usage && usage.daily_limit > 0 && (
         <div className="mt-4">
           <div className="h-1.5 bg-graphite-800 rounded-full overflow-hidden">

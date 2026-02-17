@@ -21,9 +21,7 @@ interface PaymentSubmitResponse {
   message?: string
 }
 
-/**
- * Hook for submitting crypto payment to API
- */
+
 export function usePaymentSubmit(): UsePaymentSubmitReturn {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)

@@ -3,13 +3,13 @@ import { convictionToColor, DD_COLORS } from '@/lib/colors';
 import type { SignalType } from '@/lib/signals';
 
 export interface HeatmapCell {
-  conviction: number; // 0-10
+  conviction: number;
   signal: SignalType;
 }
 
 export interface HeatmapRow {
   moduleName: string;
-  /** 7 days of data, index 0 = oldest */
+  
   days: HeatmapCell[];
 }
 
@@ -30,7 +30,6 @@ export const ConvictionHeatmap = memo(function ConvictionHeatmap({
 }: ConvictionHeatmapProps) {
   return (
     <div className="hidden md:block">
-      {/* Header row */}
       <div
         style={{
           display: 'grid',
@@ -50,7 +49,6 @@ export const ConvictionHeatmap = memo(function ConvictionHeatmap({
         ))}
       </div>
 
-      {/* Data rows */}
       {rows.map((row) => (
         <div
           key={row.moduleName}

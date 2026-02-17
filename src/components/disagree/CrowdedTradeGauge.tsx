@@ -2,7 +2,7 @@ import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { DD_COLORS } from '@/lib/colors';
 
 export interface CrowdedTradeGaugeProps {
-  /** Agreement ratio 0-1.0 */
+  
   ratio: number;
 }
 
@@ -13,10 +13,7 @@ function ratioToColor(ratio: number): string {
   return DD_COLORS.dangerExtreme;
 }
 
-/**
- * Semi-circular gauge for crowded trade agreement ratio.
- * Uses recharts RadialBarChart with startAngle 180 → endAngle 0.
- */
+
 export function CrowdedTradeGauge({ ratio }: CrowdedTradeGaugeProps) {
   const clamped = Math.max(0, Math.min(1, ratio));
   const pct = Math.round(clamped * 100);

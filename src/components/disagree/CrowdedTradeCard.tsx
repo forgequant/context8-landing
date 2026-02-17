@@ -7,26 +7,23 @@ export interface HistoricalAnalog {
 }
 
 export interface CrowdedTradeCardProps {
-  /** Asset symbol e.g. "DOGE" */
+  
   symbol: string;
-  /** "LONGS" or "SHORTS" */
+  
   direction: 'LONGS' | 'SHORTS';
-  /** Z-score value */
+  
   zScore: number;
-  /** Agreement ratio 0-1.0 for gauge */
+  
   ratio: number;
-  /** Contributing module names */
+  
   modules: string[];
-  /** Total available modules */
+  
   totalModules: number;
-  /** Historical analog reference */
+  
   analog?: HistoricalAnalog;
 }
 
-/**
- * Crowded trade alert card with gauge, z-score, and historical analog.
- * Severity visuals: z>2.5 pulsing amber border, z>3.0 bear-dim background.
- */
+
 export function CrowdedTradeCard({
   symbol,
   direction,
@@ -57,7 +54,6 @@ export function CrowdedTradeCard({
         ...borderStyle,
       }}
     >
-      {/* Header: symbol + direction */}
       <div className="flex items-baseline justify-between mb-3">
         <span
           className="font-mono leading-none"
@@ -73,7 +69,6 @@ export function CrowdedTradeCard({
         </span>
       </div>
 
-      {/* Z-score */}
       <div className="mb-2">
         <span className="text-xs" style={{ color: '#7B8FA0' }}>
           z-score:{' '}
@@ -86,12 +81,10 @@ export function CrowdedTradeCard({
         </span>
       </div>
 
-      {/* Gauge */}
       <div className="flex justify-center mb-3">
         <CrowdedTradeGauge ratio={ratio} />
       </div>
 
-      {/* Contributing modules */}
       <div className="text-xs mb-2" style={{ color: '#7B8FA0' }}>
         Contributing:{' '}
         <span style={{ color: '#C0C3CC' }}>
@@ -99,7 +92,6 @@ export function CrowdedTradeCard({
         </span>
       </div>
 
-      {/* Historical analog */}
       {analog && (
         <div
           className="text-xs rounded px-2 py-1 mt-2"
@@ -111,7 +103,6 @@ export function CrowdedTradeCard({
         </div>
       )}
 
-      {/* Pulse animation (inline keyframes) */}
       {zScore > 2.5 && (
         <style>{`
           @keyframes pulse-border {

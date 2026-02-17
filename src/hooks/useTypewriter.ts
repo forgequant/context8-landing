@@ -7,10 +7,7 @@ interface UseTypewriterOptions {
   loop?: boolean
 }
 
-/**
- * Custom hook for typewriter text animation effect
- * Simulates typing out text character by character
- */
+
 export function useTypewriter({
   text,
   speed = 50,

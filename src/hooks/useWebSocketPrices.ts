@@ -5,16 +5,16 @@ const BINANCE_WS_URL = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
 const STALE_TIMEOUT_MS = 30_000;
 const RECONNECT_DELAY_MS = 3_000;
 
-/** Symbols we track (lowercase for Binance matching) */
+
 const TRACKED_PAIRS = new Set([
   'btcusdt', 'ethusdt', 'solusdt', 'dogeusdt', 'xrpusdt',
   'adausdt', 'avaxusdt', 'dotusdt', 'linkusdt', 'maticusdt',
 ]);
 
 interface BinanceMiniTicker {
-  s: string;  // symbol e.g. "BTCUSDT"
-  c: string;  // close price
-  o: string;  // open price (24h)
+  s: string;
+  c: string;
+  o: string;
 }
 
 export function useWebSocketPrices() {
@@ -82,7 +82,7 @@ export function useWebSocketPrices() {
             bufferRef.current[displaySymbol] = { price: close, change24h };
           }
         } catch {
-          // Ignore malformed messages
+          return;
         }
       };
 

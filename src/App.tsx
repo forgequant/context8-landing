@@ -8,13 +8,9 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { NewYearDecorations } from './components/NewYearDecorations'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { AuthCallback } from './components/auth/AuthCallback'
-
-// Lazy-load heavy routes for better performance
 const Analytics = lazy(() => import('./pages/Analytics').then(m => ({ default: m.Analytics })))
 const Admin = lazy(() => import('./pages/Admin').then(m => ({ default: m.Admin })))
 const AdminRoute = lazy(() => import('./components/admin/AdminRoute').then(m => ({ default: m.AdminRoute })))
-
-// Dashboard nested pages
 const DailyReportView = lazy(() => import('./pages/DailyReportView').then(m => ({ default: m.DailyReportView })))
 const AssetDetail = lazy(() => import('./pages/AssetDetail').then(m => ({ default: m.AssetDetail })))
 const CrowdedTrades = lazy(() => import('./pages/CrowdedTrades').then(m => ({ default: m.CrowdedTrades })))
@@ -22,11 +18,7 @@ const DivergenceWatchPage = lazy(() => import('./pages/DivergenceWatchPage').the
 const ReportHistory = lazy(() => import('./pages/ReportHistory').then(m => ({ default: m.ReportHistory })))
 const Assets = lazy(() => import('./pages/Assets').then(m => ({ default: m.Assets })))
 const DashboardSettings = lazy(() => import('./pages/DashboardSettings').then(m => ({ default: m.DashboardSettings })))
-
-// Blog pages
 const BlogIndex = lazy(() => import('./pages/blog/BlogIndex').then(m => ({ default: m.BlogIndex })))
-
-// Loading fallback component
 function LoadingFallback() {
   return (
     <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono flex items-center justify-center">
@@ -45,7 +37,6 @@ export default function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
 
-          {/* Dashboard layout with nested routes */}
           <Route
             path="/dashboard"
             element={

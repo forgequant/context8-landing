@@ -186,10 +186,7 @@ interface UseVerifyPaymentReturn {
   error: string | null
 }
 
-/**
- * Hook for admin verification of payment submissions
- * Updates payment status and activates subscription via API
- */
+
 export function useVerifyPayment(): UseVerifyPaymentReturn {
   const [isVerifying, setIsVerifying] = useState(false)
   const [error, setError] = useState<string | null>(null)

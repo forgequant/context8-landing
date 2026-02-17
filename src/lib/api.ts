@@ -32,7 +32,6 @@ export async function apiFetch<T>(
   const body = fetchOptions.body
   const shouldConsiderJsonContentType = method !== 'GET' && method !== 'HEAD' && body !== undefined && body !== null
   if (shouldConsiderJsonContentType && !headers.has('Content-Type')) {
-    // Don't force Content-Type for requests without bodies, or for non-JSON bodies (FormData etc).
     if (typeof body === 'string') {
       const trimmed = body.trimStart()
       if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
@@ -72,7 +71,6 @@ export async function apiFetchWithFallback<T>(
   const retryStatuses =
     method === 'GET' || method === 'HEAD'
       ? new Set([401, 403, 404, 405, 410, 422])
-      // Safe to retry on 401/403: request was not authorized so should not have side effects.
       : new Set([401, 403, 404, 405, 410, 422])
 
   for (const path of paths) {

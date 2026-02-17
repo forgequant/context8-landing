@@ -7,7 +7,6 @@ import { WSStatusBanner } from '@/components/disagree/WSStatusBanner';
 import { SEVERITY_ORDER, type ConflictSeverity } from '@/components/disagree/conflict-types';
 import type { ModuleData, ModuleCategory } from '@/components/disagree/ModuleScorecard';
 
-// ── Warm amber palette (from landing page) + AITrader card-layout tokens ──
 
 const SC = {
   surface: '#161210',
@@ -49,7 +48,6 @@ const CATEGORY_ORDER: ModuleCategory[] = [
   'Technical', 'Positioning', 'Sentiment', 'On-Chain', 'Macro',
 ];
 
-// ── Reusable styles ──
 
 const card: React.CSSProperties = {
   background: SC.surface,
@@ -107,8 +105,6 @@ const statRow: React.CSSProperties = {
   fontSize: '0.875rem',
   fontFamily: mono,
 };
-
-// Table styles (AITrader .tbl pattern)
 const th: React.CSSProperties = {
   textAlign: 'left',
   fontWeight: 600,
@@ -128,7 +124,6 @@ const td: React.CSSProperties = {
   fontSize: '0.875rem',
 };
 
-// ── Helpers ──
 
 function computeDisagreeScore(modules: ModuleData[]): number {
   let bullW = 0, bearW = 0;
@@ -153,7 +148,6 @@ function deriveVerdict(modules: ModuleData[]) {
   return { label: 'NEUTRAL', count: `${bull}-${bear}`, note: 'evenly split', color: SC.neutral };
 }
 
-// ── Small components ──
 
 function Badge({ label, color }: { label: string; color: string }) {
   return (
@@ -204,7 +198,6 @@ function Divider() {
   );
 }
 
-// ── Main Component ──
 
 export function DailyReportView() {
   const { date } = useParams<{ date: string }>();
@@ -236,13 +229,9 @@ export function DailyReportView() {
   );
   const visibleConflicts = showAllConflicts ? sortedConflicts : sortedConflicts.slice(0, 3);
   const hiddenCount = Math.max(0, sortedConflicts.length - 3);
-
-  // Group modules by category
   const grouped = new Map<ModuleCategory, ModuleData[]>();
   for (const cat of CATEGORY_ORDER) grouped.set(cat, []);
   for (const m of report.modules) grouped.get(m.category)?.push(m);
-
-  // Module counts
   let bullCount = 0, bearCount = 0, neutCount = 0;
   for (const m of report.modules) {
     if (m.signal === 'bullish') bullCount++;
@@ -260,7 +249,6 @@ export function DailyReportView() {
     <div style={{ paddingTop: 8 }}>
       <PriceTicker />
 
-      {/* ── HERO ──────────────────────────────────── */}
       <div style={{ padding: '2rem 0 1.5rem', borderBottom: `1px solid ${SC.border}`, marginBottom: '1.5rem', position: 'relative' }}>
         <div style={{ position: 'absolute', bottom: -1, left: 0, width: 200, height: 1, background: `linear-gradient(90deg, ${SC.accent}, transparent)` }} />
         <h1 style={{
@@ -278,7 +266,6 @@ export function DailyReportView() {
         </div>
       </div>
 
-      {/* ── VERDICT BANNER ────────────────────────── */}
       <div style={{
         ...card, marginBottom: '2rem',
         background: `linear-gradient(135deg, ${verdict.color}0d, ${SC.surface} 60%)`,
@@ -315,7 +302,6 @@ export function DailyReportView() {
         </div>
       </div>
 
-      {/* ── 01 SIGNAL SCORECARD ───────────────────── */}
       <div style={{ marginBottom: '2.5rem' }}>
         <div style={sectionTitle}>
           <span style={numBadge}>01</span>
@@ -365,7 +351,6 @@ export function DailyReportView() {
 
       <Divider />
 
-      {/* ── 02 CONFLICTS ──────────────────────────── */}
       {sortedConflicts.length > 0 && (
         <div style={{ marginBottom: '2.5rem' }}>
           <div style={sectionTitle}>
@@ -426,7 +411,6 @@ export function DailyReportView() {
 
       <Divider />
 
-      {/* ── 03 CROWDED TRADES ─────────────────────── */}
       {report.crowdedTrades.length > 0 && (
         <div style={{ marginBottom: '2.5rem' }}>
           <div style={sectionTitle}>
@@ -472,7 +456,6 @@ export function DailyReportView() {
 
       <Divider />
 
-      {/* ── 04 KEY RISK ───────────────────────────── */}
       {report.riskCallout && (
         <div style={{ marginBottom: '2.5rem' }}>
           <div style={sectionTitle}>
@@ -492,7 +475,6 @@ export function DailyReportView() {
         </div>
       )}
 
-      {/* ── 05 WHAT CHANGED ───────────────────────── */}
       {report.changes && report.changes.length > 0 && (
         <div style={{ marginBottom: '2.5rem' }}>
           <div style={sectionTitle}>

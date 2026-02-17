@@ -15,7 +15,7 @@ function formatReportDate(date: string | undefined): string {
   }
 }
 
-/** 56px header bar with logo, report date navigation, and Ctrl+K hint. */
+
 export function DashboardHeader() {
   const navigate = useNavigate()
   const { date } = useParams<{ date: string }>()
@@ -30,7 +30,6 @@ export function DashboardHeader() {
 
   return (
     <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-graphite-800 bg-graphite-900 sticky top-0 z-30">
-      {/* Left: logo */}
       <div className="flex items-center gap-3">
         <span className="font-sans font-bold text-sm text-amber">DD</span>
         <span className="hidden sm:inline text-xs text-terminal-muted font-mono">
@@ -38,7 +37,6 @@ export function DashboardHeader() {
         </span>
       </div>
 
-      {/* Center: date nav */}
       <div className="flex items-center gap-2">
         <button
           onClick={() => navigateDay(-1)}
@@ -59,7 +57,6 @@ export function DashboardHeader() {
         </button>
       </div>
 
-      {/* Right: Ctrl+K hint + logout */}
       <div className="flex items-center gap-3 text-terminal-muted">
         <div className="flex items-center gap-1.5">
           <Search size={14} />

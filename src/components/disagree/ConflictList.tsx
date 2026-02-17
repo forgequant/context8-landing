@@ -6,7 +6,7 @@ export interface ConflictListProps {
   conflicts: Conflict[];
 }
 
-/** Vertical list of ConflictCards sorted by severity (critical first). */
+
 export function ConflictList({ conflicts }: ConflictListProps) {
   const sorted = [...conflicts].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity],

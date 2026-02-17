@@ -14,10 +14,7 @@ interface UsePaymentSubmissionsReturn {
   refetch: () => Promise<void>
 }
 
-/**
- * Hook for fetching pending payment submissions with user email join
- * Used in admin panel to display payments awaiting verification
- */
+
 export function usePaymentSubmissions(): UsePaymentSubmissionsReturn {
   const [payments, setPayments] = useState<PaymentSubmissionWithEmail[]>([])
   const [loading, setLoading] = useState(true)

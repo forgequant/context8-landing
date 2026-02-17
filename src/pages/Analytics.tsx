@@ -51,25 +51,20 @@ export function Analytics() {
         </div>
       </header>
 
-      {/* Main content */}
       <div className="flex-1 overflow-hidden">
         <div className="h-full max-w-7xl mx-auto px-6 py-8">
           <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Chat panel - 2 columns on large screens */}
             <div className="lg:col-span-2 h-full">
               <AnalyticsChatKit onWidgetData={handleWidgetData} />
             </div>
 
-            {/* Widgets panel - 1 column on large screens */}
             <div className="space-y-4">
-              {/* Price/Volume Chart Widget */}
               <PriceVolumeWidget
                 defaultSymbol="BTCUSDT"
                 defaultInterval="1h"
                 defaultLimit={200}
               />
 
-              {/* Legacy Market Widgets */}
               <div className="text-sm text-terminal-muted mb-4 font-mono">
                 Market widgets
               </div>

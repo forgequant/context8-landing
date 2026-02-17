@@ -69,7 +69,6 @@ export function VerificationModal({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -78,7 +77,6 @@ export function VerificationModal({
             className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
           />
 
-          {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -87,7 +85,6 @@ export function VerificationModal({
               transition={{ duration: 0.2, ease: 'easeOut' }}
               className="w-full max-w-lg bg-graphite-900 rounded-xl border border-graphite-800 shadow-2xl max-h-[90vh] overflow-y-auto"
             >
-              {/* Header */}
               <div className="sticky top-0 bg-graphite-900 border-b border-graphite-800 px-6 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-terminal-text flex items-center gap-2">
                   <span className="w-2 h-2 bg-terminal-cyan rounded-full" />
@@ -104,9 +101,7 @@ export function VerificationModal({
                 </button>
               </div>
 
-              {/* Content */}
               <div className="p-6 space-y-6">
-                {/* Payment Details */}
                 <div className="bg-graphite-950 rounded-lg p-4 space-y-3 border border-graphite-800">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-terminal-muted">User</span>
@@ -132,7 +127,6 @@ export function VerificationModal({
                   </div>
                 </div>
 
-                {/* Notes Input */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-terminal-text">
                     Notes {notes.trim() === '' && <span className="text-terminal-red">(required for rejection)</span>}
@@ -146,7 +140,6 @@ export function VerificationModal({
                   />
                 </div>
 
-                {/* Error Display */}
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
@@ -157,7 +150,6 @@ export function VerificationModal({
                   </motion.div>
                 )}
 
-                {/* Action Buttons */}
                 <div className="flex gap-3">
                   <button
                     onClick={handleReject}
@@ -175,7 +167,6 @@ export function VerificationModal({
                   </button>
                 </div>
 
-                {/* Info Text */}
                 <p className="text-xs text-terminal-muted text-center">
                   Approving will activate the user's Pro subscription immediately
                 </p>
