@@ -78,15 +78,15 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-md bg-gray-900 rounded-xl border border-gray-700 shadow-2xl max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-md bg-graphite-900 rounded-xl border border-graphite-800 shadow-2xl max-h-[90vh] overflow-y-auto text-terminal-text"
             >
               {/* Header */}
-              <div className="sticky top-0 bg-gray-900 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white">Upgrade to Pro</h2>
+              <div className="sticky top-0 bg-graphite-900 border-b border-graphite-800 px-6 py-4 flex items-center justify-between">
+                <h2 className="text-xl font-extrabold tracking-tight">Upgrade to Pro</h2>
                 <button
                   onClick={handleClose}
                   disabled={isSubmitting}
-                  className="text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+                  className="text-terminal-muted hover:text-terminal-text transition-colors disabled:opacity-50"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -97,9 +97,9 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
               {/* Content */}
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Price Info */}
-                <div className="text-center p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                  <div className="text-3xl font-bold text-white">$8</div>
-                  <div className="text-sm text-gray-300">per month</div>
+                <div className="text-center p-4 bg-terminal-cyan/10 border border-terminal-cyan/30 rounded-lg">
+                  <div className="text-3xl font-extrabold tracking-tight">$8</div>
+                  <div className="text-sm text-terminal-muted">per month</div>
                 </div>
 
                 {/* Chain Selector */}
@@ -110,7 +110,7 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
 
                 {/* Stablecoin Selector */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-300">
+                  <label className="block text-sm font-medium text-terminal-muted">
                     Select Stablecoin
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -125,8 +125,8 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
                             px-4 py-2 rounded-lg border-2 font-medium transition-all
                             ${
                               isSelected
-                                ? 'border-blue-500 bg-blue-500/10 text-white'
-                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-600'
+                                ? 'border-terminal-cyan bg-terminal-cyan/10 text-terminal-text'
+                                : 'border-graphite-800 bg-graphite-950 text-terminal-muted hover:border-graphite-700 hover:text-terminal-text'
                             }
                           `}
                         >
@@ -151,14 +151,14 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
                 />
 
                 {/* Warning */}
-                <div className="p-4 bg-red-900/20 border border-red-700 rounded-lg text-sm text-red-200 space-y-2">
+                <div className="p-4 bg-terminal-red/10 border border-terminal-red/30 rounded-lg text-sm text-terminal-text space-y-2">
                   <div className="flex items-start gap-2">
-                    <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-terminal-red flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     <div>
-                      <p className="font-medium">⚠️ Warning: Sending funds to the wrong network will result in permanent loss.</p>
-                      <p className="mt-1">
+                      <p className="font-semibold">Warning: wrong network = permanent loss.</p>
+                      <p className="mt-1 text-terminal-muted">
                         Double-check you selected <strong>{getChainDisplayName(selectedChain)}</strong> in your wallet before sending payment.
                       </p>
                     </div>
@@ -169,13 +169,13 @@ export function PaymentModal({ isOpen, onClose, onSubmit }: PaymentModalProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting || !txHash.trim()}
-                  className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                  className="w-full px-4 py-3 bg-terminal-cyan hover:bg-terminal-cyan/90 disabled:bg-graphite-800 disabled:text-terminal-muted disabled:cursor-not-allowed text-graphite-950 font-semibold rounded-lg transition-colors"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Payment'}
                 </button>
 
                 {/* Help Text */}
-                <p className="text-xs text-gray-400 text-center">
+                <p className="text-xs text-terminal-muted text-center">
                   Your subscription will be activated after admin verification (typically within 24 hours)
                 </p>
               </form>

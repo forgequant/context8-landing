@@ -456,7 +456,7 @@ export function useDailyDisagreeReport(date?: string): UseDailyDisagreeReportRet
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
-  const { accessToken, isAuthenticated, login } = useAuth();
+  const { accessToken, isAuthenticated, isLoading: authLoading, login } = useAuth();
 
   useEffect(() => {
     const returnTo = `${location.pathname}${location.search}${location.hash}`;
@@ -466,13 +466,8 @@ export function useDailyDisagreeReport(date?: string): UseDailyDisagreeReportRet
       setLoading(true);
       setError(null);
 
-      // Local/dev convenience: keep UI working when API isn't configured.
-      // Production should always provide VITE_API_URL.
-      if (!API_BASE_URL || API_BASE_URL.trim() === '') {
-        setReport(buildMockReport());
-        setLoading(false);
-        return;
-      }
+      // Wait for OIDC to hydrate from storage before deciding we're unauthenticated.
+      if (authLoading) return;
 
       if (!isAuthenticated || !accessToken) {
         setError('Not authenticated. Redirecting to sign-in...');
@@ -505,6 +500,15 @@ export function useDailyDisagreeReport(date?: string): UseDailyDisagreeReportRet
           return;
         }
         if (err instanceof DOMException && err.name === 'AbortError') return;
+        // Dev convenience: if the API is not reachable (common when VITE_API_URL
+        // is unset and no backend/proxy is running), fall back to a mock report.
+        // Note: keep this as a fallback (not an early return), so E2E tests that
+        // mock `**/api/v1/reports/**` still observe a real fetch.
+        if (import.meta.env.DEV && (!API_BASE_URL || API_BASE_URL.trim() === '') && err instanceof TypeError) {
+          setReport(buildMockReport());
+          setError(null);
+          return;
+        }
         setError(err instanceof Error ? err.message : 'Failed to fetch report');
       } finally {
         setLoading(false);
@@ -513,7 +517,7 @@ export function useDailyDisagreeReport(date?: string): UseDailyDisagreeReportRet
 
     void run();
     return () => controller.abort();
-  }, [accessToken, date, isAuthenticated, location.hash, location.pathname, location.search, login]);
+  }, [accessToken, authLoading, date, isAuthenticated, location.hash, location.pathname, location.search, login]);
 
   return { report, loading, error };
 }

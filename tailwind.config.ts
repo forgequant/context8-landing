@@ -7,14 +7,16 @@ export default {
     extend: {
       colors: {
         graphite: {
-          950: '#0B0C0E',
-          900: '#121317',
-          800: '#1A1C21'
+          950: '#0C0A08',
+          900: '#161210',
+          800: '#2E2A24',
+          700: '#443E36',
+          600: '#5A544C',
         },
         terminal: {
-          text: '#E6E8EC',
-          muted: '#B1B5C1',
-          cyan: '#7DD3FC',
+          text: '#E8E0D4',
+          muted: '#9A9080',
+          cyan: '#C49A3C',
           green: '#4ADE80',
           red: '#F87171'
         },
@@ -40,8 +42,8 @@ export default {
           dim: 'rgba(90, 158, 201, 0.10)'
         },
         surface: {
-          DEFAULT: '#121317',
-          elevated: '#1A1C21'
+          DEFAULT: '#161210',
+          elevated: '#1E1A16'
         },
         conviction: {
           0: '#1A1C21',
@@ -84,4 +86,3 @@ export default {
   },
   plugins: []
 } satisfies Config
-

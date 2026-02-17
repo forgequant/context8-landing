@@ -27,27 +27,23 @@ const articles = [
 
 export function BlogIndex() {
   return (
-    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono relative overflow-hidden">
-      {/* Background effects */}
-      <div className="terminal-scanlines" />
-      <div className="terminal-grid" />
-
+    <div className="min-h-screen bg-graphite-950 text-terminal-text">
       {/* Header */}
-      <header className="max-w-4xl mx-auto px-6 py-8 flex justify-between items-center relative z-10">
-        <Link to="/" className="text-lg">
-          <span className="text-terminal-cyan font-semibold">context8</span>
-          <span className="text-terminal-muted">&gt;_</span>
+      <header className="max-w-4xl mx-auto px-6 py-8 flex justify-between items-center">
+        <Link to="/" className="text-lg font-extrabold tracking-tight flex items-center gap-2">
+          <span className="text-terminal-cyan font-mono text-sm">&#9670;</span>
+          <span>Context8</span>
         </Link>
         <Link
           to="/"
-          className="text-sm text-terminal-muted hover:text-terminal-text transition-colors"
+          className="text-sm text-terminal-muted hover:text-terminal-text transition-colors font-mono"
         >
           ← Back to home
         </Link>
       </header>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 pb-16 relative z-10">
+      <main className="max-w-4xl mx-auto px-6 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -74,7 +70,7 @@ export function BlogIndex() {
                 to={`/blog/${article.slug}`}
                 className="block p-6 rounded-xl bg-graphite-900 border border-graphite-800 hover:border-terminal-cyan/30 transition-all group"
               >
-                <div className="flex items-center gap-4 text-sm text-terminal-muted mb-3">
+                <div className="flex items-center gap-4 text-sm text-terminal-muted mb-3 font-mono">
                   <time>{article.publishedAt}</time>
                   <span>•</span>
                   <span>{article.readTime} read</span>
@@ -92,7 +88,7 @@ export function BlogIndex() {
       </main>
 
       {/* Footer */}
-      <footer className="max-w-4xl mx-auto px-6 py-8 border-t border-graphite-800 relative z-10">
+      <footer className="max-w-4xl mx-auto px-6 py-8 border-t border-graphite-800">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-terminal-muted">
           <span>© 2025 Context8</span>
           <nav className="flex items-center gap-6">

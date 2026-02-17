@@ -73,32 +73,32 @@ export function Admin() {
   const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono px-6 py-8 md:py-12 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="terminal-scanlines" />
-      <div className="terminal-grid" />
-
+    <div className="min-h-screen bg-graphite-950 text-terminal-text px-6 py-8 md:py-12">
       {/* Header */}
       <motion.header
         ref={headerRef}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: isHeaderInView ? 1 : 0, y: isHeaderInView ? 0 : -20 }}
         transition={{ duration: 0.5 }}
-        className="max-w-6xl mx-auto mb-12 relative z-10"
+        className="max-w-6xl mx-auto mb-12"
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-xl">
-                <span className="text-terminal-cyan font-semibold">context8</span>
-                <span className="text-terminal-muted">&gt;_</span>
-              </h1>
-              <span className="px-3 py-1 bg-graphite-900 border border-graphite-800 rounded text-xs text-terminal-muted">
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="text-xl font-extrabold tracking-tight text-terminal-text flex items-center gap-2"
+              >
+                <span className="text-terminal-cyan font-mono text-sm">&#9670;</span>
+                <span>Context8</span>
+              </button>
+              <span className="px-3 py-1 bg-graphite-900 border border-graphite-800 rounded text-xs text-terminal-muted font-mono">
                 Admin Panel
               </span>
             </div>
             {user && (
-              <p className="text-sm text-terminal-muted">
+              <p className="text-sm text-terminal-muted font-mono">
                 Logged in as <span className="text-terminal-cyan">{user.email}</span>
               </p>
             )}
@@ -106,13 +106,13 @@ export function Admin() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="text-sm bg-graphite-900 border border-graphite-800 px-4 py-2 rounded-lg hover:border-terminal-cyan/30 hover:bg-graphite-800 transition-all"
+              className="text-sm bg-graphite-900 border border-graphite-800 px-4 py-2 rounded-lg hover:border-terminal-cyan/30 hover:bg-graphite-700 transition-all font-mono"
             >
               Dashboard
             </button>
             <button
               onClick={handleLogout}
-              className="text-sm text-terminal-muted hover:text-terminal-red transition-colors px-4 py-2"
+              className="text-sm text-terminal-muted hover:text-terminal-red transition-colors px-4 py-2 font-mono"
             >
               Logout
             </button>
@@ -128,13 +128,13 @@ export function Admin() {
         >
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-            <span className="text-sm text-terminal-muted">Pending:</span>
-            <span className="text-sm font-semibold text-yellow-400">{pendingCount}</span>
+            <span className="text-sm text-terminal-muted font-mono">Pending:</span>
+            <span className="text-sm font-semibold text-yellow-400 font-mono">{pendingCount}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-terminal-cyan" />
-            <span className="text-sm text-terminal-muted">Date:</span>
-            <span className="text-sm font-semibold text-terminal-cyan">{today}</span>
+            <span className="text-sm text-terminal-muted font-mono">Date:</span>
+            <span className="text-sm font-semibold text-terminal-cyan font-mono">{today}</span>
           </div>
         </motion.div>
       </motion.header>
@@ -145,17 +145,17 @@ export function Admin() {
         initial={{ opacity: 0 }}
         animate={{ opacity: isContentInView ? 1 : 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-6xl mx-auto relative z-10"
+        className="max-w-6xl mx-auto"
       >
         {/* Section Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-sm text-terminal-cyan flex items-center gap-2">
+          <h2 className="text-sm text-terminal-cyan flex items-center gap-2 font-mono">
             <span className="text-terminal-muted">01</span>
             PAYMENT VERIFICATION
           </h2>
           <button
             onClick={refetch}
-            className="text-sm text-terminal-cyan hover:text-terminal-text transition-colors flex items-center gap-2"
+            className="text-sm text-terminal-cyan hover:text-terminal-text transition-colors flex items-center gap-2 font-mono"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -169,7 +169,7 @@ export function Admin() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-terminal-red/10 border border-terminal-red/30 rounded-lg text-sm text-terminal-red"
+            className="mb-6 p-4 bg-terminal-red/10 border border-terminal-red/30 rounded-lg text-sm text-terminal-red font-mono"
           >
             Error loading payments: {error}
           </motion.div>

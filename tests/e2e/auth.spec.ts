@@ -217,8 +217,10 @@ test('report latest does not refetch endlessly after initial load', async ({ pag
 
   // In dev (Vite) + React StrictMode, mount effects intentionally run twice.
   // This should never become an unbounded refetch loop.
+  await expect
+    .poll(() => reqCount, { timeout: 8000 })
+    .toBeGreaterThan(0)
   await page.waitForTimeout(1000)
-  expect(reqCount).toBeGreaterThan(0)
   expect(reqCount).toBeLessThanOrEqual(2)
 })
 
@@ -235,7 +237,8 @@ test('admin role can access /admin and logout triggers signout redirect', async 
   })
 
   await page.goto('/admin')
-  await expect(page.getByText('Admin Panel')).toBeVisible()
+  await expect(page).toHaveURL(/\/admin\b/)
+  await expect(page.getByText('Admin Panel')).toBeVisible({ timeout: 15000 })
 
   await page.getByRole('button', { name: /^logout$/i }).click()
   await expect(page).toHaveURL(/http:\/\/localhost:5173\/?$/)

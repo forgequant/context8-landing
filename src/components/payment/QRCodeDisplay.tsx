@@ -18,7 +18,7 @@ export function QRCodeDisplay({ address, chainName }: QRCodeDisplayProps) {
   return (
     <div className="space-y-4">
       <div className="text-center">
-        <div className="inline-block p-4 bg-white rounded-lg">
+        <div className="inline-block p-4 bg-white rounded-lg border border-graphite-800">
           <QRCodeSVG
             value={address}
             size={200}
@@ -26,31 +26,31 @@ export function QRCodeDisplay({ address, chainName }: QRCodeDisplayProps) {
             includeMargin={true}
           />
         </div>
-        <p className="mt-2 text-sm text-gray-400">
+        <p className="mt-2 text-sm text-terminal-muted">
           Scan with your {chainName} wallet
         </p>
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-300">
+        <label className="block text-sm font-medium text-terminal-muted">
           Payment Address
         </label>
         <div className="flex items-center gap-2">
-          <code className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded text-xs text-gray-300 font-mono break-all">
+          <code className="flex-1 px-3 py-2 bg-graphite-950 border border-graphite-800 rounded text-xs text-terminal-muted font-mono break-all">
             {address}
           </code>
           <button
             type="button"
             onClick={handleCopy}
-            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium transition-colors"
+            className="px-3 py-2 bg-terminal-cyan hover:bg-terminal-cyan/90 text-graphite-950 rounded text-sm font-semibold transition-colors"
           >
             {copied ? 'Copied!' : 'Copy'}
           </button>
         </div>
       </div>
 
-      <div className="p-3 bg-yellow-900/20 border border-yellow-700 rounded text-sm text-yellow-200">
-        <strong>Amount:</strong> 8 USDC or 8 USDT on {chainName}
+      <div className="p-3 bg-terminal-cyan/10 border border-terminal-cyan/30 rounded text-sm text-terminal-text">
+        <strong className="text-terminal-cyan">Amount:</strong> 8 USDC or 8 USDT on {chainName}
       </div>
     </div>
   )

@@ -22,7 +22,7 @@ export function ChainSelector({ selectedChain, onChainChange }: ChainSelectorPro
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
+      <label className="block text-sm font-medium text-terminal-muted">
         Select Network
       </label>
       <div className="grid grid-cols-1 gap-2">
@@ -37,14 +37,14 @@ export function ChainSelector({ selectedChain, onChainChange }: ChainSelectorPro
                 px-4 py-3 rounded-lg border-2 text-left transition-all
                 ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-500/10 text-white'
-                    : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-600'
+                    ? 'border-terminal-cyan bg-terminal-cyan/10 text-terminal-text'
+                    : 'border-graphite-800 bg-graphite-950 text-terminal-muted hover:border-graphite-700 hover:text-terminal-text'
                 }
               `}
             >
               <div className="flex justify-between items-center">
                 <span className="font-medium">{getChainDisplayName(chain)}</span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-terminal-muted/70 font-mono">
                   Gas: {formatGasFee(chain)}
                 </span>
               </div>

@@ -31,28 +31,23 @@ export function Analytics() {
   }
 
   return (
-    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono flex flex-col">
-      {/* Background effects */}
-      <div className="terminal-scanlines" />
-      <div className="terminal-grid" />
-
-      {/* Header */}
-      <header className="border-b border-graphite-800 bg-graphite-900/50 backdrop-blur-sm sticky top-0 z-10 flex-shrink-0">
+    <div className="min-h-screen bg-graphite-950 text-terminal-text flex flex-col">
+      <header className="border-b border-graphite-800 bg-graphite-950/80 backdrop-blur-sm sticky top-0 z-10 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/dashboard')}
-              className="text-terminal-muted hover:text-terminal-cyan transition-colors text-sm"
+              className="text-terminal-muted hover:text-terminal-text transition-colors text-sm font-mono"
             >
               ← Dashboard
             </button>
-            <h1 className="text-lg font-semibold">
-              <span className="text-terminal-cyan">context8</span>
-              <span className="text-terminal-muted">/analytics</span>
+            <h1 className="text-lg font-extrabold tracking-tight">
+              <span className="text-terminal-text">Analytics</span>{' '}
+              <span className="text-terminal-muted font-mono text-sm font-semibold">MCP</span>
             </h1>
           </div>
-          <div className="text-xs text-terminal-muted">
-            <span className="text-terminal-green">●</span> MCP Connected
+          <div className="text-xs text-terminal-muted font-mono">
+            <span className="text-terminal-green">●</span> Connected
           </div>
         </div>
       </header>
@@ -76,8 +71,8 @@ export function Analytics() {
               />
 
               {/* Legacy Market Widgets */}
-              <div className="text-sm text-terminal-muted mb-4">
-                <span className="text-terminal-cyan">#</span> Market Widgets
+              <div className="text-sm text-terminal-muted mb-4 font-mono">
+                Market widgets
               </div>
 
               {widgets.length === 0 ? (
@@ -85,7 +80,7 @@ export function Analytics() {
                   <p className="text-terminal-muted text-sm">
                     Ask for market data to see widgets here
                   </p>
-                  <p className="text-terminal-muted/60 text-xs mt-2">
+                  <p className="text-terminal-muted/60 text-xs mt-2 font-mono">
                     Try: "Show BTC market report"
                   </p>
                 </div>
@@ -95,10 +90,10 @@ export function Analytics() {
                     key={idx}
                     className="bg-graphite-900 border border-graphite-800 rounded-lg p-4"
                   >
-                    <div className="text-xs text-terminal-cyan mb-2">
+                    <div className="text-xs text-terminal-cyan mb-2 font-mono">
                       {widget.symbol}
                     </div>
-                    <div className="space-y-2 text-xs">
+                    <div className="space-y-2 text-xs font-mono">
                       <div className="flex justify-between">
                         <span className="text-terminal-muted">Price:</span>
                         <span className="text-terminal-text">${widget.price}</span>

@@ -12,34 +12,30 @@ interface BlogLayoutProps {
 
 export function BlogLayout({ children, title, description, publishedAt, readTime }: BlogLayoutProps) {
   return (
-    <div className="min-h-screen bg-graphite-950 text-terminal-text font-mono relative overflow-hidden">
-      {/* Background effects */}
-      <div className="terminal-scanlines" />
-      <div className="terminal-grid" />
-
+    <div className="min-h-screen bg-graphite-950 text-terminal-text">
       {/* Header */}
-      <header className="max-w-4xl mx-auto px-6 py-8 flex justify-between items-center relative z-10">
-        <Link to="/" className="text-lg">
-          <span className="text-terminal-cyan font-semibold">context8</span>
-          <span className="text-terminal-muted">&gt;_</span>
+      <header className="max-w-4xl mx-auto px-6 py-8 flex justify-between items-center">
+        <Link to="/" className="text-lg font-extrabold tracking-tight flex items-center gap-2">
+          <span className="text-terminal-cyan font-mono text-sm">&#9670;</span>
+          <span>Context8</span>
         </Link>
         <Link
           to="/blog"
-          className="text-sm text-terminal-muted hover:text-terminal-text transition-colors"
+          className="text-sm text-terminal-muted hover:text-terminal-text transition-colors font-mono"
         >
           ← All articles
         </Link>
       </header>
 
       {/* Article */}
-      <article className="max-w-4xl mx-auto px-6 pb-16 relative z-10">
+      <article className="max-w-4xl mx-auto px-6 pb-16">
         <motion.header
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-12"
         >
-          <div className="flex items-center gap-4 text-sm text-terminal-muted mb-4">
+          <div className="flex items-center gap-4 text-sm text-terminal-muted mb-4 font-mono">
             <time>{publishedAt}</time>
             <span>•</span>
             <span>{readTime} read</span>
@@ -63,7 +59,7 @@ export function BlogLayout({ children, title, description, publishedAt, readTime
       </article>
 
       {/* CTA */}
-      <section className="max-w-4xl mx-auto px-6 pb-16 relative z-10">
+      <section className="max-w-4xl mx-auto px-6 pb-16">
         <div className="p-8 rounded-2xl bg-graphite-900 border border-graphite-800 text-center">
           <h3 className="text-xl font-semibold text-terminal-text mb-3">
             Ready to try Context8?
@@ -81,7 +77,7 @@ export function BlogLayout({ children, title, description, publishedAt, readTime
       </section>
 
       {/* Footer */}
-      <footer className="max-w-4xl mx-auto px-6 py-8 border-t border-graphite-800 relative z-10">
+      <footer className="max-w-4xl mx-auto px-6 py-8 border-t border-graphite-800">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-terminal-muted">
           <span>© 2025 Context8</span>
           <nav className="flex items-center gap-6">

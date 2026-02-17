@@ -2,19 +2,17 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { Landing } from './pages/Landing'
 import { Auth } from './pages/Auth'
+import { NotFound } from './pages/NotFound'
+import { Dashboard } from './pages/Dashboard'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { NewYearDecorations } from './components/NewYearDecorations'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { AuthCallback } from './components/auth/AuthCallback'
 
 // Lazy-load heavy routes for better performance
-const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })))
-const AccountDashboard = lazy(() => import('./pages/AccountDashboard').then(m => ({ default: m.AccountDashboard })))
 const Analytics = lazy(() => import('./pages/Analytics').then(m => ({ default: m.Analytics })))
 const Admin = lazy(() => import('./pages/Admin').then(m => ({ default: m.Admin })))
 const AdminRoute = lazy(() => import('./components/admin/AdminRoute').then(m => ({ default: m.AdminRoute })))
-const DailyReport = lazy(() => import('./pages/DailyReport').then(m => ({ default: m.DailyReport })))
-const DailyReportRu = lazy(() => import('./pages/DailyReportRu').then(m => ({ default: m.DailyReportRu })))
 
 // Dashboard nested pages
 const DailyReportView = lazy(() => import('./pages/DailyReportView').then(m => ({ default: m.DailyReportView })))
@@ -45,51 +43,56 @@ export default function App() {
     <ErrorBoundary>
       <NewYearDecorations />
       <BrowserRouter>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
-            {/* Dashboard layout with nested routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="report/latest" replace />} />
-              <Route path="report/:date" element={<DailyReportView />} />
-              <Route path="report/:date/:asset" element={<AssetDetail />} />
-              <Route path="crowded" element={<CrowdedTrades />} />
-              <Route path="divergence" element={<DivergenceWatchPage />} />
-              <Route path="history" element={<ReportHistory />} />
-              <Route path="assets" element={<Assets />} />
-              <Route path="settings" element={<DashboardSettings />} />
-            </Route>
+          {/* Dashboard layout with nested routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="report/latest" replace />} />
+            <Route path="report/:date" element={<Suspense fallback={<LoadingFallback />}><DailyReportView /></Suspense>} />
+            <Route path="report/:date/:asset" element={<Suspense fallback={<LoadingFallback />}><AssetDetail /></Suspense>} />
+            <Route path="crowded" element={<Suspense fallback={<LoadingFallback />}><CrowdedTrades /></Suspense>} />
+            <Route path="divergence" element={<Suspense fallback={<LoadingFallback />}><DivergenceWatchPage /></Suspense>} />
+            <Route path="history" element={<Suspense fallback={<LoadingFallback />}><ReportHistory /></Suspense>} />
+            <Route path="assets" element={<Suspense fallback={<LoadingFallback />}><Assets /></Suspense>} />
+            <Route path="settings" element={<Suspense fallback={<LoadingFallback />}><DashboardSettings /></Suspense>} />
+          </Route>
 
-            {/* Legacy account dashboard */}
-            <Route path="/account" element={<ProtectedRoute><AccountDashboard /></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-            <Route path="/reports/daily" element={<ProtectedRoute><DailyReport /></ProtectedRoute>} />
-            <Route path="/reports/daily-ru" element={<ProtectedRoute><DailyReportRu /></ProtectedRoute>} />
-            <Route path="/blog" element={<BlogIndex />} />
-            <Route path="/blog/what-is-mcp" element={<WhatIsMcp />} />
-            <Route path="/blog/ai-crypto-data-integration" element={<AiCryptoData />} />
-            <Route path="/blog/mcp-vs-rest-api" element={<McpVsRestApi />} />
-            <Route
-              path="/admin"
-              element={
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Analytics />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/blog" element={<Suspense fallback={<LoadingFallback />}><BlogIndex /></Suspense>} />
+          <Route path="/blog/what-is-mcp" element={<Suspense fallback={<LoadingFallback />}><WhatIsMcp /></Suspense>} />
+          <Route path="/blog/ai-crypto-data-integration" element={<Suspense fallback={<LoadingFallback />}><AiCryptoData /></Suspense>} />
+          <Route path="/blog/mcp-vs-rest-api" element={<Suspense fallback={<LoadingFallback />}><McpVsRestApi /></Suspense>} />
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={<LoadingFallback />}>
                 <AdminRoute>
                   <Admin />
                 </AdminRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+              </Suspense>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </BrowserRouter>
     </ErrorBoundary>
   )

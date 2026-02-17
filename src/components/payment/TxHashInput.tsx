@@ -24,8 +24,8 @@ export function TxHashInput({ value, onChange, error: externalError }: TxHashInp
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        Transaction Hash <span className="text-red-400">*</span>
+      <label className="block text-sm font-medium text-terminal-muted">
+        Transaction Hash <span className="text-terminal-red">*</span>
       </label>
       <input
         type="text"
@@ -34,19 +34,19 @@ export function TxHashInput({ value, onChange, error: externalError }: TxHashInp
         onBlur={() => setTouched(true)}
         placeholder="0x..."
         className={`
-          w-full px-3 py-2 bg-gray-800 border rounded text-white font-mono text-sm
-          placeholder-gray-500 focus:outline-none focus:ring-2
+          w-full px-3 py-2 bg-graphite-950 border rounded text-terminal-text font-mono text-sm
+          placeholder-terminal-muted/60 focus:outline-none focus:ring-2
           ${
             displayError
-              ? 'border-red-500 focus:ring-red-500'
-              : 'border-gray-700 focus:ring-blue-500'
+              ? 'border-terminal-red/60 focus:ring-terminal-red/30'
+              : 'border-graphite-800 focus:ring-terminal-cyan/30'
           }
         `}
       />
       {displayError && (
-        <p className="text-xs text-red-400">{displayError}</p>
+        <p className="text-xs text-terminal-red font-mono">{displayError}</p>
       )}
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-terminal-muted">
         Enter the transaction hash from your wallet after sending the payment
       </p>
     </div>
