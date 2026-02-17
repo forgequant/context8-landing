@@ -6,6 +6,7 @@ import {
   GitBranch,
   Clock,
   Coins,
+  Settings,
   Lock,
 } from 'lucide-react'
 
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
   { to: '/dashboard/divergence', icon: GitBranch, label: 'Divergence Watch', locked: true },
   { to: '/dashboard/history', icon: Clock, label: 'Historical', locked: true },
   { to: '/dashboard/assets', icon: Coins, label: 'Assets', locked: true },
+  { to: '/dashboard/settings', icon: Settings, label: 'Settings', locked: false },
 ] as const
 
 function isActiveRoute(pathname: string, to: string): boolean {
