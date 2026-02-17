@@ -106,7 +106,7 @@ test('redirects unauthenticated users to /auth for protected routes', async ({ p
   await page.goto('/dashboard')
   await expect(page).toHaveURL(/\/auth$/)
   await expect(
-    page.getByRole('button', { name: /sign in \/ register/i }),
+    page.getByRole('button', { name: /sign in/i }),
   ).toBeVisible()
 })
 

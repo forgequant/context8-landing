@@ -25,13 +25,9 @@ export function SubscriptionStatus({
   if (!subscription) {
     return (
       <div className="bg-graphite-900 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-sm mb-1">
-              Current plan: <span className="font-semibold">Free</span>
-            </p>
-          </div>
-        </div>
+        <p className="text-sm text-terminal-muted font-mono">
+          No active subscription.
+        </p>
       </div>
     )
   }
@@ -43,12 +39,6 @@ export function SubscriptionStatus({
     <div className="bg-graphite-900 rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm mb-1">
-            Current plan:{' '}
-            <span className="font-semibold text-terminal-cyan">
-              {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
-            </span>
-          </p>
           {isInGrace && (
             <p className="text-xs text-yellow-400 mt-1">Grace period active (48h)</p>
           )}

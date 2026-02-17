@@ -3,9 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 const SECTION_ROUTES = [
   '/dashboard/report/latest',   // 1
-  '/dashboard/crowded',         // 2
-  '/dashboard/divergence',      // 3
-  '/dashboard/history',         // 4
 ] as const
 
 interface UseKeyboardNavOptions {
@@ -46,7 +43,7 @@ export function useKeyboardNav({ onTogglePalette }: UseKeyboardNavOptions) {
 
       // 1-4 — section navigation
       const num = parseInt(e.key, 10)
-      if (num >= 1 && num <= 4 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      if (num >= 1 && num <= SECTION_ROUTES.length && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault()
         navigate(SECTION_ROUTES[num - 1])
         return

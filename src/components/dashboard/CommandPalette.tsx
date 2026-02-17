@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Command } from 'cmdk'
 import { useNavigate } from 'react-router-dom'
-import { FileText, TrendingUp, GitBranch, Clock, Settings, Search } from 'lucide-react'
+import { FileText, TrendingUp, GitBranch, Clock, Settings, Search, Lock } from 'lucide-react'
 
 const NAV_COMMANDS = [
   { label: "Today's Report", route: '/dashboard/report/latest', icon: FileText, group: 'Navigation' },
-  { label: 'Crowded Trades', route: '/dashboard/crowded', icon: TrendingUp, group: 'Navigation' },
-  { label: 'Divergence Watch', route: '/dashboard/divergence', icon: GitBranch, group: 'Navigation' },
-  { label: 'History', route: '/dashboard/history', icon: Clock, group: 'Navigation' },
+  { label: 'Crowded Trades', route: '/dashboard/crowded', icon: TrendingUp, group: 'Navigation', disabled: true, hint: 'Coming soon' },
+  { label: 'Divergence Watch', route: '/dashboard/divergence', icon: GitBranch, group: 'Navigation', disabled: true, hint: 'Coming soon' },
+  { label: 'History', route: '/dashboard/history', icon: Clock, group: 'Navigation', disabled: true, hint: 'Coming soon' },
 ] as const
 
 const ASSET_COMMANDS = [
@@ -74,15 +74,22 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             heading="Navigation"
             className="[&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-terminal-muted [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5"
           >
-            {NAV_COMMANDS.map(({ label, route, icon: Icon }) => (
+            {NAV_COMMANDS.map(({ label, route, icon: Icon, disabled, hint }) => (
               <Command.Item
                 key={route}
                 value={label}
-                onSelect={() => select(route)}
-                className="flex items-center gap-3 px-2 py-2 rounded-md text-sm font-mono text-terminal-text cursor-pointer data-[selected=true]:bg-amber-dim data-[selected=true]:text-amber"
+                disabled={disabled}
+                onSelect={disabled ? undefined : () => select(route)}
+                className="flex items-center gap-3 px-2 py-2 rounded-md text-sm font-mono text-terminal-text cursor-pointer data-[selected=true]:bg-amber-dim data-[selected=true]:text-amber data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-not-allowed"
               >
                 <Icon size={16} className="shrink-0" />
-                {label}
+                <span className="flex-1">{label}</span>
+                {disabled ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-mono text-terminal-muted uppercase tracking-wider">
+                    <Lock size={12} />
+                    {hint ?? 'Coming soon'}
+                  </span>
+                ) : null}
               </Command.Item>
             ))}
           </Command.Group>

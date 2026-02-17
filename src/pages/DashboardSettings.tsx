@@ -92,7 +92,7 @@ export function DashboardSettings() {
         <PaymentHistory payments={payments} loading={paymentsLoading} />
       </div>
 
-      <SectionTitle label="Developer" />
+      <SectionTitle label="API" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ApiKeySection />
         <ApiUsageInstructions />

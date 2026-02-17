@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, LogOut, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, LogOut, Search, Settings } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 function formatReportDate(date: string | undefined): string {
@@ -67,6 +67,16 @@ export function DashboardHeader() {
             Ctrl+K
           </kbd>
         </div>
+
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard/settings')}
+          className="inline-flex items-center gap-1.5 text-terminal-muted hover:text-terminal-text transition-colors"
+          aria-label="Settings"
+        >
+          <Settings size={14} />
+          <span className="hidden sm:inline text-[11px] font-mono">Settings</span>
+        </button>
 
         <button
           type="button"

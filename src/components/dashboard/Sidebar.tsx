@@ -6,16 +6,15 @@ import {
   GitBranch,
   Clock,
   Coins,
-  Settings,
+  Lock,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { to: '/dashboard/report/latest', icon: FileText, label: "Today's Report" },
-  { to: '/dashboard/crowded', icon: TrendingUp, label: 'Crowded Trades' },
-  { to: '/dashboard/divergence', icon: GitBranch, label: 'Divergence Watch' },
-  { to: '/dashboard/history', icon: Clock, label: 'Historical' },
-  { to: '/dashboard/assets', icon: Coins, label: 'Assets' },
-  { to: '/dashboard/settings', icon: Settings, label: 'Settings' },
+  { to: '/dashboard/report/latest', icon: FileText, label: "Today's Report", locked: false },
+  { to: '/dashboard/crowded', icon: TrendingUp, label: 'Crowded Trades', locked: true },
+  { to: '/dashboard/divergence', icon: GitBranch, label: 'Divergence Watch', locked: true },
+  { to: '/dashboard/history', icon: Clock, label: 'Historical', locked: true },
+  { to: '/dashboard/assets', icon: Coins, label: 'Assets', locked: true },
 ] as const
 
 function isActiveRoute(pathname: string, to: string): boolean {
@@ -49,8 +48,36 @@ export function Sidebar() {
 
         {/* Nav items */}
         <div className="flex-1 flex flex-col gap-1 py-2 px-1.5">
-          {NAV_ITEMS.map(({ to, icon: Icon, label }) => {
+          {NAV_ITEMS.map(({ to, icon: Icon, label, locked }) => {
             const active = isActiveRoute(pathname, to)
+            const DisplayIcon = locked && !expanded ? Lock : Icon
+
+            if (locked) {
+              return (
+                <div
+                  key={to}
+                  aria-disabled="true"
+                  title="Coming soon"
+                  className={`flex items-center gap-3 rounded-md px-2.5 py-2 text-sm border-l-2 select-none
+                    ${active
+                      ? 'bg-graphite-800/60 text-terminal-muted border-graphite-700'
+                      : 'text-terminal-muted/60 border-transparent'
+                    } cursor-not-allowed`}
+                >
+                  <DisplayIcon size={18} className="shrink-0" />
+                  {expanded && (
+                    <>
+                      <span className="whitespace-nowrap font-mono text-xs">{label}</span>
+                      <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-mono text-terminal-muted uppercase tracking-wider">
+                        <Lock size={12} />
+                        Soon
+                      </span>
+                    </>
+                  )}
+                </div>
+              )
+            }
+
             return (
               <NavLink
                 key={to}
@@ -73,8 +100,25 @@ export function Sidebar() {
 
       {/* Mobile bottom tab bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-graphite-900 border-t border-graphite-800 flex items-center justify-around h-14 px-1">
-        {NAV_ITEMS.map(({ to, icon: Icon, label }) => {
+        {NAV_ITEMS.map(({ to, icon: Icon, label, locked }) => {
           const active = isActiveRoute(pathname, to)
+          const DisplayIcon = locked ? Lock : Icon
+
+          if (locked) {
+            return (
+              <div
+                key={to}
+                aria-disabled="true"
+                title="Coming soon"
+                className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-md text-[10px] cursor-not-allowed
+                  ${active ? 'text-terminal-muted' : 'text-terminal-muted/70'}`}
+              >
+                <DisplayIcon size={18} />
+                <span className="truncate max-w-[56px]">{label}</span>
+              </div>
+            )
+          }
+
           return (
             <NavLink
               key={to}

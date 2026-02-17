@@ -1,7 +1,10 @@
+import { ComingSoon } from '@/components/dashboard/ComingSoon'
+
 export function DivergenceWatchPage() {
   return (
-    <div className="text-terminal-muted text-sm font-mono">
-      <p>Divergence Watch</p>
-    </div>
+    <ComingSoon
+      title="Divergence Watch"
+      description="We are polishing this view and will ship it soon."
+    />
   )
 }

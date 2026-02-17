@@ -177,12 +177,12 @@ export function Auth() {
             </div>
 
             <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.12, margin: 0 }}>
-              Authenticate to access
+              Sign in to access
               <br />
-              Daily Disagree and API keys
+              Daily Disagree
             </h1>
             <p style={{ marginTop: 12, marginBottom: 0, color: C.textSecondary, fontSize: '1rem', lineHeight: 1.6 }}>
-              We use OIDC. You will be redirected to our secure login provider and returned here after sign-in.
+              Reports today. API access soon.
             </p>
           </motion.div>
 
@@ -267,7 +267,7 @@ export function Auth() {
                 opacity: isSigningIn || oidcMisconfigured ? 0.6 : 1,
               }}
             >
-              {isSigningIn ? 'Redirecting…' : 'Sign In / Register'}
+              {isSigningIn ? 'Redirecting…' : 'Sign in'}
             </motion.button>
 
             <div style={{ marginTop: 12, fontFamily: font.mono, fontSize: '0.75rem', color: C.textMuted, lineHeight: 1.5 }}>

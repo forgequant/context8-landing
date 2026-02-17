@@ -211,7 +211,7 @@ test('oidc code callback completes and lands on dashboard with stored session', 
   await page.goto('/dashboard')
   await expect(page).toHaveURL(/\/auth$/)
 
-  await page.getByRole('button', { name: /sign in \/ register/i }).click()
+  await page.getByRole('button', { name: /sign in/i }).click()
 
   // Callback handler hard-reloads; wait for a stable dashboard signal.
   await expect(page.getByLabel('Previous day')).toBeVisible({ timeout: 20000 })
@@ -225,4 +225,3 @@ test('oidc code callback completes and lands on dashboard with stored session', 
   })
   expect(hasOidcUser).toBe(true)
 })
-

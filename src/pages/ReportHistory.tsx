@@ -1,7 +1,10 @@
+import { ComingSoon } from '@/components/dashboard/ComingSoon'
+
 export function ReportHistory() {
   return (
-    <div className="text-terminal-muted text-sm font-mono">
-      <p>Historical Reports</p>
-    </div>
+    <ComingSoon
+      title="History"
+      description="We are polishing this view and will ship it soon."
+    />
   )
 }

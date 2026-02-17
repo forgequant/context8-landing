@@ -1,7 +1,10 @@
+import { ComingSoon } from '@/components/dashboard/ComingSoon'
+
 export function Assets() {
   return (
-    <div className="text-terminal-muted text-sm font-mono">
-      <p>Assets</p>
-    </div>
+    <ComingSoon
+      title="Assets"
+      description="We are polishing this view and will ship it soon."
+    />
   )
 }

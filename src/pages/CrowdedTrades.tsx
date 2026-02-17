@@ -1,7 +1,10 @@
+import { ComingSoon } from '@/components/dashboard/ComingSoon'
+
 export function CrowdedTrades() {
   return (
-    <div className="text-terminal-muted text-sm font-mono">
-      <p>Crowded Trades</p>
-    </div>
+    <ComingSoon
+      title="Crowded Trades"
+      description="We are polishing this view and will ship it soon."
+    />
   )
 }
