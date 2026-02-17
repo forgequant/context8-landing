@@ -165,6 +165,63 @@ test('authenticated (no roles) can load dashboard and performs authorized report
   await expect(page).toHaveURL(/\/dashboard/)
 })
 
+test('report latest does not refetch endlessly after initial load', async ({ page }) => {
+  const { accessToken } = await seedOidcUser(page, { roles: [], tier: 'free' })
+
+  let reqCount = 0
+  await page.route('**/api/v1/reports/**', async (route) => {
+    reqCount++
+    const auth = route.request().headers()['authorization']
+    expect(auth).toBe(`Bearer ${accessToken}`)
+
+    const nowIso = new Date().toISOString()
+    const payload = {
+      date: '2026-02-16',
+      reportNumber: 1,
+      headline: {
+        headline: 'E2E mock report',
+        conviction: 0,
+        reportDate: 'Feb 16, 2026',
+        reportNumber: 1,
+        macro: { regime: 'mixed', fearGreed: 50, dxyTrend: 'flat' },
+      },
+      modules: [],
+      conflicts: [],
+      crowdedTrades: [],
+      divergences: [],
+      macro: { regime: 'mixed', fearGreed: 50, dxyTrend: 'flat' },
+      assets: [],
+      priceData: [],
+      heatmapRows: [],
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 'e2e-report-1',
+        asset: 'MARKET',
+        report_date: '2026-02-16',
+        headline: 'E2E',
+        payload,
+        status: 'published',
+        version: 2,
+        created_at: nowIso,
+        published_at: nowIso,
+      }),
+    })
+  })
+
+  await page.goto('/dashboard/report/latest')
+  await expect(page.getByLabel('Previous day')).toBeVisible()
+
+  // In dev (Vite) + React StrictMode, mount effects intentionally run twice.
+  // This should never become an unbounded refetch loop.
+  await page.waitForTimeout(1000)
+  expect(reqCount).toBeGreaterThan(0)
+  expect(reqCount).toBeLessThanOrEqual(2)
+})
+
 test('admin role can access /admin and logout triggers signout redirect', async ({ page }) => {
   await seedOidcUser(page, { roles: ['admin'], tier: 'pro' })
 

@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useAuth as useOidcAuth } from 'react-oidc-context'
 import { type SubscriptionTier, tierAtLeast } from '../lib/auth'
 
@@ -84,21 +85,45 @@ function extractTier(
 
 export function useAuth(): UseAuthReturn {
   const oidc = useOidcAuth()
+  // `react-oidc-context` may provide a new object identity across renders.
+  // Keep a ref so callbacks (login/logout) can be stable and not trigger
+  // dependency cascades (e.g. effects that depend on `login`).
+  const oidcRef = useRef(oidc)
+  useEffect(() => {
+    oidcRef.current = oidc
+  }, [oidc])
 
   const profile = oidc.user?.profile
   const accessToken = oidc.user?.access_token ?? null
-  const roles = extractRoles(profile, accessToken)
-  const subscriptionTier = extractTier(profile, accessToken)
+  const roles = useMemo(() => extractRoles(profile, accessToken), [profile, accessToken])
+  const subscriptionTier = useMemo(() => extractTier(profile, accessToken), [profile, accessToken])
 
-  const user: AuthUser | null =
-    oidc.isAuthenticated && profile
-      ? {
-          id: profile.sub as string,
-          email: (profile.email as string) ?? '',
-          name: (profile.name as string) ?? '',
-          roles,
-        }
-      : null
+  const user: AuthUser | null = useMemo(() => {
+    if (!oidc.isAuthenticated || !profile) return null
+    return {
+      id: profile.sub as string,
+      email: (profile.email as string) ?? '',
+      name: (profile.name as string) ?? '',
+      roles,
+    }
+  }, [oidc.isAuthenticated, profile, roles])
+
+  const login = useCallback(async (returnTo?: string) => {
+    const current = oidcRef.current
+    await current.signinRedirect(returnTo ? { state: { returnTo } } : undefined)
+  }, [])
+
+  const logout = useCallback(async () => {
+    const current = oidcRef.current
+    await current.signoutRedirect({ post_logout_redirect_uri: window.location.origin })
+  }, [])
+
+  const hasRole = useCallback((role: string) => roles.includes(role), [roles])
+
+  const hasTier = useCallback(
+    (minTier: SubscriptionTier) => tierAtLeast(subscriptionTier, minTier),
+    [subscriptionTier],
+  )
 
   return {
     user,
@@ -107,11 +132,9 @@ export function useAuth(): UseAuthReturn {
     isAdmin: roles.includes('admin'),
     accessToken,
     subscriptionTier,
-    login: (returnTo?: string) =>
-      oidc.signinRedirect(returnTo ? { state: { returnTo } } : undefined),
-    logout: () =>
-      oidc.signoutRedirect({ post_logout_redirect_uri: window.location.origin }),
-    hasRole: (role: string) => roles.includes(role),
-    hasTier: (minTier: SubscriptionTier) => tierAtLeast(subscriptionTier, minTier),
+    login,
+    logout,
+    hasRole,
+    hasTier,
   }
 }
