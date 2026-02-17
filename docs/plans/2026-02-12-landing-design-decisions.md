@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-12
 **Status**: Finalized
-**Final artifact**: `mockups/hybrid-amber.html`
+**Final artifact**: Implemented in `src/pages/Landing.tsx` (amber Daily Disagree style)
 
 ---
 
@@ -212,32 +212,10 @@ No one says "here's where the market disagrees with itself." This is confirmed w
 ## 7. File Inventory
 
 ### Final artifacts
-- `mockups/hybrid-amber.html` — **THE FINAL MOCKUP** (design + copy applied)
-- `mockups/FINAL-amber.html` — Snapshot before copy was applied
-- `mockups/copy/FINAL-COPY.md` — Production-ready copy deck
+- `src/pages/Landing.tsx` — current implementation (design + copy)
 
 ### Research
-- `mockups/research-trading-ui.md` — Trading UI patterns research (26KB)
-- `mockups/research-trader-ux.md` — Trader UX research (20KB)
-- `mockups/copy/research-market.md` — Competitor positioning
-- `mockups/copy/research-copy.md` — Landing page copy best practices
-- `mockups/copy/strategy.md` — Positioning framework
-- `mockups/copy/growth-marketing.md` — Conversion analysis
-- `mockups/copy/copywriter-drafts.md` — 3 copy variants (A/B/C)
-- `mockups/copy/BRIEF.md` — Product brief for team
+- See commit history before 2026-02-17 for archived HTML mockups and copy deck (removed from repo).
 
 ### All mockups (chronological)
-1. `terminal-hacker.html` — Matrix terminal
-2. `brutal-minimal.html` — White neobrutalism
-3. `data-glass.html` — Glassmorphism
-4. `brutal-dark.html` — Dark neobrutalism
-5. `war-room.html` — Military command center
-6. `war-room-v1.html` — Muted amber
-7. `war-room-v2.html` — Cool steel
-8. `war-room-v3.html` — Phosphor green
-9. `bloomberg-pure.html` — Pure Bloomberg terminal
-10. `modern-terminal.html` — Linear/Vercel + Bloomberg
-11. `radar-ops.html` — Evolved war-room
-12. `hybrid-teal.html` — Teal accent hybrid
-13. `hybrid-amber.html` — **WINNER** (amber accent hybrid)
-14. `hybrid-orange.html` — Bloomberg orange hybrid
+Archived; removed from repo during cleanup.

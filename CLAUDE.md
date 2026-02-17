@@ -182,7 +182,7 @@ Use `/new-adr` command.
 
 ## Design System — Visual Reference
 
-**Palette reference**: `mockups/hybrid-amber.html` (warm dark palette)
+**Palette reference**: `tailwind.config.ts` (warm amber palette tokens)
 **Layout reference**: `/Users/vi/personal/aitrader/reports/btc-analysis-2026-02-10.html` (card layout, font scale, readability)
 
 ALL dashboard pages MUST use: warm amber palette + AITrader card-based layout patterns.
