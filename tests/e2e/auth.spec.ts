@@ -98,6 +98,55 @@ async function seedOidcUser(
   return { accessToken }
 }
 
+function buildMarketV3Payload() {
+  return {
+    headline: 'E2E mock report v3',
+    conviction_scores: [
+      {
+        symbol: 'BTCUSDT',
+        score: 6,
+        bullish_modules: 2,
+        bearish_modules: 1,
+        neutral_modules: 0,
+        modules: [
+          { module: 'funding', bias: 'bearish', confidence: 80, summary: 'crowded longs' },
+          { module: 'social', bias: 'bullish', confidence: 62, summary: 'narrative rotation' },
+          { module: 'macro', bias: 'bullish', confidence: 55, summary: 'macro support' },
+        ],
+      },
+    ],
+    crowded_trades: [
+      { symbol: 'DOGEUSDT', direction: 'long', z_score: 3.1 },
+    ],
+    divergences: [
+      { symbol: 'ETHUSDT', type: 'social_price', description: 'social diverges from price', signal: 'pending_move', strength: 13 },
+    ],
+    macro_regime: { bias: 'mixed', feargreed_value: 50, feargreed_label: 'Neutral', dxy_trend: 'flat', summary: 'Macro balanced' },
+    generated_at: '2026-02-19T10:00:00Z',
+    collectors: {
+      derivatives: { status: 'ok', confidence: 80, as_of: '2026-02-19T09:58:00Z', sources: ['binance'] },
+      macro: { status: 'partial', confidence: 63, as_of: '2026-02-19T09:57:00Z', sources: ['fred'] },
+      social: { status: 'unavailable', confidence: 0, as_of: '2026-02-19T09:56:00Z', sources: ['lunarcrush'] },
+      flows: { status: 'ok', confidence: 72, as_of: '2026-02-19T09:55:00Z', sources: ['defillama'] },
+    },
+    sections: {
+      trade_setups: [
+        { symbol: 'BTCUSDT', bias: 'bullish', thesis: 'Funding reset + macro support', confidence: 74 },
+      ],
+      risk_flags: [
+        { key: 'event-risk', severity: 'medium', summary: 'macro print in 12h' },
+      ],
+      narrative_bullets: [
+        { topic: 'AI beta rotation', summary: 'high-beta narratives regaining volume', sentiment: 'bullish' },
+      ],
+      avoid_list: [
+        { symbol: 'DOGEUSDT', reason: 'crowded and negative divergence' },
+      ],
+    },
+    quality: { overall: 'amber', coverage_pct: 76.5, warnings: ['social signal degraded'] },
+  }
+}
+
 test.beforeEach(async ({ page }) => {
   await mockOidcProvider(page)
 })
@@ -118,25 +167,7 @@ test('authenticated (no roles) can load dashboard and performs authorized report
     expect(auth).toBe(`Bearer ${accessToken}`)
 
     const nowIso = new Date().toISOString()
-    const payload = {
-      date: '2026-02-16',
-      reportNumber: 1,
-      headline: {
-        headline: 'E2E mock report',
-        conviction: 0,
-        reportDate: 'Feb 16, 2026',
-        reportNumber: 1,
-        macro: { regime: 'mixed', fearGreed: 50, dxyTrend: 'flat' },
-      },
-      modules: [],
-      conflicts: [],
-      crowdedTrades: [],
-      divergences: [],
-      macro: { regime: 'mixed', fearGreed: 50, dxyTrend: 'flat' },
-      assets: [],
-      priceData: [],
-      heatmapRows: [],
-    }
+    const payload = buildMarketV3Payload()
 
     await route.fulfill({
       status: 200,
@@ -148,7 +179,7 @@ test('authenticated (no roles) can load dashboard and performs authorized report
         headline: 'E2E',
         payload,
         status: 'published',
-        version: 2,
+        version: 3,
         created_at: nowIso,
         published_at: nowIso,
       }),
@@ -175,25 +206,7 @@ test('report latest does not refetch endlessly after initial load', async ({ pag
     expect(auth).toBe(`Bearer ${accessToken}`)
 
     const nowIso = new Date().toISOString()
-    const payload = {
-      date: '2026-02-16',
-      reportNumber: 1,
-      headline: {
-        headline: 'E2E mock report',
-        conviction: 0,
-        reportDate: 'Feb 16, 2026',
-        reportNumber: 1,
-        macro: { regime: 'mixed', fearGreed: 50, dxyTrend: 'flat' },
-      },
-      modules: [],
-      conflicts: [],
-      crowdedTrades: [],
-      divergences: [],
-      macro: { regime: 'mixed', fearGreed: 50, dxyTrend: 'flat' },
-      assets: [],
-      priceData: [],
-      heatmapRows: [],
-    }
+    const payload = buildMarketV3Payload()
 
     await route.fulfill({
       status: 200,
@@ -205,7 +218,7 @@ test('report latest does not refetch endlessly after initial load', async ({ pag
         headline: 'E2E',
         payload,
         status: 'published',
-        version: 2,
+        version: 3,
         created_at: nowIso,
         published_at: nowIso,
       }),
@@ -214,6 +227,10 @@ test('report latest does not refetch endlessly after initial load', async ({ pag
 
   await page.goto('/dashboard/report/latest')
   await expect(page.getByLabel('Previous day')).toBeVisible()
+  await expect(page.getByRole('heading', { name: /E2E mock report v3/i })).toBeVisible({ timeout: 15000 })
+  await expect(page.getByText(/Collector Health/)).toBeVisible({ timeout: 15000 })
+  await expect(page.getByText(/Trade Setups/)).toBeVisible()
+  await expect(page.getByText(/event-risk/)).toBeVisible()
 
   // In dev (Vite) + React StrictMode, mount effects intentionally run twice.
   // This should never become an unbounded refetch loop.

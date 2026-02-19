@@ -160,6 +160,43 @@ async function mockOidcProvider(page: Page) {
   )
 }
 
+function buildMarketV3Payload() {
+  return {
+    headline: 'E2E callback report v3',
+    conviction_scores: [
+      {
+        symbol: 'BTCUSDT',
+        score: 5,
+        bullish_modules: 1,
+        bearish_modules: 1,
+        neutral_modules: 1,
+        modules: [
+          { module: 'funding', bias: 'bearish', confidence: 78, summary: 'crowded longs' },
+          { module: 'social', bias: 'bullish', confidence: 64, summary: 'social bounce' },
+          { module: 'macro', bias: 'neutral', confidence: 50, summary: 'mixed macro' },
+        ],
+      },
+    ],
+    crowded_trades: [{ symbol: 'DOGEUSDT', direction: 'long', z_score: 2.9 }],
+    divergences: [{ symbol: 'ETHUSDT', type: 'social_price', description: 'sentiment mismatch', signal: 'pending_move', strength: 11 }],
+    macro_regime: { bias: 'mixed', feargreed_value: 50, feargreed_label: 'Neutral', dxy_trend: 'flat', summary: 'Macro balanced' },
+    generated_at: '2026-02-19T10:00:00Z',
+    collectors: {
+      derivatives: { status: 'ok', confidence: 80, as_of: '2026-02-19T09:58:00Z', sources: ['binance'] },
+      macro: { status: 'ok', confidence: 74, as_of: '2026-02-19T09:57:00Z', sources: ['fred'] },
+      social: { status: 'partial', confidence: 45, as_of: '2026-02-19T09:56:00Z', sources: ['lunarcrush'] },
+      flows: { status: 'ok', confidence: 70, as_of: '2026-02-19T09:55:00Z', sources: ['defillama'] },
+    },
+    sections: {
+      trade_setups: [{ symbol: 'BTCUSDT', bias: 'bullish', thesis: 'Funding reset', confidence: 71 }],
+      risk_flags: [{ key: 'event-risk', severity: 'medium', summary: 'macro print in 12h' }],
+      narrative_bullets: [{ topic: 'AI beta', summary: 'volume recovering', sentiment: 'bullish' }],
+      avoid_list: [{ symbol: 'DOGEUSDT', reason: 'crowded' }],
+    },
+    quality: { overall: 'amber', coverage_pct: 79, warnings: ['social degraded'] },
+  }
+}
+
 test.beforeEach(async ({ page }) => {
   await mockOidcProvider(page)
 })
@@ -171,25 +208,7 @@ test('oidc code callback completes and lands on dashboard with stored session', 
     expect(auth).toBe('Bearer e2e-access-token')
 
     const nowIso = new Date().toISOString()
-    const payload = {
-      date: '2026-02-16',
-      reportNumber: 1,
-      headline: {
-        headline: 'E2E mock report',
-        conviction: 0,
-        reportDate: 'Feb 16, 2026',
-        reportNumber: 1,
-        macro: { regime: 'mixed', fearGreed: 50, dxyTrend: 'flat' },
-      },
-      modules: [],
-      conflicts: [],
-      crowdedTrades: [],
-      divergences: [],
-      macro: { regime: 'mixed', fearGreed: 50, dxyTrend: 'flat' },
-      assets: [],
-      priceData: [],
-      heatmapRows: [],
-    }
+    const payload = buildMarketV3Payload()
 
     await route.fulfill({
       status: 200,
@@ -201,7 +220,7 @@ test('oidc code callback completes and lands on dashboard with stored session', 
         headline: 'E2E',
         payload,
         status: 'published',
-        version: 2,
+        version: 3,
         created_at: nowIso,
         published_at: nowIso,
       }),
@@ -215,6 +234,9 @@ test('oidc code callback completes and lands on dashboard with stored session', 
 
   // Callback handler hard-reloads; wait for a stable dashboard signal.
   await expect(page.getByLabel('Previous day')).toBeVisible({ timeout: 20000 })
+  await expect(page.getByRole('heading', { name: 'E2E callback report v3' })).toBeVisible({ timeout: 15000 })
+  await expect(page.getByText('Trade Setups')).toBeVisible()
+  await expect(page.getByText('Collector Health')).toBeVisible()
 
   const hasOidcUser = await page.evaluate(() => {
     for (let i = 0; i < window.localStorage.length; i++) {

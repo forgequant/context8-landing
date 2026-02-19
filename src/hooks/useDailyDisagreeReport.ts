@@ -31,7 +31,69 @@ export interface ChangeItem {
   text: string;
 }
 
+export type CollectorStatus = 'ok' | 'partial' | 'unavailable';
+export type QualityOverall = 'green' | 'amber' | 'red';
+
+export interface CollectorFallback {
+  mode: string;
+  reason: string;
+}
+
+export interface CollectorInfo {
+  status: CollectorStatus;
+  confidence: number;
+  asOf: string;
+  sources: string[];
+  fallback?: CollectorFallback;
+  metrics?: Record<string, unknown>;
+}
+
+export interface ReportCollectors {
+  derivatives: CollectorInfo;
+  macro: CollectorInfo;
+  social: CollectorInfo;
+  flows: CollectorInfo;
+}
+
+export interface TradeSetup {
+  symbol: string;
+  bias: 'bullish' | 'bearish' | 'neutral';
+  thesis: string;
+  confidence: number;
+}
+
+export interface RiskFlag {
+  key: string;
+  severity: 'low' | 'medium' | 'high';
+  summary: string;
+}
+
+export interface NarrativeBullet {
+  topic: string;
+  summary: string;
+  sentiment: 'bullish' | 'bearish' | 'neutral' | 'mixed';
+}
+
+export interface AvoidListItem {
+  symbol: string;
+  reason: string;
+}
+
+export interface ReportSections {
+  tradeSetups: TradeSetup[];
+  riskFlags: RiskFlag[];
+  narrativeBullets: NarrativeBullet[];
+  avoidList: AvoidListItem[];
+}
+
+export interface ReportQuality {
+  overall: QualityOverall;
+  coveragePct: number;
+  warnings: string[];
+}
+
 export interface DailyDisagreeReport {
+  version: number;
   date: string;
   reportNumber: number;
   headline: HeadlineBannerProps;
@@ -45,6 +107,12 @@ export interface DailyDisagreeReport {
   heatmapRows: HeatmapRow[];
   changes?: ChangeItem[];
   riskCallout?: string;
+  generatedAt?: string;
+  collectors?: ReportCollectors;
+  sections?: ReportSections;
+  quality?: ReportQuality;
+  v3FallbackUsed?: boolean;
+  fallbackNotes?: string[];
 }
 
 interface UseDailyDisagreeReportReturn {
@@ -57,7 +125,7 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
 }
 
-type Ctx8Report = {
+export type Ctx8Report = {
   id: string;
   asset: string;
   report_date: string;
@@ -191,6 +259,7 @@ function buildMockReport(): DailyDisagreeReport {
   ];
 
   return {
+    version: 2,
     date: '2026-02-12',
     reportNumber: 42,
     headline: {
@@ -281,13 +350,129 @@ function quantizeStrength(strength: unknown): 1 | 2 | 3 {
   return 1;
 }
 
-function normalizeFromCtx8Report(ctx8: Ctx8Report): DailyDisagreeReport {
-  const reportDate = ctx8.report_date;
+class UnsupportedReportVersionError extends Error {
+  constructor(version: unknown) {
+    super(`Unsupported report version: ${String(version)}. Expected version 2 or 3.`);
+    this.name = 'UnsupportedReportVersionError';
+  }
+}
+
+function isCollectorStatus(value: unknown): value is CollectorStatus {
+  return value === 'ok' || value === 'partial' || value === 'unavailable';
+}
+
+function isQualityOverall(value: unknown): value is QualityOverall {
+  return value === 'green' || value === 'amber' || value === 'red';
+}
+
+function asFiniteNumber(value: unknown): number | null {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function parseCollector(raw: unknown): CollectorInfo | null {
+  if (!isRecord(raw)) return null;
+  if (!isCollectorStatus(raw.status)) return null;
+  const confidence = asFiniteNumber(raw.confidence);
+  if (confidence === null) return null;
+  if (typeof raw.as_of !== 'string') return null;
+  if (!Array.isArray(raw.sources) || raw.sources.some((s) => typeof s !== 'string')) return null;
+  const fallback =
+    isRecord(raw.fallback) && typeof raw.fallback.mode === 'string' && typeof raw.fallback.reason === 'string'
+      ? { mode: raw.fallback.mode, reason: raw.fallback.reason }
+      : undefined;
+  return {
+    status: raw.status,
+    confidence,
+    asOf: raw.as_of,
+    sources: raw.sources as string[],
+    fallback,
+    metrics: isRecord(raw.metrics) ? raw.metrics : undefined,
+  };
+}
+
+function parseCollectors(raw: unknown): ReportCollectors | null {
+  if (!isRecord(raw)) return null;
+  const derivatives = parseCollector(raw.derivatives);
+  const macro = parseCollector(raw.macro);
+  const social = parseCollector(raw.social);
+  const flows = parseCollector(raw.flows);
+  if (!derivatives || !macro || !social || !flows) return null;
+  return { derivatives, macro, social, flows };
+}
+
+function parseSections(raw: unknown): ReportSections | null {
+  if (!isRecord(raw)) return null;
+  if (!Array.isArray(raw.trade_setups) || !Array.isArray(raw.risk_flags) || !Array.isArray(raw.narrative_bullets) || !Array.isArray(raw.avoid_list)) {
+    return null;
+  }
+  const tradeSetups: TradeSetup[] = [];
+  for (const item of raw.trade_setups) {
+    if (!isRecord(item) || typeof item.symbol !== 'string' || typeof item.thesis !== 'string') return null;
+    const confidence = asFiniteNumber(item.confidence);
+    if (confidence === null) return null;
+    tradeSetups.push({
+      symbol: stripQuoteSuffix(item.symbol),
+      bias: biasToSignal(item.bias),
+      thesis: item.thesis,
+      confidence,
+    });
+  }
+  const riskFlags: RiskFlag[] = [];
+  for (const item of raw.risk_flags) {
+    if (!isRecord(item) || typeof item.key !== 'string' || typeof item.summary !== 'string') return null;
+    if (item.severity !== 'low' && item.severity !== 'medium' && item.severity !== 'high') return null;
+    riskFlags.push({ key: item.key, severity: item.severity, summary: item.summary });
+  }
+  const narrativeBullets: NarrativeBullet[] = [];
+  for (const item of raw.narrative_bullets) {
+    if (!isRecord(item) || typeof item.topic !== 'string' || typeof item.summary !== 'string') return null;
+    if (item.sentiment !== 'bullish' && item.sentiment !== 'bearish' && item.sentiment !== 'neutral' && item.sentiment !== 'mixed') return null;
+    narrativeBullets.push({ topic: item.topic, summary: item.summary, sentiment: item.sentiment });
+  }
+  const avoidList: AvoidListItem[] = [];
+  for (const item of raw.avoid_list) {
+    if (!isRecord(item) || typeof item.symbol !== 'string' || typeof item.reason !== 'string') return null;
+    avoidList.push({ symbol: stripQuoteSuffix(item.symbol), reason: item.reason });
+  }
+  return { tradeSetups, riskFlags, narrativeBullets, avoidList };
+}
+
+function parseQuality(raw: unknown): ReportQuality | null {
+  if (!isRecord(raw)) return null;
+  if (!isQualityOverall(raw.overall)) return null;
+  const coveragePct = asFiniteNumber(raw.coverage_pct);
+  if (coveragePct === null) return null;
+  if (!Array.isArray(raw.warnings) || raw.warnings.some((warning) => typeof warning !== 'string')) return null;
+  return {
+    overall: raw.overall,
+    coveragePct,
+    warnings: raw.warnings as string[],
+  };
+}
+
+function parseFallbackNotes(payload: Record<string, unknown>): string[] | undefined {
+  if (!isRecord(payload.fallbacks) || !Array.isArray(payload.fallbacks.notes)) return undefined;
+  const notes = payload.fallbacks.notes.filter((item): item is string => typeof item === 'string');
+  return notes.length > 0 ? notes : undefined;
+}
+
+function extractFallbackV2Payload(payload: Record<string, unknown>): Record<string, unknown> | null {
+  if (!isRecord(payload.fallbacks)) return null;
+  return isRecord(payload.fallbacks.v2_payload) ? payload.fallbacks.v2_payload : null;
+}
+
+function normalizeLegacyPayload(
+  payload: Record<string, unknown>,
+  reportDate: string,
+  fallbackHeadline: string,
+  version: number,
+): DailyDisagreeReport {
   const reportNumber = reportNumberFromDate(reportDate);
-  const payload = isRecord(ctx8.payload) ? ctx8.payload : {};
   if (Array.isArray(payload.modules) && payload.headline) {
     return {
       ...payload,
+      version: typeof payload.version === 'number' ? payload.version : version,
       date: (payload.date as string | undefined) ?? reportDate,
       reportNumber: (payload.reportNumber as number | undefined) ?? reportNumber,
     } as DailyDisagreeReport;
@@ -392,7 +577,7 @@ function normalizeFromCtx8Report(ctx8: Ctx8Report): DailyDisagreeReport {
     isRecord(featured) && typeof featured.score === 'number' ? featured.score : Number(isRecord(featured) ? featured.score ?? 0 : 0);
 
   const headline: HeadlineBannerProps = {
-    headline: String(payload.headline ?? ctx8.headline ?? ''),
+    headline: String(payload.headline ?? fallbackHeadline),
     conviction: Number.isFinite(conviction) ? conviction : 0,
     reportDate: formatReportDate(reportDate),
     reportNumber,
@@ -402,15 +587,15 @@ function normalizeFromCtx8Report(ctx8: Ctx8Report): DailyDisagreeReport {
   const assets: DisagreeAssetSummary[] = convictionScores.map((s) => {
     const rec = isRecord(s) ? s : {};
     return {
-    symbol: stripQuoteSuffix(String(rec.symbol ?? '')),
-    price: 0,
-    change24h: 0,
-    volume: '\u2014',
-    marketCap: '\u2014',
-    bullCount: typeof rec.bullish_modules === 'number' ? rec.bullish_modules : Number(rec.bullish_modules ?? 0),
-    bearCount: typeof rec.bearish_modules === 'number' ? rec.bearish_modules : Number(rec.bearish_modules ?? 0),
-    topConflictSeverity: null,
-    conviction: typeof rec.score === 'number' ? rec.score : Number(rec.score ?? 0),
+      symbol: stripQuoteSuffix(String(rec.symbol ?? '')),
+      price: 0,
+      change24h: 0,
+      volume: '\u2014',
+      marketCap: '\u2014',
+      bullCount: typeof rec.bullish_modules === 'number' ? rec.bullish_modules : Number(rec.bullish_modules ?? 0),
+      bearCount: typeof rec.bearish_modules === 'number' ? rec.bearish_modules : Number(rec.bearish_modules ?? 0),
+      topConflictSeverity: null,
+      conviction: typeof rec.score === 'number' ? rec.score : Number(rec.score ?? 0),
     };
   });
 
@@ -422,6 +607,7 @@ function normalizeFromCtx8Report(ctx8: Ctx8Report): DailyDisagreeReport {
         : undefined;
 
   return {
+    version,
     date: reportDate,
     reportNumber,
     headline,
@@ -435,6 +621,42 @@ function normalizeFromCtx8Report(ctx8: Ctx8Report): DailyDisagreeReport {
     heatmapRows: [],
     riskCallout,
   };
+}
+
+export function normalizeFromCtx8Report(ctx8: Ctx8Report): DailyDisagreeReport {
+  const payload = isRecord(ctx8.payload) ? ctx8.payload : {};
+  const version = typeof ctx8.version === 'number' ? ctx8.version : Number(ctx8.version);
+  if (version === 2) {
+    return normalizeLegacyPayload(payload, ctx8.report_date, ctx8.headline, 2);
+  }
+  if (version === 3) {
+    const generatedAt = typeof payload.generated_at === 'string' ? payload.generated_at : null;
+    const collectors = parseCollectors(payload.collectors);
+    const sections = parseSections(payload.sections);
+    const quality = parseQuality(payload.quality);
+    if (generatedAt && collectors && sections && quality) {
+      return {
+        ...normalizeLegacyPayload(payload, ctx8.report_date, ctx8.headline, 3),
+        version: 3,
+        generatedAt,
+        collectors,
+        sections,
+        quality,
+        fallbackNotes: parseFallbackNotes(payload),
+      };
+    }
+    const fallbackPayload = extractFallbackV2Payload(payload);
+    if (fallbackPayload) {
+      return {
+        ...normalizeLegacyPayload(fallbackPayload, ctx8.report_date, ctx8.headline, 3),
+        version: 3,
+        v3FallbackUsed: true,
+        fallbackNotes: parseFallbackNotes(payload),
+      };
+    }
+    throw new Error('MARKET payload v3 is malformed and has no fallbacks.v2_payload');
+  }
+  throw new UnsupportedReportVersionError(ctx8.version);
 }
 
 export function useDailyDisagreeReport(date?: string): UseDailyDisagreeReportReturn {

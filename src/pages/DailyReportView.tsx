@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useDailyDisagreeReport } from '@/hooks/useDailyDisagreeReport';
+import { useDailyDisagreeReport, type CollectorStatus, type QualityOverall } from '@/hooks/useDailyDisagreeReport';
 import { SIGNAL_DISPLAY, type SignalType } from '@/lib/signals';
 import { PriceTicker } from '@/components/disagree/PriceTicker';
 import { WSStatusBanner } from '@/components/disagree/WSStatusBanner';
@@ -42,6 +42,16 @@ const SEVERITY_CLR: Record<ConflictSeverity, string> = {
   medium: SC.accent,
   high: '#E8853D',
   critical: SC.bear,
+};
+const COLLECTOR_STATUS_CLR: Record<CollectorStatus, string> = {
+  ok: SC.bull,
+  partial: SC.accent,
+  unavailable: SC.bear,
+};
+const QUALITY_CLR: Record<QualityOverall, string> = {
+  green: SC.bull,
+  amber: SC.accent,
+  red: SC.bear,
 };
 
 const CATEGORY_ORDER: ModuleCategory[] = [
@@ -244,6 +254,19 @@ export function DailyReportView() {
     `F&G ${report.headline.macro.fearGreed}`,
     `DXY ${report.headline.macro.dxyTrend === 'up' ? '\u25B2' : report.headline.macro.dxyTrend === 'down' ? '\u25BC' : '\u25C6'}`,
   ];
+  const collectorRows = report.collectors
+    ? [
+        { key: 'Derivatives', value: report.collectors.derivatives },
+        { key: 'Macro', value: report.collectors.macro },
+        { key: 'Social', value: report.collectors.social },
+        { key: 'Flows', value: report.collectors.flows },
+      ]
+    : [];
+  const qualityColor = report.quality ? QUALITY_CLR[report.quality.overall] : SC.textMuted;
+  const tradeSetups = report.sections?.tradeSetups ?? [];
+  const riskFlags = report.sections?.riskFlags ?? [];
+  const narrativeBullets = report.sections?.narrativeBullets ?? [];
+  const avoidList = report.sections?.avoidList ?? [];
 
   return (
     <div style={{ paddingTop: 8 }}>
@@ -302,9 +325,191 @@ export function DailyReportView() {
         </div>
       </div>
 
+      {report.v3FallbackUsed && (
+        <div style={{ ...card, marginBottom: '1.5rem', border: `1px solid ${SC.accent}66`, background: `${SC.accent}0f` }}>
+          <p style={{ margin: 0, fontFamily: mono, color: SC.textSecondary, fontSize: '0.85rem', lineHeight: 1.6 }}>
+            Payload v3 was partial; rendered from fallback v2 snapshot.
+          </p>
+          {report.fallbackNotes && report.fallbackNotes.length > 0 && (
+            <div style={{ marginTop: '0.6rem', color: SC.textMuted, fontFamily: mono, fontSize: '0.8rem' }}>
+              Notes: {report.fallbackNotes.join(' | ')}
+            </div>
+          )}
+        </div>
+      )}
+
+      {report.quality && (
+        <div style={{ ...card, marginBottom: '1.5rem', border: `1px solid ${qualityColor}44` }}>
+          <div style={cardHeader}>
+            <span style={cardTitle}>Quality</span>
+            <Badge label={report.quality.overall} color={qualityColor} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: report.quality.warnings.length > 0 ? '0.6rem' : 0 }}>
+            <span style={{ fontFamily: mono, fontSize: '0.85rem', color: SC.textSecondary }}>
+              Coverage
+            </span>
+            <span style={{ fontFamily: mono, color: qualityColor, fontWeight: 700 }}>{report.quality.coveragePct.toFixed(1)}%</span>
+          </div>
+          {report.quality.warnings.length > 0 && (
+            <div>
+              {report.quality.warnings.map((warning) => (
+                <div key={warning} style={{ fontFamily: mono, fontSize: '0.8rem', color: SC.textMuted, lineHeight: 1.5 }}>
+                  • {warning}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {collectorRows.length > 0 && (
+        <div style={{ marginBottom: '2.5rem' }}>
+          <div style={sectionTitle}>
+            <span style={numBadge}>01</span>
+            Collector Health
+          </div>
+          <div style={card}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={th}>Collector</th>
+                  <th style={th}>Status</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Confidence</th>
+                  <th style={th}>As Of</th>
+                </tr>
+              </thead>
+              <tbody>
+                {collectorRows.map((row, idx) => (
+                  <tr key={row.key}>
+                    <td style={{ ...td, color: SC.text, fontWeight: 600, borderBottom: idx === collectorRows.length - 1 ? 'none' : td.borderBottom }}>{row.key}</td>
+                    <td style={{ ...td, borderBottom: idx === collectorRows.length - 1 ? 'none' : td.borderBottom }}>
+                      <Badge label={row.value.status} color={COLLECTOR_STATUS_CLR[row.value.status]} />
+                    </td>
+                    <td style={{ ...td, textAlign: 'right', borderBottom: idx === collectorRows.length - 1 ? 'none' : td.borderBottom }}>
+                      {row.value.confidence}%
+                    </td>
+                    <td style={{ ...td, color: SC.textMuted, borderBottom: idx === collectorRows.length - 1 ? 'none' : td.borderBottom }}>
+                      {row.value.asOf}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tradeSetups.length > 0 && (
+        <div style={{ marginBottom: '2.5rem' }}>
+          <div style={sectionTitle}>
+            <span style={numBadge}>02</span>
+            Trade Setups
+          </div>
+          <div style={card}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={th}>Symbol</th>
+                  <th style={th}>Bias</th>
+                  <th style={th}>Thesis</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Confidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tradeSetups.map((setup, idx) => (
+                  <tr key={`${setup.symbol}-${idx}`}>
+                    <td style={{ ...td, color: SC.text, fontWeight: 600, borderBottom: idx === tradeSetups.length - 1 ? 'none' : td.borderBottom }}>{setup.symbol}</td>
+                    <td style={{ ...td, borderBottom: idx === tradeSetups.length - 1 ? 'none' : td.borderBottom }}>
+                      <SignalBadge signal={setup.bias} />
+                    </td>
+                    <td style={{ ...td, color: SC.textSecondary, borderBottom: idx === tradeSetups.length - 1 ? 'none' : td.borderBottom }}>{setup.thesis}</td>
+                    <td style={{ ...td, textAlign: 'right', borderBottom: idx === tradeSetups.length - 1 ? 'none' : td.borderBottom }}>{setup.confidence}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {riskFlags.length > 0 && (
+        <div style={{ marginBottom: '2.5rem' }}>
+          <div style={sectionTitle}>
+            <span style={numBadge}>03</span>
+            Risk Flags
+          </div>
+          <div style={{ display: 'grid', gap: '0.8rem' }}>
+            {riskFlags.map((flag) => (
+              <div key={flag.key} style={{ ...card, borderLeft: `3px solid ${SEVERITY_CLR[flag.severity]}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                  <Badge label={flag.severity} color={SEVERITY_CLR[flag.severity]} />
+                  <span style={{ fontFamily: mono, color: SC.text, fontWeight: 600 }}>{flag.key}</span>
+                </div>
+                <p style={{ marginTop: '0.5rem', marginBottom: 0, fontFamily: mono, color: SC.textSecondary, fontSize: '0.875rem', lineHeight: 1.6 }}>
+                  {flag.summary}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {narrativeBullets.length > 0 && (
+        <div style={{ marginBottom: '2.5rem' }}>
+          <div style={sectionTitle}>
+            <span style={numBadge}>04</span>
+            Narrative Bullets
+          </div>
+          <div style={card}>
+            {narrativeBullets.map((bullet, idx) => (
+              <div
+                key={`${bullet.topic}-${idx}`}
+                style={{
+                  padding: '0.6rem 0',
+                  borderTop: idx > 0 ? `1px solid ${SC.borderDim}` : undefined,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
+                  <span style={{ fontFamily: mono, color: SC.text, fontWeight: 600 }}>{bullet.topic}</span>
+                  <Badge label={bullet.sentiment} color={bullet.sentiment === 'bullish' ? SC.bull : bullet.sentiment === 'bearish' ? SC.bear : SC.neutral} />
+                </div>
+                <p style={{ margin: 0, fontFamily: mono, color: SC.textSecondary, fontSize: '0.875rem', lineHeight: 1.6 }}>{bullet.summary}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {avoidList.length > 0 && (
+        <div style={{ marginBottom: '2.5rem' }}>
+          <div style={sectionTitle}>
+            <span style={numBadge}>05</span>
+            Avoid List
+          </div>
+          <div style={card}>
+            {avoidList.map((entry, idx) => (
+              <div
+                key={`${entry.symbol}-${idx}`}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: '0.75rem',
+                  padding: '0.55rem 0',
+                  borderTop: idx > 0 ? `1px solid ${SC.borderDim}` : undefined,
+                }}
+              >
+                <span style={{ fontFamily: mono, color: SC.bear, fontWeight: 700 }}>{entry.symbol}</span>
+                <span style={{ fontFamily: mono, color: SC.textSecondary, textAlign: 'right', lineHeight: 1.5 }}>{entry.reason}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div style={{ marginBottom: '2.5rem' }}>
         <div style={sectionTitle}>
-          <span style={numBadge}>01</span>
+          <span style={numBadge}>06</span>
           Signal Scorecard
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1rem' }}>
@@ -354,7 +559,7 @@ export function DailyReportView() {
       {sortedConflicts.length > 0 && (
         <div style={{ marginBottom: '2.5rem' }}>
           <div style={sectionTitle}>
-            <span style={numBadge}>02</span>
+            <span style={numBadge}>07</span>
             Conflicts
             <Badge label={`${sortedConflicts.length}`} color={SC.bear} />
           </div>
@@ -414,7 +619,7 @@ export function DailyReportView() {
       {report.crowdedTrades.length > 0 && (
         <div style={{ marginBottom: '2.5rem' }}>
           <div style={sectionTitle}>
-            <span style={numBadge}>03</span>
+            <span style={numBadge}>08</span>
             Crowded Trades
           </div>
           <div style={card}>
@@ -459,7 +664,7 @@ export function DailyReportView() {
       {report.riskCallout && (
         <div style={{ marginBottom: '2.5rem' }}>
           <div style={sectionTitle}>
-            <span style={numBadge}>04</span>
+            <span style={numBadge}>09</span>
             Key Risk
           </div>
           <div style={{
@@ -478,7 +683,7 @@ export function DailyReportView() {
       {report.changes && report.changes.length > 0 && (
         <div style={{ marginBottom: '2.5rem' }}>
           <div style={sectionTitle}>
-            <span style={numBadge}>05</span>
+            <span style={numBadge}>10</span>
             What Changed
           </div>
           <div style={card}>
