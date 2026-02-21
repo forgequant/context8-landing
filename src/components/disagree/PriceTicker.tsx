@@ -2,11 +2,9 @@ import React, { memo } from 'react';
 import {
   usePriceStore,
   selectPrice,
-  selectConnectionStatus,
-  type ConnectionStatus,
 } from '@/stores/priceStore';
-import { MiniSparkline } from './MiniSparkline';
 import { DD_COLORS } from '@/lib/colors';
+import { MiniSparkline } from './MiniSparkline';
 
 const DISPLAY_SYMBOLS = [
   'BTC', 'ETH', 'SOL', 'DOGE', 'XRP',
@@ -23,13 +21,6 @@ function formatChange(change: number): string {
   const sign = change >= 0 ? '+' : '';
   return `${sign}${change.toFixed(1)}%`;
 }
-
-const STATUS_COLORS: Record<ConnectionStatus, string> = {
-  connected: DD_COLORS.bullish,
-  reconnecting: '#C49A3C',
-  disconnected: DD_COLORS.bearish,
-};
-
 
 const PriceCell = memo(function PriceCell({ symbol }: { symbol: string }) {
   const data = usePriceStore(selectPrice(symbol));
@@ -64,23 +55,6 @@ const PriceCell = memo(function PriceCell({ symbol }: { symbol: string }) {
   );
 });
 
-function ConnectionDot() {
-  const status = usePriceStore(selectConnectionStatus);
-  const color = STATUS_COLORS[status];
-
-  return (
-    <div className="flex items-center gap-1.5 px-3 shrink-0">
-      <div
-        className="w-2 h-2 rounded-full"
-        style={{ backgroundColor: color }}
-      />
-      <span className="text-[10px] font-mono uppercase" style={{ color }}>
-        {status === 'connected' ? 'LIVE' : status === 'reconnecting' ? 'STALE' : 'OFF'}
-      </span>
-    </div>
-  );
-}
-
 export function PriceTicker() {
   return (
     <div
@@ -91,8 +65,6 @@ export function PriceTicker() {
         borderColor: '#1A1C2144',
       }}
     >
-      <ConnectionDot />
-      <div className="h-4 w-px bg-[#1A1C21] shrink-0" />
       {DISPLAY_SYMBOLS.map((sym) => (
         <PriceCell key={sym} symbol={sym} />
       ))}
