@@ -55,6 +55,23 @@ const PriceCell = memo(function PriceCell({ symbol }: { symbol: string }) {
   );
 });
 
+const ConnectionOnBadge = memo(function ConnectionOnBadge() {
+  return (
+    <div className="flex items-center gap-1.5 px-3 shrink-0">
+      <div
+        className="w-2 h-2 rounded-full"
+        style={{ backgroundColor: DD_COLORS.bullish }}
+      />
+      <span
+        className="text-[10px] font-mono uppercase"
+        style={{ color: DD_COLORS.bullish }}
+      >
+        ON
+      </span>
+    </div>
+  );
+});
+
 export function PriceTicker() {
   return (
     <div
@@ -65,6 +82,8 @@ export function PriceTicker() {
         borderColor: '#1A1C2144',
       }}
     >
+      <ConnectionOnBadge />
+      <div className="h-4 w-px bg-[#1A1C21] shrink-0" />
       {DISPLAY_SYMBOLS.map((sym) => (
         <PriceCell key={sym} symbol={sym} />
       ))}
